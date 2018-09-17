@@ -2,9 +2,9 @@ OBJECT Page 50 Purchase Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -1749,9 +1749,14 @@ OBJECT Page 50 Purchase Order
     LOCAL PROCEDURE Post@4(PostingCodeunitID@1000 : Integer);
     VAR
       PurchaseHeader@1001 : Record 38;
+      ApplicationAreaSetup@1004 : Record 9178;
       InstructionMgt@1002 : Codeunit 1330;
+      LinesInstructionMgt@1005 : Codeunit 1320;
       IsScheduledPosting@1003 : Boolean;
     BEGIN
+      IF ApplicationAreaSetup.IsFoundationEnabled THEN
+        LinesInstructionMgt.PurchaseCheckAllLinesHaveQuantityAssigned(Rec);
+
       SendToPosting(PostingCodeunitID);
 
       IsScheduledPosting := "Job Queue Status" = "Job Queue Status"::"Scheduled for Posting";

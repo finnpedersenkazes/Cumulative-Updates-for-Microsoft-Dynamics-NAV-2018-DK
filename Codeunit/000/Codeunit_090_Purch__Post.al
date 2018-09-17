@@ -2,9 +2,9 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -284,6 +284,8 @@ OBJECT Codeunit 90 Purch.-Post
       ZeroDeferralAmtErr@1067 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";DAN=Periodiseringsbel›b m† ikke v‘re 0. Linje: %1, periodiseringsskabelon: %2.;ENU=Deferral amounts cannot be 0. Line: %1, Deferral Template: %2.';
       MixedDerpFAUntilPostingDateErr@1268 : TextConst '@@@=%1 - Fixed Asset No.;DAN=V‘rdien i feltet Afskriv til bogf›ringsdato for anl‘g skal v‘re den samme i linjerne for samme anl‘gsaktiv %1.;ENU=The value in the Depr. Until FA Posting Date field must be the same on lines for the same fixed asset %1.';
       CannotPostSameMultipleFAWhenDeprBookValueZeroErr@1274 : TextConst '@@@=%1 - Fixed Asset No.;DAN=Du kan ikke markere afkrydsningsfeltet Afskriv til bogf›ringsdato for anl‘g, da der ikke er en tidligere anskaffelsespost for anl‘gsaktivet %1.\\Hvis du vil afskrive nye anskaffelser, kan du markere afkrydsningsfeltet Afskriv anskaffelse i stedet.;ENU=You cannot select the Depr. Until FA Posting Date check box because there is no previous acquisition entry for fixed asset %1.\\If you want to depreciate new acquisitions, you can select the Depr. Acquisition Cost check box instead.';
+      InvPickExistsErr@1057 : TextConst 'DAN=One or more related inventory picks must be registered before you can post the shipment.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
+      InvPutAwayExistsErr@1056 : TextConst 'DAN=One or more related inventory put-aways must be registered before you can post the receipt.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
 
     LOCAL PROCEDURE CopyToTempLines@174(PurchHeader@1001 : Record 38);
     VAR
@@ -418,11 +420,19 @@ OBJECT Codeunit 90 Purch.-Post
         IF Invoice AND NOT IsCreditDocType THEN
           TESTFIELD("Due Date");
 
-        IF Receive THEN
+        IF Receive THEN BEGIN
           Receive := CheckTrackingAndWarehouseForReceive(PurchHeader);
+          IF NOT InvtPickPutaway THEN
+            IF CheckIfInvPutawayExists(PurchHeader) THEN
+              ERROR(InvPutAwayExistsErr);
+        END;
 
-        IF Ship THEN
+        IF Ship THEN BEGIN
           Ship := CheckTrackingAndWarehouseForShip(PurchHeader);
+          IF NOT InvtPickPutaway THEN
+            IF CheckIfInvPickExists THEN
+              ERROR(InvPickExistsErr);
+        END;
 
         IF NOT (Receive OR Invoice OR Ship) THEN
           ERROR(NothingToPostErr);
@@ -3536,6 +3546,7 @@ OBJECT Codeunit 90 Purch.-Post
 
     LOCAL PROCEDURE InsertTrackingSpecification@35(PurchHeader@1001 : Record 38);
     BEGIN
+      TempTrackingSpecification.RESET;
       IF NOT TempTrackingSpecification.ISEMPTY THEN BEGIN
         TempTrackingSpecification.InsertSpecification;
         ReservePurchLine.UpdateItemTrackingAfterPosting(PurchHeader);
@@ -5306,6 +5317,55 @@ OBJECT Codeunit 90 Purch.-Post
             CheckWarehouse(TempPurchLine);
         END;
         EXIT(Ship);
+      END;
+    END;
+
+    LOCAL PROCEDURE CheckIfInvPutawayExists@235(PurchaseHeader@1002 : Record 38) : Boolean;
+    VAR
+      TempPurchLine@1000 : TEMPORARY Record 39;
+      WarehouseActivityLine@1001 : Record 5767;
+    BEGIN
+      WITH TempPurchLine DO BEGIN
+        ResetTempLines(TempPurchLine);
+        SETFILTER(Quantity,'<>0');
+        IF PurchaseHeader."Document Type" = PurchaseHeader."Document Type"::Order THEN
+          SETFILTER("Qty. to Receive",'<>0');
+        SETRANGE("Receipt No.",'');
+        IF ISEMPTY THEN
+          EXIT(FALSE);
+        FINDSET;
+        REPEAT
+          IF WarehouseActivityLine.ActivityExists(
+               DATABASE::"Purchase Line","Document Type","Document No.","Line No.",0,
+               WarehouseActivityLine."Activity Type"::"Invt. Put-away")
+          THEN
+            EXIT(TRUE);
+        UNTIL NEXT = 0;
+        EXIT(FALSE);
+      END;
+    END;
+
+    LOCAL PROCEDURE CheckIfInvPickExists@234() : Boolean;
+    VAR
+      TempPurchLine@1000 : TEMPORARY Record 39;
+      WarehouseActivityLine@1001 : Record 5767;
+    BEGIN
+      WITH TempPurchLine DO BEGIN
+        ResetTempLines(TempPurchLine);
+        SETFILTER(Quantity,'<>0');
+        SETFILTER("Return Qty. to Ship",'<>0');
+        SETRANGE("Return Shipment No.",'');
+        IF ISEMPTY THEN
+          EXIT(FALSE);
+        FINDSET;
+        REPEAT
+          IF WarehouseActivityLine.ActivityExists(
+               DATABASE::"Purchase Line","Document Type","Document No.","Line No.",0,
+               WarehouseActivityLine."Activity Type"::"Invt. Pick")
+          THEN
+            EXIT(TRUE);
+        UNTIL NEXT = 0;
+        EXIT(FALSE);
       END;
     END;
 

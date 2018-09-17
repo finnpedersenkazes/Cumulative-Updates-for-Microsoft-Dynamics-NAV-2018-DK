@@ -2,9 +2,9 @@ OBJECT Table 5802 Value Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -286,6 +286,7 @@ OBJECT Table 5802 Value Entry
     {    ;Item Ledger Entry Type,Posting Date,Item No.,Inventory Posting Group,Dimension Set ID;
                                                    SumIndexFields=Invoiced Quantity,Sales Amount (Actual),Purchase Amount (Actual) }
     { No ;Item Ledger Entry No.,Valuation Date     }
+    {    ;Location Code,Inventory Posting Group    }
   }
   FIELDGROUPS
   {

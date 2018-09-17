@@ -2,9 +2,9 @@ OBJECT Page 9082 Customer Statistics FactBox
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -128,7 +128,7 @@ OBJECT Page 9082 Customer Statistics FactBox
 
     { 12  ;1   ;Field     ;
                 Name=Balance Due (LCY);
-                CaptionML=[DAN=Balance Due (LCY);
+                CaptionML=[DAN=Forf. bel›b (RV);
                            ENU=Balance Due (LCY)];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=CalcOverdueBalance;

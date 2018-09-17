@@ -2,9 +2,9 @@ OBJECT Table 96 G/L Budget Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -57,9 +57,19 @@ OBJECT Table 96 G/L Budget Entry
                                                    CaptionML=[DAN=Budgetnavn;
                                                               ENU=Budget Name] }
     { 3   ;   ;G/L Account No.     ;Code20        ;TableRelation="G/L Account";
+                                                   OnValidate=BEGIN
+                                                                IF (xRec."G/L Account No." <> '') AND (xRec."G/L Account No." <> "G/L Account No.") THEN
+                                                                  VerifyNoRelatedAnalysisViewBudgetEntries(xRec);
+                                                              END;
+
                                                    CaptionML=[DAN=Finanskontonr.;
                                                               ENU=G/L Account No.] }
-    { 4   ;   ;Date                ;Date          ;CaptionML=[DAN=Dato;
+    { 4   ;   ;Date                ;Date          ;OnValidate=BEGIN
+                                                                IF (xRec.Date <> 0D) AND (xRec.Date <> Date) THEN
+                                                                  VerifyNoRelatedAnalysisViewBudgetEntries(xRec);
+                                                              END;
+
+                                                   CaptionML=[DAN=Dato;
                                                               ENU=Date];
                                                    ClosingDates=Yes }
     { 5   ;   ;Global Dimension 1 Code;Code20     ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
@@ -88,7 +98,7 @@ OBJECT Table 96 G/L Budget Entry
                                                    CaptionClass='1,1,2' }
     { 7   ;   ;Amount              ;Decimal       ;OnValidate=BEGIN
                                                                 IF (xRec.Amount <> 0) AND (xRec.Amount <> Amount) THEN
-                                                                  VerifyNoRelatedAnalysisViewBudgetEntries;
+                                                                  VerifyNoRelatedAnalysisViewBudgetEntries(xRec);
                                                               END;
 
                                                    CaptionML=[DAN=Bel›b;
@@ -426,14 +436,14 @@ OBJECT Table 96 G/L Budget Entry
       AnalysisViewBudgetEntry.DELETEALL;
     END;
 
-    LOCAL PROCEDURE VerifyNoRelatedAnalysisViewBudgetEntries@11();
+    LOCAL PROCEDURE VerifyNoRelatedAnalysisViewBudgetEntries@11(GLBudgetEntry@1001 : Record 96);
     VAR
       AnalysisViewBudgetEntry@1000 : Record 366;
     BEGIN
-      AnalysisViewBudgetEntry.SETRANGE("Budget Name","Budget Name");
-      AnalysisViewBudgetEntry.SETRANGE("G/L Account No.","G/L Account No.");
-      AnalysisViewBudgetEntry.SETRANGE("Posting Date",Date);
-      AnalysisViewBudgetEntry.SETRANGE("Business Unit Code","Business Unit Code");
+      AnalysisViewBudgetEntry.SETRANGE("Budget Name",GLBudgetEntry."Budget Name");
+      AnalysisViewBudgetEntry.SETRANGE("G/L Account No.",GLBudgetEntry."G/L Account No.");
+      AnalysisViewBudgetEntry.SETRANGE("Posting Date",GLBudgetEntry.Date);
+      AnalysisViewBudgetEntry.SETRANGE("Business Unit Code",GLBudgetEntry."Business Unit Code");
       IF NOT AnalysisViewBudgetEntry.ISEMPTY THEN
         ERROR(AnalysisViewBudgetEntryExistsErr);
     END;

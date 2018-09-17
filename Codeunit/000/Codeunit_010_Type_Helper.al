@@ -2,9 +2,9 @@ OBJECT Codeunit 10 Type Helper
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -23,7 +23,7 @@ OBJECT Codeunit 10 Type Helper
       BitwiseAndTxt@1005 : TextConst '@@@={Locked};DAN=BitwiseAnd;ENU=BitwiseAnd';
       BitwiseOrTxt@1006 : TextConst '@@@={Locked};DAN=BitwiseOr;ENU=BitwiseOr';
       BitwiseXorTxt@1007 : TextConst '@@@={Locked};DAN=BitwiseXor;ENU=BitwiseXor';
-      ObsoleteFieldErr@1008 : TextConst '@@@=%1 - field name, %2 - table name;DAN=The field %1 of %2 table is obsolete and cannot be used.;ENU=The field %1 of %2 table is obsolete and cannot be used.';
+      ObsoleteFieldErr@1008 : TextConst '@@@=%1 - field name, %2 - table name;DAN=Feltet %1 i tabellen %2 er for‘ldet og kan ikke bruges.;ENU=The field %1 of %2 table is obsolete and cannot be used.';
 
     [External]
     PROCEDURE Evaluate@3(VAR Variable@1000 : Variant;String@1001 : Text;Format@1002 : Text;CultureName@1003 : Text) : Boolean;

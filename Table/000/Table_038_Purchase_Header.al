@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -1692,6 +1692,15 @@ OBJECT Table 38 Purchase Header
 
                                                    CaptionML=[DAN=Ansvarscenter;
                                                               ENU=Responsibility Center] }
+    { 5751;   ;Partially Invoiced  ;Boolean       ;FieldClass=FlowField;
+                                                   CalcFormula=Exist("Purchase Line" WHERE (Document Type=FIELD(Document Type),
+                                                                                            Document No.=FIELD(No.),
+                                                                                            Type=FILTER(<>' '),
+                                                                                            Location Code=FIELD(Location Filter),
+                                                                                            Quantity Invoiced=FILTER(<>0)));
+                                                   CaptionML=[DAN=Partially Invoiced;
+                                                              ENU=Partially Invoiced];
+                                                   Editable=No }
     { 5752;   ;Completely Received ;Boolean       ;FieldClass=FlowField;
                                                    CalcFormula=Min("Purchase Line"."Completely Received" WHERE (Document Type=FIELD(Document Type),
                                                                                                                 Document No.=FIELD(No.),
@@ -1833,7 +1842,8 @@ OBJECT Table 38 Purchase Header
       Text009@1009 : TextConst '@@@="%1 = Document No.";DAN=Hvis du sletter dette dokument, opst†r der et hul i nummerserien for modtagelse. Der oprettes en tom modtagelse %1 for at udfylde hullet i nummerserien.\\Vil du forts‘tte?;ENU=Deleting this document will cause a gap in the number series for receipts. An empty receipt %1 will be created to fill this gap in the number series.\\Do you want to continue?';
       Text012@1012 : TextConst '@@@="%1 = Document No.";DAN=Hvis du sletter dette dokument, opst†r der et hul i nummerserien for bogf›rte fakturaer. Der oprettes en tom bogf›rt faktura %1 for at udfylde hullet i nummerserien.\\Vil du forts‘tte?;ENU=Deleting this document will cause a gap in the number series for posted invoices. An empty posted invoice %1 will be created to fill this gap in the number series.\\Do you want to continue?';
       Text014@1014 : TextConst '@@@="%1 = Document No.";DAN=Hvis du sletter dette dokument, opst†r der et hul i nummerserien for bogf›rte kreditnotaer. Der oprettes en tom bogf›rt kreditnota %1 for at udfylde hullet i nummerserien.\\Vil du forts‘tte?;ENU=Deleting this document will cause a gap in the number series for posted credit memos. An empty posted credit memo %1 will be created to fill this gap in the number series.\\Do you want to continue?';
-      Text016@1016 : TextConst 'DAN=Hvis du ‘ndrer %1, vil de eksisterende k›bslinjer blive slettet, og der vil blive oprettet nye k›bslinjer p† baggrund af de nye oplysninger i hovedet.\\;ENU=If you change %1, the existing purchase lines will be deleted and new purchase lines based on the new information in the header will be created.\\';
+      RecreatePurchLinesMsg@1016 : TextConst '@@@=%1: FieldCaption;DAN=Hvis du ‘ndrer %1, slettes de eksisterende k›bslinjer, og der oprettes nye k›bslinjer p† baggrund af de nye oplysninger i hovedet.\\Vil du forts‘tte?;ENU=If you change %1, the existing purchase lines will be deleted and new purchase lines based on the new information in the header will be created.\\Do you want to continue?';
+      ResetItemChargeAssignMsg@1081 : TextConst '@@@=%1: FieldCaption;DAN=Hvis du ‘ndrer %1, slettes de eksisterende k›bslinjer, og der oprettes nye k›bslinjer p† baggrund af de nye oplysninger i hovedet.\Bel›bet for tildeling af varegebyr nulstilles til 0.\\Vil du forts‘tte?;ENU=If you change %1, the existing purchase lines will be deleted and new purchase lines based on the new information in the header will be created.\The amount of the item charge assignment will be reset to 0.\\Do you want to continue?';
       Text018@1017 : TextConst 'DAN=Du skal slette de eksisterende k›bslinjer, f›r du kan ‘ndre %1.;ENU=You must delete the existing purchase lines before you can change %1.';
       Text019@1018 : TextConst 'DAN=Du har ‘ndret %1 p† k›bshovedet, men det er ikke blevet ‘ndret p† de eksisterende k›bslinjer.\;ENU=You have changed %1 on the purchase header, but it has not been changed on the existing purchase lines.\';
       Text020@1019 : TextConst 'DAN=Du skal opdatere de eksisterende k›bslinjer manuelt.;ENU=You must update the existing purchase lines manually.';
@@ -2216,151 +2226,147 @@ OBJECT Table 38 Purchase Header
       SalesHeader@1006 : Record 36;
       TransferExtendedText@1009 : Codeunit 378;
       ExtendedTextAdded@1002 : Boolean;
+      ConfirmText@1007 : Text;
     BEGIN
-      IF PurchLinesExist THEN BEGIN
-        IF HideValidationDialog THEN
-          Confirmed := TRUE
+      IF NOT PurchLinesExist THEN
+        EXIT;
+
+      IF HideValidationDialog OR NOT GUIALLOWED THEN
+        Confirmed := TRUE
+      ELSE BEGIN
+        IF HasItemChargeAssignment THEN
+          ConfirmText := ResetItemChargeAssignMsg
         ELSE
-          Confirmed :=
-            CONFIRM(
-              Text016 +
-              ConfirmChangeQst,FALSE,ChangedFieldName);
-        IF Confirmed THEN BEGIN
-          PurchLine.LOCKTABLE;
-          ItemChargeAssgntPurch.LOCKTABLE;
-          MODIFY;
+          ConfirmText := RecreatePurchLinesMsg;
+        Confirmed := CONFIRM(ConfirmText,FALSE,ChangedFieldName);
+      END;
 
-          PurchLine.RESET;
-          PurchLine.SETRANGE("Document Type","Document Type");
-          PurchLine.SETRANGE("Document No.","No.");
-          IF PurchLine.FINDSET THEN BEGIN
-            REPEAT
-              PurchLine.TESTFIELD("Quantity Received",0);
-              PurchLine.TESTFIELD("Quantity Invoiced",0);
-              PurchLine.TESTFIELD("Return Qty. Shipped",0);
-              PurchLine.CALCFIELDS("Reserved Qty. (Base)");
-              PurchLine.TESTFIELD("Reserved Qty. (Base)",0);
-              PurchLine.TESTFIELD("Receipt No.",'');
-              PurchLine.TESTFIELD("Return Shipment No.",'');
-              PurchLine.TESTFIELD("Blanket Order No.",'');
-              IF PurchLine."Drop Shipment" OR PurchLine."Special Order" THEN BEGIN
-                CASE TRUE OF
-                  PurchLine."Drop Shipment":
-                    SalesHeader.GET(SalesHeader."Document Type"::Order,PurchLine."Sales Order No.");
-                  PurchLine."Special Order":
-                    SalesHeader.GET(SalesHeader."Document Type"::Order,PurchLine."Special Order Sales No.");
-                END;
-                TESTFIELD("Sell-to Customer No.",SalesHeader."Sell-to Customer No.");
-                TESTFIELD("Ship-to Code",SalesHeader."Ship-to Code");
+      IF Confirmed THEN BEGIN
+        PurchLine.LOCKTABLE;
+        ItemChargeAssgntPurch.LOCKTABLE;
+        MODIFY;
+
+        PurchLine.RESET;
+        PurchLine.SETRANGE("Document Type","Document Type");
+        PurchLine.SETRANGE("Document No.","No.");
+        IF PurchLine.FINDSET THEN BEGIN
+          REPEAT
+            PurchLine.TESTFIELD("Quantity Received",0);
+            PurchLine.TESTFIELD("Quantity Invoiced",0);
+            PurchLine.TESTFIELD("Return Qty. Shipped",0);
+            PurchLine.CALCFIELDS("Reserved Qty. (Base)");
+            PurchLine.TESTFIELD("Reserved Qty. (Base)",0);
+            PurchLine.TESTFIELD("Receipt No.",'');
+            PurchLine.TESTFIELD("Return Shipment No.",'');
+            PurchLine.TESTFIELD("Blanket Order No.",'');
+            IF PurchLine."Drop Shipment" OR PurchLine."Special Order" THEN BEGIN
+              CASE TRUE OF
+                PurchLine."Drop Shipment":
+                  SalesHeader.GET(SalesHeader."Document Type"::Order,PurchLine."Sales Order No.");
+                PurchLine."Special Order":
+                  SalesHeader.GET(SalesHeader."Document Type"::Order,PurchLine."Special Order Sales No.");
               END;
-
-              PurchLine.TESTFIELD("Prepmt. Amt. Inv.",0);
-              TempPurchLine := PurchLine;
-              IF PurchLine.Nonstock THEN BEGIN
-                PurchLine.Nonstock := FALSE;
-                PurchLine.MODIFY;
-              END;
-              TempPurchLine.INSERT;
-            UNTIL PurchLine.NEXT = 0;
-
-            ItemChargeAssgntPurch.SETRANGE("Document Type","Document Type");
-            ItemChargeAssgntPurch.SETRANGE("Document No.","No.");
-            IF ItemChargeAssgntPurch.FINDSET THEN BEGIN
-              REPEAT
-                TempItemChargeAssgntPurch.INIT;
-                TempItemChargeAssgntPurch := ItemChargeAssgntPurch;
-                TempItemChargeAssgntPurch.INSERT;
-              UNTIL ItemChargeAssgntPurch.NEXT = 0;
-              ItemChargeAssgntPurch.DELETEALL;
+              TESTFIELD("Sell-to Customer No.",SalesHeader."Sell-to Customer No.");
+              TESTFIELD("Ship-to Code",SalesHeader."Ship-to Code");
             END;
 
-            PurchLine.DELETEALL(TRUE);
+            PurchLine.TESTFIELD("Prepmt. Amt. Inv.",0);
+            TempPurchLine := PurchLine;
+            IF PurchLine.Nonstock THEN BEGIN
+              PurchLine.Nonstock := FALSE;
+              PurchLine.MODIFY;
+            END;
+            TempPurchLine.INSERT;
+          UNTIL PurchLine.NEXT = 0;
 
-            PurchLine.INIT;
-            PurchLine."Line No." := 0;
-            TempPurchLine.FINDSET;
-            ExtendedTextAdded := FALSE;
-            REPEAT
-              IF TempPurchLine."Attached to Line No." = 0 THEN BEGIN
-                PurchLine.INIT;
-                PurchLine."Line No." := PurchLine."Line No." + 10000;
-                PurchLine.VALIDATE(Type,TempPurchLine.Type);
-                IF TempPurchLine."No." = '' THEN BEGIN
-                  PurchLine.VALIDATE(Description,TempPurchLine.Description);
-                  PurchLine.VALIDATE("Description 2",TempPurchLine."Description 2");
-                END ELSE BEGIN
-                  PurchLine.VALIDATE("No.",TempPurchLine."No.");
-                  IF PurchLine.Type <> PurchLine.Type::" " THEN
-                    CASE TRUE OF
-                      TempPurchLine."Drop Shipment":
-                        TransferSavedFieldsDropShipment(PurchLine,TempPurchLine);
-                      TempPurchLine."Special Order":
-                        TransferSavedFieldsSpecialOrder(PurchLine,TempPurchLine);
-                      ELSE
-                        TransferSavedFields(PurchLine,TempPurchLine);
+          TransferItemChargeAssgntPurchToTemp(ItemChargeAssgntPurch,TempItemChargeAssgntPurch);
+
+          PurchLine.DELETEALL(TRUE);
+
+          PurchLine.INIT;
+          PurchLine."Line No." := 0;
+          TempPurchLine.FINDSET;
+          ExtendedTextAdded := FALSE;
+          REPEAT
+            IF TempPurchLine."Attached to Line No." = 0 THEN BEGIN
+              PurchLine.INIT;
+              PurchLine."Line No." := PurchLine."Line No." + 10000;
+              PurchLine.VALIDATE(Type,TempPurchLine.Type);
+              IF TempPurchLine."No." = '' THEN BEGIN
+                PurchLine.VALIDATE(Description,TempPurchLine.Description);
+                PurchLine.VALIDATE("Description 2",TempPurchLine."Description 2");
+              END ELSE BEGIN
+                PurchLine.VALIDATE("No.",TempPurchLine."No.");
+                IF PurchLine.Type <> PurchLine.Type::" " THEN
+                  CASE TRUE OF
+                    TempPurchLine."Drop Shipment":
+                      TransferSavedFieldsDropShipment(PurchLine,TempPurchLine);
+                    TempPurchLine."Special Order":
+                      TransferSavedFieldsSpecialOrder(PurchLine,TempPurchLine);
+                    ELSE
+                      TransferSavedFields(PurchLine,TempPurchLine);
+                  END;
+              END;
+
+              PurchLine.INSERT;
+              ExtendedTextAdded := FALSE;
+
+              IF PurchLine.Type = PurchLine.Type::Item THEN BEGIN
+                ClearItemAssgntPurchFilter(TempItemChargeAssgntPurch);
+                TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. Type",TempPurchLine."Document Type");
+                TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. No.",TempPurchLine."Document No.");
+                TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. Line No.",TempPurchLine."Line No.");
+                IF TempItemChargeAssgntPurch.FINDSET THEN
+                  REPEAT
+                    IF NOT TempItemChargeAssgntPurch.MARK THEN BEGIN
+                      TempItemChargeAssgntPurch."Applies-to Doc. Line No." := PurchLine."Line No.";
+                      TempItemChargeAssgntPurch.Description := PurchLine.Description;
+                      TempItemChargeAssgntPurch.MODIFY;
+                      TempItemChargeAssgntPurch.MARK(TRUE);
                     END;
-                END;
+                  UNTIL TempItemChargeAssgntPurch.NEXT = 0;
+              END;
+              IF PurchLine.Type = PurchLine.Type::"Charge (Item)" THEN BEGIN
+                TempInteger.INIT;
+                TempInteger.Number := PurchLine."Line No.";
+                TempInteger.INSERT;
+              END;
+            END ELSE
+              IF NOT ExtendedTextAdded THEN BEGIN
+                TransferExtendedText.PurchCheckIfAnyExtText(PurchLine,TRUE);
+                TransferExtendedText.InsertPurchExtText(PurchLine);
+                OnAfterTransferExtendedTextForPurchaseLineRecreation(PurchLine);
+                PurchLine.FINDLAST;
+                ExtendedTextAdded := TRUE;
+              END;
+          UNTIL TempPurchLine.NEXT = 0;
 
-                PurchLine.INSERT;
-                ExtendedTextAdded := FALSE;
-
-                IF PurchLine.Type = PurchLine.Type::Item THEN BEGIN
-                  ClearItemAssgntPurchFilter(TempItemChargeAssgntPurch);
-                  TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. Type",TempPurchLine."Document Type");
-                  TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. No.",TempPurchLine."Document No.");
-                  TempItemChargeAssgntPurch.SETRANGE("Applies-to Doc. Line No.",TempPurchLine."Line No.");
-                  IF TempItemChargeAssgntPurch.FINDSET THEN
-                    REPEAT
-                      IF NOT TempItemChargeAssgntPurch.MARK THEN BEGIN
-                        TempItemChargeAssgntPurch."Applies-to Doc. Line No." := PurchLine."Line No.";
-                        TempItemChargeAssgntPurch.Description := PurchLine.Description;
-                        TempItemChargeAssgntPurch.MODIFY;
-                        TempItemChargeAssgntPurch.MARK(TRUE);
-                      END;
-                    UNTIL TempItemChargeAssgntPurch.NEXT = 0;
-                END;
-                IF PurchLine.Type = PurchLine.Type::"Charge (Item)" THEN BEGIN
-                  TempInteger.INIT;
-                  TempInteger.Number := PurchLine."Line No.";
-                  TempInteger.INSERT;
-                END;
-              END ELSE
-                IF NOT ExtendedTextAdded THEN BEGIN
-                  TransferExtendedText.PurchCheckIfAnyExtText(PurchLine,TRUE);
-                  TransferExtendedText.InsertPurchExtText(PurchLine);
-                  OnAfterTransferExtendedTextForPurchaseLineRecreation(PurchLine);
-                  PurchLine.FINDLAST;
-                  ExtendedTextAdded := TRUE;
-                END;
+          ClearItemAssgntPurchFilter(TempItemChargeAssgntPurch);
+          TempPurchLine.SETRANGE(Type,PurchLine.Type::"Charge (Item)");
+          IF TempPurchLine.FINDSET THEN
+            REPEAT
+              TempItemChargeAssgntPurch.SETRANGE("Document Line No.",TempPurchLine."Line No.");
+              IF TempItemChargeAssgntPurch.FINDSET THEN BEGIN
+                REPEAT
+                  TempInteger.FINDFIRST;
+                  ItemChargeAssgntPurch.INIT;
+                  ItemChargeAssgntPurch := TempItemChargeAssgntPurch;
+                  ItemChargeAssgntPurch."Document Line No." := TempInteger.Number;
+                  ItemChargeAssgntPurch.VALIDATE("Unit Cost",0);
+                  ItemChargeAssgntPurch.INSERT;
+                UNTIL TempItemChargeAssgntPurch.NEXT = 0;
+                TempInteger.DELETE;
+              END;
             UNTIL TempPurchLine.NEXT = 0;
 
-            ClearItemAssgntPurchFilter(TempItemChargeAssgntPurch);
-            TempPurchLine.SETRANGE(Type,PurchLine.Type::"Charge (Item)");
-            IF TempPurchLine.FINDSET THEN
-              REPEAT
-                TempItemChargeAssgntPurch.SETRANGE("Document Line No.",TempPurchLine."Line No.");
-                IF TempItemChargeAssgntPurch.FINDSET THEN BEGIN
-                  REPEAT
-                    TempInteger.FINDFIRST;
-                    ItemChargeAssgntPurch.INIT;
-                    ItemChargeAssgntPurch := TempItemChargeAssgntPurch;
-                    ItemChargeAssgntPurch."Document Line No." := TempInteger.Number;
-                    ItemChargeAssgntPurch.VALIDATE("Unit Cost",0);
-                    ItemChargeAssgntPurch.INSERT;
-                  UNTIL TempItemChargeAssgntPurch.NEXT = 0;
-                  TempInteger.DELETE;
-                END;
-              UNTIL TempPurchLine.NEXT = 0;
-
-            TempPurchLine.SETRANGE(Type);
-            TempPurchLine.DELETEALL;
-            ClearItemAssgntPurchFilter(TempItemChargeAssgntPurch);
-            TempItemChargeAssgntPurch.DELETEALL;
-          END;
-        END ELSE
-          ERROR(
-            Text018,ChangedFieldName);
-      END;
+          TempPurchLine.SETRANGE(Type);
+          TempPurchLine.DELETEALL;
+          ClearItemAssgntPurchFilter(TempItemChargeAssgntPurch);
+          TempItemChargeAssgntPurch.DELETEALL;
+        END;
+      END ELSE
+        ERROR(
+          Text018,ChangedFieldName);
     END;
 
     LOCAL PROCEDURE TransferSavedFields@72(VAR DestinationPurchaseLine@1000 : Record 39;VAR SourcePurchaseLine@1001 : Record 39);
@@ -3288,6 +3294,19 @@ OBJECT Table 38 Purchase Header
       TempPurchaseLine.INSERT;
     END;
 
+    LOCAL PROCEDURE TransferItemChargeAssgntPurchToTemp@95(VAR ItemChargeAssgntPurch@1000 : Record 5805;VAR TempItemChargeAssgntPurch@1001 : TEMPORARY Record 5805);
+    BEGIN
+      ItemChargeAssgntPurch.SETRANGE("Document Type","Document Type");
+      ItemChargeAssgntPurch.SETRANGE("Document No.","No.");
+      IF ItemChargeAssgntPurch.FINDSET THEN BEGIN
+        REPEAT
+          TempItemChargeAssgntPurch := ItemChargeAssgntPurch;
+          TempItemChargeAssgntPurch.INSERT;
+        UNTIL ItemChargeAssgntPurch.NEXT = 0;
+        ItemChargeAssgntPurch.DELETEALL;
+      END;
+    END;
+
     [Internal]
     PROCEDURE OpenPurchaseOrderStatistics@60();
     BEGIN
@@ -3323,9 +3342,17 @@ OBJECT Table 38 Purchase Header
     END;
 
     [Integration(TRUE)]
-    [External]
-    PROCEDURE OnCheckPurchaseReleaseRestrictions@55();
+    LOCAL PROCEDURE OnCheckPurchaseReleaseRestrictions@55();
     BEGIN
+    END;
+
+    [External]
+    PROCEDURE CheckPurchaseReleaseRestrictions@105();
+    VAR
+      ApprovalsMgmt@1000 : Codeunit 1535;
+    BEGIN
+      OnCheckPurchaseReleaseRestrictions;
+      ApprovalsMgmt.PrePostApprovalCheckPurch(Rec);
     END;
 
     [External]
@@ -3475,6 +3502,16 @@ OBJECT Table 38 Purchase Header
       END;
 
       EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE HasItemChargeAssignment@93() : Boolean;
+    VAR
+      ItemChargeAssgntPurch@1000 : Record 5805;
+    BEGIN
+      ItemChargeAssgntPurch.SETRANGE("Document Type","Document Type");
+      ItemChargeAssgntPurch.SETRANGE("Document No.","No.");
+      ItemChargeAssgntPurch.SETFILTER("Amount to Assign",'<>%1',0);
+      EXIT(NOT ItemChargeAssgntPurch.ISEMPTY);
     END;
 
     LOCAL PROCEDURE CopyBuyFromVendorAddressFieldsFromVendor@62(VAR BuyFromVendor@1000 : Record 23;ForceCopy@1001 : Boolean);
@@ -3909,6 +3946,78 @@ OBJECT Table 38 Purchase Header
       VendorLedgerEntry.SETRANGE("Document Type",GetGenJnlDocumentType);
       VendorLedgerEntry.SETRANGE(Reversed,FALSE);
       EXIT(VendorLedgerEntry.FINDFIRST);
+    END;
+
+    PROCEDURE FilterPartialReceived@108();
+    VAR
+      PurchaseHeaderOriginal@1000 : Record 38;
+      ReceiveFilter@1004 : Text;
+      IsMarked@1003 : Boolean;
+      ReceiveValue@1001 : Boolean;
+    BEGIN
+      ReceiveFilter := GETFILTER(Receive);
+      SETRANGE(Receive);
+      EVALUATE(ReceiveValue,ReceiveFilter);
+
+      PurchaseHeaderOriginal := Rec;
+      IF FINDSET THEN
+        REPEAT
+          IF NOT HasReceivedLines THEN
+            IsMarked := NOT ReceiveValue
+          ELSE
+            IsMarked := ReceiveValue;
+          MARK(IsMarked);
+        UNTIL NEXT = 0;
+
+      Rec := PurchaseHeaderOriginal;
+      MARKEDONLY(TRUE);
+    END;
+
+    PROCEDURE FilterPartialInvoiced@307();
+    VAR
+      PurchaseHeaderOriginal@1000 : Record 38;
+      InvoiceFilter@1004 : Text;
+      IsMarked@1003 : Boolean;
+      InvoiceValue@1001 : Boolean;
+    BEGIN
+      InvoiceFilter := GETFILTER(Invoice);
+      SETRANGE(Invoice);
+      EVALUATE(InvoiceValue,InvoiceFilter);
+
+      PurchaseHeaderOriginal := Rec;
+      IF FINDSET THEN
+        REPEAT
+          IF NOT HasInvoicedLines THEN
+            IsMarked := NOT InvoiceValue
+          ELSE
+            IsMarked := InvoiceValue;
+          MARK(IsMarked);
+        UNTIL NEXT = 0;
+
+      Rec := PurchaseHeaderOriginal;
+      MARKEDONLY(TRUE);
+    END;
+
+    LOCAL PROCEDURE HasReceivedLines@126() : Boolean;
+    VAR
+      PurchaseLine@1002 : Record 39;
+    BEGIN
+      PurchaseLine.SETRANGE("Document Type","Document Type");
+      PurchaseLine.SETRANGE("Document No.","No.");
+      PurchaseLine.SETFILTER("No.",'<>%1','');
+      PurchaseLine.SETFILTER("Quantity Received",'<>%1',0);
+      EXIT(NOT PurchaseLine.ISEMPTY);
+    END;
+
+    LOCAL PROCEDURE HasInvoicedLines@123() : Boolean;
+    VAR
+      PurchaseLine@1002 : Record 39;
+    BEGIN
+      PurchaseLine.SETRANGE("Document Type","Document Type");
+      PurchaseLine.SETRANGE("Document No.","No.");
+      PurchaseLine.SETFILTER("No.",'<>%1','');
+      PurchaseLine.SETFILTER("Quantity Invoiced",'<>%1',0);
+      EXIT(NOT PurchaseLine.ISEMPTY);
     END;
 
     LOCAL PROCEDURE ShowExternalDocAlreadyExistNotification@89(VendorLedgerEntry@1000 : Record 25);

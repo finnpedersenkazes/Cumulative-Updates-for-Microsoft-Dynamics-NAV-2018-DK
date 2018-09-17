@@ -2,9 +2,9 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -829,13 +829,7 @@ OBJECT Table 37 Sales Line
                                                                 TestStatusOpen;
                                                                 TESTFIELD(Quantity);
                                                                 IF xRec."Line Discount Amount" <> "Line Discount Amount" THEN
-                                                                  IF ROUND(Quantity * "Unit Price",Currency."Amount Rounding Precision") <> 0 THEN
-                                                                    "Line Discount %" :=
-                                                                      ROUND(
-                                                                        "Line Discount Amount" / ROUND(Quantity * "Unit Price",Currency."Amount Rounding Precision") * 100,
-                                                                        0.00001)
-                                                                  ELSE
-                                                                    "Line Discount %" := 0;
+                                                                  UpdateLineDiscPct;
                                                                 "Inv. Discount Amount" := 0;
                                                                 "Inv. Disc. Amount to Invoice" := 0;
                                                                 UpdateAmounts;
@@ -2730,6 +2724,7 @@ OBJECT Table 37 Sales Line
       SelectNonstockItemErr@1062 : TextConst 'DAN=Du kan kun v‘lge en katalogvare til en tom linje.;ENU=You can only select a nonstock item for an empty line.';
       EstimateLbl@1072 : TextConst 'DAN=Estimat;ENU=Estimate';
       CommentLbl@1046 : TextConst 'DAN=Bem‘rkning;ENU=Comment';
+      LineDiscountPctErr@1073 : TextConst 'DAN=The value in the Line Discount % field must be between 0 and 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
 
     [External]
     PROCEDURE InitOutstanding@16();
@@ -5676,6 +5671,21 @@ OBJECT Table 37 Sales Line
     PROCEDURE AssignedItemCharge@153() : Boolean;
     BEGIN
       EXIT((Type = Type::"Charge (Item)") AND ("No." <> '') AND ("Qty. to Assign" < Quantity));
+    END;
+
+    LOCAL PROCEDURE UpdateLineDiscPct@189();
+    VAR
+      LineDiscountPct@1000 : Decimal;
+    BEGIN
+      IF ROUND(Quantity * "Unit Price",Currency."Amount Rounding Precision") <> 0 THEN BEGIN
+        LineDiscountPct := ROUND(
+            "Line Discount Amount" / ROUND(Quantity * "Unit Price",Currency."Amount Rounding Precision") * 100,
+            0.00001);
+        IF NOT (LineDiscountPct IN [0..100]) THEN
+          ERROR(LineDiscountPctErr);
+        "Line Discount %" := LineDiscountPct;
+      END ELSE
+        "Line Discount %" := 0;
     END;
 
     [Integration]

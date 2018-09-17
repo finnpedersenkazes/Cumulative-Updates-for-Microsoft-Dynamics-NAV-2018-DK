@@ -2,9 +2,9 @@ OBJECT Codeunit 5407 Prod. Order Status Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -759,6 +759,7 @@ OBJECT Codeunit 5407 Prod. Order Status Management
       CapLedgEntry.SETCURRENTKEY("Order Type","Order No.","Order Line No.","Routing No.","Routing Reference No.");
       CapLedgEntry.SETRANGE("Order Type",CapLedgEntry."Order Type"::Production);
       CapLedgEntry.SETRANGE("Order No.",ProdOrderLine."Prod. Order No.");
+      CapLedgEntry.SETRANGE("Order Line No.",ProdOrderLine."Line No.");
       CapLedgEntry.SETRANGE("Routing No.",ProdOrderLine."Routing No.");
       CapLedgEntry.SETRANGE("Routing Reference No.",ProdOrderLine."Routing Reference No.");
       EXIT(NOT CapLedgEntry.ISEMPTY);

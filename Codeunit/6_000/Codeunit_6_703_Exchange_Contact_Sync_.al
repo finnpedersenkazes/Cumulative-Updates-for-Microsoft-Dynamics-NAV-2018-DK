@@ -2,9 +2,9 @@ OBJECT Codeunit 6703 Exchange Contact Sync.
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -124,9 +124,10 @@ OBJECT Codeunit 6703 Exchange Contact Sync.
               Contact.MODIFY(TRUE);
             END
           END ELSE BEGIN
-            O365ContactSyncHelper.TransferExchangeContactToNavContact(LocalContact,Contact,ExchangeSync);
             Contact."No." := '';
+            Contact.Type := Contact.Type::Person;
             Contact.INSERT(TRUE);
+            O365ContactSyncHelper.TransferExchangeContactToNavContact(LocalContact,Contact,ExchangeSync);
           END;
         UNTIL (LocalContact.NEXT = 0)
     END;

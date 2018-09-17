@@ -2,9 +2,9 @@ OBJECT Report 1404 Bank Acc. - Detail Trial Bal.
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -3113,7 +3113,7 @@ OBJECT Report 1404 Bank Acc. - Detail Trial Bal.
                                     <FontFamily>Segoe UI</FontFamily>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>=Fields!StartBalanceFormat.Value</Format>
+                                    <Format>=Fields!BankAccBalanceFormat.Value</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>

@@ -2,9 +2,9 @@ OBJECT Codeunit 841 Cash Flow Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -682,6 +682,7 @@ OBJECT Codeunit 841 Cash Flow Management
       EndDate@1004 : Date;
     BEGIN
       VATEntry.SETFILTER(Type,STRSUBSTNO('%1|%2',VATEntry.Type::Purchase,VATEntry.Type::Sale));
+      VATEntry.SETFILTER("VAT Calculation Type",STRSUBSTNO('<>%1',VATEntry."VAT Calculation Type"::"Reverse Charge VAT"));
       VATEntry.SETRANGE(Closed,FALSE);
       VATEntry.SETFILTER(Amount,'<>%1',0);
       VATEntry.SETFILTER("Document Date",'<>%1',DummyDate);

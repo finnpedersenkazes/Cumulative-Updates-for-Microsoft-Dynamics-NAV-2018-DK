@@ -2,9 +2,9 @@ OBJECT Table 1001 Job Task
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -469,6 +469,17 @@ OBJECT Table 1001 Job Task
     PROCEDURE ClearTempDim@1();
     BEGIN
       DimMgt.DeleteJobTaskTempDim;
+    END;
+
+    PROCEDURE ApplyPurchaseLineFilters@4(VAR PurchLine@1000 : Record 39);
+    BEGIN
+      PurchLine.SETCURRENTKEY("Document Type","Job No.","Job Task No.");
+      PurchLine.SETRANGE("Document Type",PurchLine."Document Type"::Order);
+      PurchLine.SETRANGE("Job No.","Job No.");
+      IF "Job Task Type" IN ["Job Task Type"::Total,"Job Task Type"::"End-Total"] THEN
+        PurchLine.SETFILTER("Job Task No.",Totaling)
+      ELSE
+        PurchLine.SETRANGE("Job Task No.","Job Task No.");
     END;
 
     BEGIN

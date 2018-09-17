@@ -2,9 +2,9 @@ OBJECT Table 409 SMTP Mail Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -58,7 +58,7 @@ OBJECT Table 409 SMTP Mail Setup
   {
 
     [External]
-    PROCEDURE SetPassword@1(NewPassword@1000 : Text[250]);
+    PROCEDURE SetPassword@1(NewPassword@1000 : Text);
     VAR
       ServicePassword@1001 : Record 1261;
     BEGIN
@@ -73,7 +73,7 @@ OBJECT Table 409 SMTP Mail Setup
     END;
 
     [External]
-    PROCEDURE GetPassword@3() : Text[250];
+    PROCEDURE GetPassword@3() : Text;
     VAR
       ServicePassword@1000 : Record 1261;
     BEGIN

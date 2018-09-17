@@ -2,9 +2,9 @@ OBJECT Table 27 Item
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -2155,9 +2155,13 @@ OBJECT Table 27 Item
           ItemVend."Vendor Item No." := SKU."Vendor Item No.";
         ItemVend."Lead Time Calculation" := SKU."Lead Time Calculation";
       END;
-      IF FORMAT(ItemVend."Lead Time Calculation") = '' THEN
-        IF Vend.GET(ItemVend."Vendor No.") THEN
-          ItemVend."Lead Time Calculation" := Vend."Lead Time Calculation";
+      IF FORMAT(ItemVend."Lead Time Calculation") = '' THEN BEGIN
+        GetPlanningParameters.AtSKU(SKU,"No.",ItemVend."Variant Code",LocationCode);
+        ItemVend."Lead Time Calculation" := SKU."Lead Time Calculation";
+        IF FORMAT(ItemVend."Lead Time Calculation") = '' THEN
+          IF Vend.GET(ItemVend."Vendor No.") THEN
+            ItemVend."Lead Time Calculation" := Vend."Lead Time Calculation";
+      END;
       ItemVend.RESET;
     END;
 

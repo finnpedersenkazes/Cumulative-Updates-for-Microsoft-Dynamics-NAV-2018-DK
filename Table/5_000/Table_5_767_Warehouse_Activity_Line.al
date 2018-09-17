@@ -2,9 +2,9 @@ OBJECT Table 5767 Warehouse Activity Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -373,9 +373,8 @@ OBJECT Table 5767 Warehouse Activity Line
                                                    OnValidate=VAR
                                                                 BinContent@1000 : Record 7302;
                                                                 BinType@1002 : Record 7303;
-                                                                QtyAvail@1001 : Decimal;
-                                                                QtyOutstanding@1004 : Decimal;
-                                                                AvailableQty@1006 : Decimal;
+                                                                QtyAvailBase@1001 : Decimal;
+                                                                AvailableQtyBase@1006 : Decimal;
                                                                 UOMCode@1003 : Code[10];
                                                                 NewBinCode@1005 : Code[20];
                                                               BEGIN
@@ -403,62 +402,45 @@ OBJECT Table 5767 Warehouse Activity Line
                                                                           IF BinType.GET(Bin."Bin Type Code") THEN
                                                                             BinType.TESTFIELD(Receive,FALSE);
                                                                         GetLocation("Location Code");
-                                                                        IF Location."Directed Put-away and Pick" THEN BEGIN
-                                                                          UOMCode := "Unit of Measure Code";
-                                                                          QtyOutstanding := "Qty. Outstanding";
-                                                                        END ELSE BEGIN
+                                                                        IF Location."Directed Put-away and Pick" THEN
+                                                                          UOMCode := "Unit of Measure Code"
+                                                                        ELSE
                                                                           UOMCode := WMSMgt.GetBaseUOM("Item No.");
-                                                                          QtyOutstanding := "Qty. Outstanding (Base)";
-                                                                        END;
                                                                         NewBinCode := "Bin Code";
                                                                         IF BinContent.GET("Location Code","Bin Code","Item No.","Variant Code",UOMCode) THEN BEGIN
                                                                           IF "Activity Type" IN ["Activity Type"::Pick,"Activity Type"::"Invt. Pick","Activity Type"::"Invt. Movement"] THEN
-                                                                            QtyAvail := BinContent.CalcQtyAvailToPick(0)
+                                                                            QtyAvailBase := BinContent.CalcQtyAvailToPick(0)
                                                                           ELSE
-                                                                            QtyAvail := BinContent.CalcQtyAvailToTake(0);
+                                                                            QtyAvailBase := BinContent.CalcQtyAvailToTake(0);
                                                                           IF Location."Directed Put-away and Pick" THEN BEGIN
                                                                             CreatePick.SetCrossDock(Bin."Cross-Dock Bin");
-                                                                            AvailableQty :=
+                                                                            AvailableQtyBase :=
                                                                               CreatePick.CalcTotalAvailQtyToPick(
                                                                                 "Location Code","Item No.","Variant Code","Lot No.","Serial No.",
                                                                                 "Source Type","Source Subtype","Source No.","Source Line No.","Source Subline No.",0,FALSE);
-                                                                            AvailableQty := AvailableQty + "Qty. Outstanding (Base)";
-                                                                            IF AvailableQty < 0 THEN
-                                                                              AvailableQty := 0;
+                                                                            AvailableQtyBase += "Qty. Outstanding (Base)";
+                                                                            IF AvailableQtyBase < 0 THEN
+                                                                              AvailableQtyBase := 0;
 
-                                                                            IF AvailableQty = 0 THEN
+                                                                            IF AvailableQtyBase = 0 THEN
                                                                               ERROR(Text015);
                                                                           END ELSE
-                                                                            AvailableQty := QtyAvail;
+                                                                            AvailableQtyBase := QtyAvailBase;
 
-                                                                          IF AvailableQty < QtyAvail THEN
-                                                                            QtyAvail := AvailableQty;
+                                                                          IF AvailableQtyBase < QtyAvailBase THEN
+                                                                            QtyAvailBase := AvailableQtyBase;
+                                                                        END;
 
-                                                                          IF (QtyAvail < QtyOutstanding) AND NOT "Assemble to Order" THEN BEGIN
-                                                                            IF NOT
-                                                                               CONFIRM(
-                                                                                 STRSUBSTNO(
-                                                                                   Text012,
-                                                                                   FIELDCAPTION("Qty. Outstanding"),QtyOutstanding,
-                                                                                   QtyAvail,BinContent.TABLECAPTION,FIELDCAPTION("Bin Code")),
-                                                                                 FALSE)
-                                                                            THEN
-                                                                              ERROR(Text006);
-
-                                                                            "Bin Code" := NewBinCode;
-                                                                            MODIFY;
-                                                                          END;
-                                                                        END ELSE BEGIN
-                                                                          IF NOT "Assemble to Order" THEN
-                                                                            IF NOT
-                                                                               CONFIRM(
-                                                                                 STRSUBSTNO(
-                                                                                   Text012,
-                                                                                   FIELDCAPTION("Qty. Outstanding"),QtyOutstanding,
-                                                                                   QtyAvail,BinContent.TABLECAPTION,FIELDCAPTION("Bin Code")),
-                                                                                 FALSE)
-                                                                            THEN
-                                                                              ERROR(Text006);
+                                                                        IF (QtyAvailBase < "Qty. Outstanding (Base)") AND NOT "Assemble to Order" THEN BEGIN
+                                                                          IF NOT
+                                                                             CONFIRM(
+                                                                               STRSUBSTNO(
+                                                                                 Text012,
+                                                                                 FIELDCAPTION("Qty. Outstanding (Base)"),"Qty. Outstanding (Base)",
+                                                                                 QtyAvailBase,BinContent.TABLECAPTION,FIELDCAPTION("Bin Code")),
+                                                                               FALSE)
+                                                                          THEN
+                                                                            ERROR(Text006);
 
                                                                           "Bin Code" := NewBinCode;
                                                                           MODIFY;

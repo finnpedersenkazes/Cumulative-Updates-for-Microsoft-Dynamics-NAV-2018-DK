@@ -2,9 +2,9 @@ OBJECT Page 1751 Data Classification Worksheet
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -20,16 +20,17 @@ OBJECT Page 1751 Data Classification Worksheet
     PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Administrer,Vis;
                                 ENU=New,Process,Report,Manage,View];
     OnOpenPage=VAR
-                 CompanyInformation@1002 : Record 79;
+                 Company@1002 : Record 2000000006;
                  DataClassificationMgt@1000 : Codeunit 1750;
+                 DataClassificationEvalData@1003 : Codeunit 1751;
                  Notification@1001 : Notification;
                BEGIN
                  Notification.MESSAGE := DataClassificationMgt.GetLegalDisclaimerTxt;
                  Notification.SEND;
                  SETRANGE("Company Name",COMPANYNAME);
-                 CompanyInformation.GET;
-                 IF ISEMPTY AND CompanyInformation."Demo Company" THEN
-                   DataClassificationMgt.CreateDemoData;
+                 Company.GET(COMPANYNAME);
+                 IF ISEMPTY AND Company."Evaluation Company" THEN
+                   DataClassificationEvalData.CreateEvaluationData;
                  DataClassificationMgt.ShowSyncFieldsNotification;
                END;
 

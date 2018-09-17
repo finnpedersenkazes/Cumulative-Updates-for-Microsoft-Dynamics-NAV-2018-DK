@@ -2,9 +2,9 @@ OBJECT Report 1306 Standard Sales - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -9328,9 +9328,6 @@ OBJECT Report 1306 Standard Sales - Invoice
                               </Style>
                             </Textbox>
                           </ReportItems>
-                          <PageBreak>
-                            <BreakLocation>End</BreakLocation>
-                          </PageBreak>
                           <KeepTogether>true</KeepTogether>
                           <OmitBorderOnPageBreak>true</OmitBorderOnPageBreak>
                           <Style>

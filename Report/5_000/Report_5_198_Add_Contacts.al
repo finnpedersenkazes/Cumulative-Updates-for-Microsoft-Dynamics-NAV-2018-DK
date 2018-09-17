@@ -2,9 +2,9 @@ OBJECT Report 5198 Add Contacts
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -46,8 +46,8 @@ OBJECT Report 5198 Add Contacts
     OnPostReport=BEGIN
                    IF ExpandCompanies THEN
                      AddPeople;
-                   IF NOT AllowCoRepdByContPerson THEN
-                     DeleteCompanies;
+                   IF AllowCoRepdByContPerson THEN
+                     AddCompanies;
 
                    UpdateSegLines;
                  END;
@@ -274,6 +274,7 @@ OBJECT Report 5198 Add Contacts
                   SourceExpr=ExpandCompanies }
 
       { 5   ;2   ;Field     ;
+                  Name=AllowRelatedCompaines;
                   CaptionML=[DAN=Tillad relaterede virksomheder;
                              ENU=Allow Related Companies];
                   ToolTipML=[DAN=Angiver, om virksomheder, der er repr‘senteret af personkontakter, er inkluderet i m†lgruppen.;
@@ -337,6 +338,29 @@ OBJECT Report 5198 Add Contacts
       IF TempCont.INSERT THEN;
     END;
 
+    LOCAL PROCEDURE AddCompanies@6();
+    BEGIN
+      TempCont.RESET;
+      IF TempCont.FIND('-') THEN
+        REPEAT
+          TempCont2 := TempCont;
+          IF TempCont2.INSERT THEN;
+          IF TempCont."Company No." <> '' THEN BEGIN
+            Cont.GET(TempCont."Company No.");
+            TempCont2 := Cont;
+            IF TempCont2.INSERT THEN;
+          END;
+        UNTIL TempCont.NEXT = 0;
+
+      TempCont.DELETEALL;
+      IF TempCont2.FIND('-') THEN
+        REPEAT
+          TempCont := TempCont2;
+          TempCont.INSERT;
+        UNTIL TempCont2.NEXT = 0;
+      TempCont2.DELETEALL;
+    END;
+
     LOCAL PROCEDURE AddPeople@2();
     BEGIN
       TempCont.RESET;
@@ -363,22 +387,6 @@ OBJECT Report 5198 Add Contacts
           TempCont.INSERT;
         UNTIL TempCont2.NEXT = 0;
       TempCont2.DELETEALL;
-    END;
-
-    LOCAL PROCEDURE DeleteCompanies@3();
-    BEGIN
-      TempCont.RESET;
-      TempCont.SETCURRENTKEY("Company No.");
-      TempCont.SETRANGE(Type,TempCont.Type::Company);
-      IF TempCont.FIND('-') THEN
-        REPEAT
-          TempCont.SETRANGE("Company No.",TempCont."Company No.");
-          TempCont.SETRANGE(Type,TempCont.Type::Person);
-          IF TempCont.COUNT > 0 THEN
-            TempCont.DELETE;
-          TempCont.SETRANGE("Company No.");
-          TempCont.SETRANGE(Type,TempCont.Type::Company);
-        UNTIL TempCont.NEXT = 0;
     END;
 
     LOCAL PROCEDURE UpdateSegLines@1();

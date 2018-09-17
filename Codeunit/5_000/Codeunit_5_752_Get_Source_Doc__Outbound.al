@@ -2,9 +2,9 @@ OBJECT Codeunit 5752 Get Source Doc. Outbound
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -188,62 +188,59 @@ OBJECT Codeunit 5752 Get Source Doc. Outbound
     PROCEDURE CheckSalesHeader@7(SalesHeader@1000 : Record 36;ShowError@1001 : Boolean) : Boolean;
     VAR
       SalesLine@1002 : Record 37;
-      SalesLine2@1003 : Record 37;
       CurrItemVariant@1010 : Record 5401;
-      Item@1005 : Record 27;
       SalesOrder@1004 : Page 42;
       QtyOutstandingBase@1006 : Decimal;
       RecordNo@1007 : Integer;
       TotalNoOfRecords@1008 : Integer;
+      LocationCode@1005 : Code[10];
     BEGIN
       WITH SalesHeader DO BEGIN
         IF NOT ("Shipping Advice" = "Shipping Advice"::Complete) THEN
           EXIT(FALSE);
 
-        SalesLine.SETCURRENTKEY("Document Type",Type,"No.");
+        SalesLine.SETCURRENTKEY("Document Type",Type,"No.","Variant Code");
         SalesLine.SETRANGE("Document Type","Document Type");
         SalesLine.SETRANGE("Document No.","No.");
         SalesLine.SETRANGE(Type,SalesLine.Type::Item);
-        IF SalesLine.FINDSET THEN BEGIN
-          SalesLine2.COPYFILTERS(SalesLine);
-          SalesLine2.SETCURRENTKEY("Document Type","Document No.","Location Code");
-          SalesLine2.SETFILTER("Location Code",'<> %1',SalesLine."Location Code");
-          IF SalesLine2.FINDSET THEN BEGIN
-            REPEAT
-              Item.GET(SalesLine2."No.");
-              IF Item.Type = Item.Type::Inventory THEN BEGIN
-                IF ShowError THEN
-                  ERROR(Text001,FIELDCAPTION("Shipping Advice"),"Shipping Advice",
-                    SalesOrder.CAPTION,"No.",SalesLine.Type);
-                EXIT(TRUE);
-              END;
-            UNTIL SalesLine2.NEXT = 0;
-          END;
+        IF SalesLine.FINDSET THEN
+          REPEAT
+            IF NOT SalesLine.IsServiceItem THEN
+              SalesLine.MARK(TRUE);
+          UNTIL SalesLine.NEXT = 0;
+        SalesLine.MARKEDONLY(TRUE);
 
+        IF SalesLine.FINDSET THEN BEGIN
+          LocationCode := SalesLine."Location Code";
           SetItemVariant(CurrItemVariant,SalesLine."No.",SalesLine."Variant Code");
           TotalNoOfRecords := SalesLine.COUNT;
           REPEAT
-            Item.GET(SalesLine."No.");
-            IF Item.Type = Item.Type::Inventory THEN BEGIN
-              RecordNo += 1;
-              IF EqualItemVariant(CurrItemVariant,SalesLine."No.",SalesLine."Variant Code") THEN
-                QtyOutstandingBase += SalesLine."Outstanding Qty. (Base)"
-              ELSE BEGIN
-                IF CheckAvailability(
-                     CurrItemVariant,QtyOutstandingBase,SalesLine."Location Code",
-                     SalesOrder.CAPTION,DATABASE::"Sales Line","Document Type","No.",ShowError)
-                THEN
-                  EXIT(TRUE);
-                SetItemVariant(CurrItemVariant,SalesLine."No.",SalesLine."Variant Code");
-                QtyOutstandingBase := SalesLine."Outstanding Qty. (Base)";
-              END;
-              IF RecordNo = TotalNoOfRecords THEN BEGIN // last record
-                IF CheckAvailability(
-                     CurrItemVariant,QtyOutstandingBase,SalesLine."Location Code",
-                     SalesOrder.CAPTION,DATABASE::"Sales Line","Document Type","No.",ShowError)
-                THEN
-                  EXIT(TRUE);
-              END;
+            RecordNo += 1;
+
+            IF SalesLine."Location Code" <> LocationCode THEN BEGIN
+              IF ShowError THEN
+                ERROR(Text001,FIELDCAPTION("Shipping Advice"),"Shipping Advice",
+                  SalesOrder.CAPTION,"No.",SalesLine.Type);
+              EXIT(TRUE);
+            END;
+
+            IF EqualItemVariant(CurrItemVariant,SalesLine."No.",SalesLine."Variant Code") THEN
+              QtyOutstandingBase += SalesLine."Outstanding Qty. (Base)"
+            ELSE BEGIN
+              IF CheckAvailability(
+                   CurrItemVariant,QtyOutstandingBase,SalesLine."Location Code",
+                   SalesOrder.CAPTION,DATABASE::"Sales Line","Document Type","No.",ShowError)
+              THEN
+                EXIT(TRUE);
+              SetItemVariant(CurrItemVariant,SalesLine."No.",SalesLine."Variant Code");
+              QtyOutstandingBase := SalesLine."Outstanding Qty. (Base)";
+            END;
+            IF RecordNo = TotalNoOfRecords THEN BEGIN // last record
+              IF CheckAvailability(
+                   CurrItemVariant,QtyOutstandingBase,SalesLine."Location Code",
+                   SalesOrder.CAPTION,DATABASE::"Sales Line","Document Type","No.",ShowError)
+              THEN
+                EXIT(TRUE);
             END;
           UNTIL SalesLine.NEXT = 0; // sorted by item
         END;

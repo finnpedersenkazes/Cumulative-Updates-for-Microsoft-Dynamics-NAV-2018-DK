@@ -2,9 +2,9 @@ OBJECT Codeunit 1800 Assisted Company Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -205,13 +205,13 @@ OBJECT Codeunit 1800 Assisted Company Setup
     VAR
       Company@1002 : Record 2000000006;
       ConfigurationPackageFile@1003 : Record 2000000170;
-      DataClassificationMgt@1005 : Codeunit 1750;
+      DataClassificationEvalData@1005 : Codeunit 1751;
     BEGIN
       IF NewCompanyData = NewCompanyData::"Evaluation Data" THEN BEGIN
         Company.GET(NewCompanyName);
         Company."Evaluation Company" := TRUE;
         Company.MODIFY;
-        DataClassificationMgt.CreateDemoData;
+        DataClassificationEvalData.CreateEvaluationData;
       END;
       IF FindConfigurationPackageFile(ConfigurationPackageFile,NewCompanyData) THEN
         ScheduleConfigPackageImport(ConfigurationPackageFile,NewCompanyName);

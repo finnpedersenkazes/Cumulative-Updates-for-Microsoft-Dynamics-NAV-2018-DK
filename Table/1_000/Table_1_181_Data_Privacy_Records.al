@@ -2,9 +2,9 @@ OBJECT Table 1181 Data Privacy Records
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Table 1181 Data Privacy Records
   FIELDS
   {
     { 1   ;   ;ID                  ;Integer       ;AutoIncrement=Yes;
-                                                   DataClassification=ToBeClassified;
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Id;
                                                               ENU=ID] }
     { 2   ;   ;Table No.           ;Integer       ;DataClassification=SystemMetadata;

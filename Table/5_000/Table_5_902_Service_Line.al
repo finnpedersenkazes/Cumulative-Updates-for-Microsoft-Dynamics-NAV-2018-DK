@@ -2,9 +2,9 @@ OBJECT Table 5902 Service Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -527,14 +527,7 @@ OBJECT Table 5902 Service Line
                                                                 GetServHeader;
                                                                 TESTFIELD(Quantity);
                                                                 IF "Line Discount Amount" <> xRec."Line Discount Amount" THEN
-                                                                  IF ROUND(CalcChargeableQty * "Unit Price",Currency."Amount Rounding Precision") <> 0 THEN
-                                                                    "Line Discount %" :=
-                                                                      ROUND(
-                                                                        "Line Discount Amount" /
-                                                                        ROUND(CalcChargeableQty * "Unit Price",
-                                                                          Currency."Amount Rounding Precision") * 100,0.00001)
-                                                                  ELSE
-                                                                    "Line Discount %" := 0;
+                                                                  UpdateLineDiscPct;
                                                                 "Inv. Discount Amount" := 0;
                                                                 "Inv. Disc. Amount to Invoice" := 0;
                                                                 VALIDATE("Line Discount %");
@@ -2261,6 +2254,7 @@ OBJECT Table 5902 Service Line
       Text053@1020 : TextConst 'DAN=Du kan ikke ‘ndre denne servicelinje, da der findes en eller flere serviceposter for denne linje.;ENU=You cannot modify the service line because one or more service entries exist for this line.';
       IsCustCrLimitChecked@1049 : Boolean;
       LocationChangedMsg@1055 : TextConst '@@@="%1 = Item No., %2 = Item serial No., %3 = Location code";DAN=Varen %1 med serienummeret %2 opbevares p† placeringen %3. Feltet Lokationskode p† servicelinjen vil blive opdateret.;ENU=Item %1 with serial number %2 is stored on location %3. The Location Code field on the service line will be updated.';
+      LineDiscountPctErr@1022 : TextConst 'DAN=The value in the Line Discount % field must be between 0 and 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
 
     LOCAL PROCEDURE CheckItemAvailable@3(CalledByFieldNo@1000 : Integer);
     VAR
@@ -4540,6 +4534,21 @@ OBJECT Table 5902 Service Line
         TableID[LastAddedTableID] := NewTableID;
         No[LastAddedTableID] := NewNo;
       END;
+    END;
+
+    LOCAL PROCEDURE UpdateLineDiscPct@97();
+    VAR
+      LineDiscountPct@1000 : Decimal;
+    BEGIN
+      IF ROUND(CalcChargeableQty * "Unit Price",Currency."Amount Rounding Precision") <> 0 THEN BEGIN
+        LineDiscountPct := ROUND(
+            "Line Discount Amount" / ROUND(CalcChargeableQty * "Unit Price",Currency."Amount Rounding Precision") * 100,
+            0.00001);
+        IF NOT (LineDiscountPct IN [0..100]) THEN
+          ERROR(LineDiscountPctErr);
+        "Line Discount %" := LineDiscountPct;
+      END ELSE
+        "Line Discount %" := 0;
     END;
 
     [Integration]

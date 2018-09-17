@@ -2,9 +2,9 @@ OBJECT Table 5050 Contact
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -400,19 +400,23 @@ OBJECT Table 5050 Contact
                                                                     Opp.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     Opp.SETRANGE("Contact Company No.",xRec."Company No.");
                                                                     Opp.SETRANGE("Contact No.","No.");
-                                                                    Opp.MODIFYALL("Contact No.",xRec."Company No.");
+                                                                    IF NOT Opp.ISEMPTY THEN
+                                                                      Opp.MODIFYALL("Contact No.",xRec."Company No.");
                                                                     OppEntry.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     OppEntry.SETRANGE("Contact Company No.",xRec."Company No.");
                                                                     OppEntry.SETRANGE("Contact No.","No.");
-                                                                    OppEntry.MODIFYALL("Contact No.",xRec."Company No.");
+                                                                    IF NOT OppEntry.ISEMPTY THEN
+                                                                      OppEntry.MODIFYALL("Contact No.",xRec."Company No.");
                                                                     Task.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     Task.SETRANGE("Contact Company No.",xRec."Company No.");
                                                                     Task.SETRANGE("Contact No.","No.");
-                                                                    Task.MODIFYALL("Contact No.",xRec."Company No.");
+                                                                    IF NOT Task.ISEMPTY THEN
+                                                                      Task.MODIFYALL("Contact No.",xRec."Company No.");
                                                                     InteractLogEntry.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     InteractLogEntry.SETRANGE("Contact Company No.",xRec."Company No.");
                                                                     InteractLogEntry.SETRANGE("Contact No.","No.");
-                                                                    InteractLogEntry.MODIFYALL("Contact No.",xRec."Company No.");
+                                                                    IF NOT InteractLogEntry.ISEMPTY THEN
+                                                                      InteractLogEntry.MODIFYALL("Contact No.",xRec."Company No.");
                                                                     ContBusRel.RESET;
                                                                     ContBusRel.SETCURRENTKEY("Link to Table","No.");
                                                                     ContBusRel.SETRANGE("Link to Table",ContBusRel."Link to Table"::Customer);
@@ -433,24 +437,29 @@ OBJECT Table 5050 Contact
                                                                     SalesHeader.RESET;
                                                                     SalesHeader.SETCURRENTKEY("Bill-to Contact No.");
                                                                     SalesHeader.SETRANGE("Bill-to Contact No.","No.");
-                                                                    SalesHeader.MODIFYALL("Bill-to Contact No.",xRec."Company No.");
+                                                                    IF NOT SalesHeader.ISEMPTY THEN
+                                                                      SalesHeader.MODIFYALL("Bill-to Contact No.",xRec."Company No.");
                                                                   END ELSE BEGIN
                                                                     Opp.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     Opp.SETRANGE("Contact Company No.",'');
                                                                     Opp.SETRANGE("Contact No.","No.");
-                                                                    Opp.MODIFYALL("Contact Company No.","Company No.");
+                                                                    IF NOT Opp.ISEMPTY THEN
+                                                                      Opp.MODIFYALL("Contact Company No.","Company No.");
                                                                     OppEntry.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     OppEntry.SETRANGE("Contact Company No.",'');
                                                                     OppEntry.SETRANGE("Contact No.","No.");
-                                                                    OppEntry.MODIFYALL("Contact Company No.","Company No.");
+                                                                    IF NOT OppEntry.ISEMPTY THEN
+                                                                      OppEntry.MODIFYALL("Contact Company No.","Company No.");
                                                                     Task.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     Task.SETRANGE("Contact Company No.",'');
                                                                     Task.SETRANGE("Contact No.","No.");
-                                                                    Task.MODIFYALL("Contact Company No.","Company No.");
+                                                                    IF NOT Task.ISEMPTY THEN
+                                                                      Task.MODIFYALL("Contact Company No.","Company No.");
                                                                     InteractLogEntry.SETCURRENTKEY("Contact Company No.","Contact No.");
                                                                     InteractLogEntry.SETRANGE("Contact Company No.",'');
                                                                     InteractLogEntry.SETRANGE("Contact No.","No.");
-                                                                    InteractLogEntry.MODIFYALL("Contact Company No.","Company No.");
+                                                                    IF NOT InteractLogEntry.ISEMPTY THEN
+                                                                      InteractLogEntry.MODIFYALL("Contact Company No.","Company No.");
                                                                   END;
 
                                                                   IF CurrFieldNo <> 0 THEN

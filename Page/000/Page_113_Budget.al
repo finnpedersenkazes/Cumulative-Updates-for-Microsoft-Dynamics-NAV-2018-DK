@@ -2,9 +2,9 @@ OBJECT Page 113 Budget
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -44,6 +44,9 @@ OBJECT Page 113 Budget
                  GlobalDim2FilterEnable :=
                    (GLSetup."Global Dimension 2 Code" <> '') AND
                    (GLAccBudgetBuf.GETFILTER("Global Dimension 2 Filter") = '');
+
+                 IF GLAccBudgetBuf.GETFILTER("G/L Account Filter") <> '' THEN
+                   GLAccFilter := GLAccBudgetBuf.GETFILTER("G/L Account Filter");
 
                  ValidateBudgetName;
 

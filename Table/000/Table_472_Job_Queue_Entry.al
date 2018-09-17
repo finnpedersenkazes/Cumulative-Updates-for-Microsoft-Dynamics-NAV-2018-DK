@@ -2,9 +2,9 @@ OBJECT Table 472 Job Queue Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -553,7 +553,13 @@ OBJECT Table 472 Job Queue Entry
 
     [External]
     PROCEDURE ScheduleTask@36() : GUID;
+    VAR
+      TaskGUID@1000 : GUID;
     BEGIN
+      OnBeforeScheduleTask(Rec,TaskGUID);
+      IF NOT ISNULLGUID(TaskGUID) THEN
+        EXIT(TaskGUID);
+
       EXIT(
         TASKSCHEDULER.CREATETASK(
           CODEUNIT::"Job Queue Dispatcher",
@@ -1002,6 +1008,11 @@ OBJECT Table 472 Job Queue Entry
     PROCEDURE DoesJobNeedToBeRun@49() Result : Boolean;
     BEGIN
       OnFindingIfJobNeedsToBeRun(Result);
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeScheduleTask@59(VAR JobQueueEntry@1000 : Record 472;VAR TaskGUID@1001 : GUID);
+    BEGIN
     END;
 
     [Integration(TRUE)]

@@ -2,9 +2,9 @@ OBJECT Page 9305 Sales Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -44,8 +44,22 @@ OBJECT Page 9305 Sales Order List
                  PowerBIVisible := SetPowerBIUserConfig.SetUserConfig(PowerBIUserConfiguration,CurrPage.OBJECTID(FALSE));
                END;
 
-    OnFindRecord=BEGIN
-                   EXIT(FIND(Which) AND ShowHeader);
+    OnFindRecord=VAR
+                   NextRecNotFound@1001 : Boolean;
+                 BEGIN
+                   IF NOT FIND(Which) THEN
+                     EXIT(FALSE);
+
+                   IF ShowHeader THEN
+                     EXIT(TRUE);
+
+                   REPEAT
+                     NextRecNotFound := NEXT <= 0;
+                     IF ShowHeader THEN
+                       EXIT(TRUE);
+                   UNTIL NextRecNotFound;
+
+                   EXIT(FALSE);
                  END;
 
     OnNextRecord=VAR
@@ -406,7 +420,7 @@ OBJECT Page 9305 Sales Order List
                                  ENU=P&ost];
                       ToolTipML=[DAN=F‘rdigg›r bilaget eller kladden ved at bogf›re bel›b og antal p† de relaterede konti i regnskaberne.;
                                  ENU=Finalize the document or journal by posting the amounts and quantities to the related accounts in your company books.];
-                      ApplicationArea=#Advanced;
+                      ApplicationArea=#Basic,#Suite;
                       Promoted=Yes;
                       PromotedIsBig=Yes;
                       Image=PostOrder;

@@ -2,9 +2,9 @@ OBJECT Page 43 Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -1590,7 +1590,8 @@ OBJECT Page 43 Sales Invoice
       PreAssignedNo@1001 : Code[20];
       IsScheduledPosting@1007 : Boolean;
     BEGIN
-      LinesInstructionMgt.SalesCheckAllLinesHaveQuantityAssigned(Rec);
+      IF ApplicationAreaSetup.IsFoundationEnabled THEN
+        LinesInstructionMgt.SalesCheckAllLinesHaveQuantityAssigned(Rec);
       PreAssignedNo := "No.";
 
       SendToPosting(PostingCodeunitID);

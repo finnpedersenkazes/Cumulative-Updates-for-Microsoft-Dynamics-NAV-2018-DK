@@ -2,9 +2,9 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -102,7 +102,7 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
       RefPostingState@1002 : 'Checking lines,Checking balance,Updating bal. lines,Posting Lines,Posting revers. lines,Updating lines';
       PreviewMode@1051 : Boolean;
       SkippedLineMsg@1092 : TextConst 'DAN=En eller flere linjer er ikke blevet bogf›rt, fordi bel›bet er nul.;ENU=One or more lines has not been posted because the amount is zero.';
-      ConfirmPostingAfterCurrentPeriodQst@1079 : TextConst 'DAN=The posting date of one or more journal lines is after the current fiscal year. Do you want to continue?;ENU=The posting date of one or more journal lines is after the current fiscal year. Do you want to continue?';
+      ConfirmPostingAfterCurrentPeriodQst@1079 : TextConst 'DAN=Bogf›ringsdatoen for ‚n eller flere kladdelinjer ligger efter det indev‘rende regnskabs†r. Vil du forts‘tte?;ENU=The posting date of one or more journal lines is after the current fiscal year. Do you want to continue?';
 
     LOCAL PROCEDURE Code@7(VAR GenJnlLine@1000 : Record 81);
     VAR
@@ -335,7 +335,7 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
               (("Bal. Account Type" = "Bal. Account Type"::"G/L Account") AND ("Bal. Account No." <> '') AND
                ("Bal. Gen. Posting Type" IN ["Bal. Gen. Posting Type"::Purchase,"Bal. Gen. Posting Type"::Sale]) AND
                (BalVATPostingSetup."VAT %" <> 0));
-            IF IsCustVendICAdded(GenJnlLine) THEN BEGIN
+            IF GenJnlLineTemp.IsCustVendICAdded(GenJnlLine) THEN BEGIN
               GenJnlLineVATInfoSource := GenJnlLine;
               VATInfoSourceLineIsInserted := TRUE;
             END;
@@ -808,25 +808,6 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
         IncomingDocument.UpdateIncomingDocumentFromPosting("Incoming Document Entry No.","Posting Date","Document No.");
     END;
 
-    LOCAL PROCEDURE AddCustVendIC@14(AccountType@1000 : Option;AccountNo@1001 : Code[20]) : Boolean;
-    BEGIN
-      GenJnlLineTemp.SETRANGE("Account Type",AccountType);
-      GenJnlLineTemp.SETRANGE("Account No.",AccountNo);
-      IF GenJnlLineTemp.FINDFIRST THEN
-        EXIT(FALSE);
-
-      GenJnlLineTemp.RESET;
-      IF GenJnlLineTemp.FINDLAST THEN
-        GenJnlLineTemp."Line No." := GenJnlLineTemp."Line No." + 10000
-      ELSE
-        GenJnlLineTemp."Line No." := 10000;
-
-      GenJnlLineTemp."Account Type" := AccountType;
-      GenJnlLineTemp."Account No." := AccountNo;
-      GenJnlLineTemp.INSERT;
-      EXIT(TRUE);
-    END;
-
     LOCAL PROCEDURE CopyGenJnlLineBalancingData@18(VAR GenJnlLineTo@1000 : Record 81;VAR GenJnlLineFrom@1002 : Record 81);
     BEGIN
       GenJnlLineTo."Bill-to/Pay-to No." := GenJnlLineFrom."Bill-to/Pay-to No.";
@@ -884,25 +865,6 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
               END;
             UNTIL (GenJnlLine6.NEXT = 0) OR (-GenJnlLine4.Amount = CheckAmount);
         UNTIL GenJnlLine4.NEXT = 0;
-    END;
-
-    LOCAL PROCEDURE IsCustVendICAdded@30(GenJournalLine@1000 : Record 81) : Boolean;
-    BEGIN
-      WITH GenJournalLine DO BEGIN
-        IF ("Account No." <> '') AND
-           ("Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor,
-                               "Account Type"::"IC Partner"])
-        THEN
-          EXIT(AddCustVendIC("Account Type","Account No."));
-
-        IF ("Bal. Account No." <> '') AND
-           ("Bal. Account Type" IN ["Bal. Account Type"::Customer,"Bal. Account Type"::Vendor,
-                                    "Bal. Account Type"::"IC Partner"])
-        THEN
-          EXIT(AddCustVendIC("Bal. Account Type","Bal. Account No."));
-      END;
-
-      EXIT(FALSE);
     END;
 
     LOCAL PROCEDURE UpdateGenJnlLineWithVATInfo@26(VAR GenJournalLineFiltersSource@1005 : Record 81;GenJournalLineVATInfoSource@1000 : Record 81;StartLineNo@1003 : Integer;LastLineNo@1004 : Integer);

@@ -2,9 +2,9 @@ OBJECT Codeunit 48 PostingSetupManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -20,7 +20,7 @@ OBJECT Codeunit 48 PostingSetupManagement
       SetupMissingAccountTxt@1004 : TextConst 'DAN=Opret manglende konto;ENU=Set up missing account';
       MissingAccountNotificationTxt@1006 : TextConst 'DAN=Finanskontoen mangler i bogf›ringsgruppen eller ops‘tningen.;ENU=G/L Account is missing in posting group or setup.';
       MissingAccountNotificationDescriptionTxt@1002 : TextConst 'DAN=Vis en advarsel, n†r en p†kr‘vet finanskonto mangler i en bogf›ringsgruppe eller ops‘tning.;ENU=Show a warning when required G/L Account is missing in posting group or setup.';
-      NotAllowedToPostAfterCurrentFiscalYearErr@1001 : TextConst 'DAN=Cannot post because one or more transactions have dates after the current fiscal year.;ENU=Cannot post because one or more transactions have dates after the current fiscal year.';
+      NotAllowedToPostAfterCurrentFiscalYearErr@1001 : TextConst 'DAN=Der kan ikke bogf›res, fordi ‚n eller flere transaktioner har datoer, der ligger efter det aktuelle regnskabs†r.;ENU=Cannot post because one or more transactions have dates after the current fiscal year.';
 
     [External]
     PROCEDURE CheckCustPostingGroupReceivablesAccount@26(PostingGroup@1000 : Code[20]);

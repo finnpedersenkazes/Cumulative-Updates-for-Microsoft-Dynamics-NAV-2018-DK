@@ -2,9 +2,9 @@ OBJECT Table 8619 Config. Template Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -137,7 +137,12 @@ OBJECT Table 8619 Config. Template Line
                                                    CaptionML=[DAN=Beskrivelse af skabelon;
                                                               ENU=Template Description];
                                                    Editable=No }
-    { 10  ;   ;Mandatory           ;Boolean       ;CaptionML=[DAN=Obligatorisk;
+    { 10  ;   ;Mandatory           ;Boolean       ;OnValidate=BEGIN
+                                                                IF Mandatory AND ("Default Value" = '') THEN
+                                                                  ERROR(EmptyDefaultValueErr);
+                                                              END;
+
+                                                   CaptionML=[DAN=Obligatorisk;
                                                               ENU=Mandatory] }
     { 11  ;   ;Reference           ;Text250       ;ExtendedDatatype=URL;
                                                    CaptionML=[DAN=Reference;
@@ -150,6 +155,8 @@ OBJECT Table 8619 Config. Template Line
                                                                 FieldRef@1001 : FieldRef;
                                                                 ValidationError@1000 : Text[250];
                                                               BEGIN
+                                                                IF Mandatory AND ("Default Value" = '') THEN
+                                                                  ERROR(EmptyDefaultValueErr);
                                                                 IF ("Field ID" <> 0) AND ("Default Value" <> '') THEN BEGIN
                                                                   RecRef.OPEN("Table ID",TRUE);
                                                                   FieldRef := RecRef.FIELD("Field ID");
@@ -209,6 +216,7 @@ OBJECT Table 8619 Config. Template Line
       Text003@1003 : TextConst 'DAN=Skabelonen %1 findes allerede i dette hierarki.;ENU=The template %1 is already in this hierarchy.';
       Text004@1004 : TextConst 'DAN=Feltet %1 findes allerede i skabelonen.;ENU=Field %1 is already in the template.';
       Text005@1005 : TextConst 'DAN=Skabelonen kan ikke redigeres, hvis typen er Felt.;ENU=The template line cannot be edited if type is Field.';
+      EmptyDefaultValueErr@1001 : TextConst 'DAN=The Default Value field must be filled in if the Mandatory check box is selected.;ENU=The Default Value field must be filled in if the Mandatory check box is selected.';
 
     PROCEDURE SelectFieldName@2();
     VAR

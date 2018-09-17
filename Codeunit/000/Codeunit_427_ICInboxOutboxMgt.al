@@ -2,9 +2,9 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -2096,27 +2096,26 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
         EXIT(FALSE);
 
       WITH PurchRcptLine DO BEGIN
-        SETCURRENTKEY("Order No.");
+        SETCURRENTKEY("Qty. Rcd. Not Invoiced");
         SETRANGE("Order No.",PurchaseHeader."No.");
         SETRANGE("Order Line No.",PurchaseLineSource."Receipt Line No.");
         SETRANGE(Type,PurchaseLineSource.Type);
         SETRANGE("No.",PurchaseLineSource."No.");
         SETFILTER("Qty. Rcd. Not Invoiced",'<>%1',0);
-        IF NOT FINDFIRST THEN
-          EXIT(FALSE);
+        IF FINDSET THEN
+          REPEAT
+            PurchaseLine.SETCURRENTKEY("Document Type","Receipt No.");
+            PurchaseLine.SETRANGE("Document Type",PurchaseLine."Document Type"::Invoice);
+            PurchaseLine.SETRANGE("Receipt No.","Document No.");
+            PurchaseLine.SETRANGE("Receipt Line No.","Line No.");
+            PurchaseLine.SETRANGE(Type,PurchaseLineSource.Type);
+            PurchaseLine.SETRANGE("No.",PurchaseLineSource."No.");
+            PurchaseLine.CALCSUMS(Quantity);
+            IF ABS("Qty. Rcd. Not Invoiced" - PurchaseLine.Quantity) >= ABS(PurchaseLineSource.Quantity) THEN
+              EXIT(TRUE);
+          UNTIL NEXT = 0;
+        EXIT(FALSE);
       END;
-
-      WITH PurchaseLine DO
-        IF ABS(PurchRcptLine."Qty. Rcd. Not Invoiced") >= ABS(PurchaseLineSource.Quantity) THEN BEGIN
-          SETCURRENTKEY("Document Type","Receipt No.");
-          SETRANGE("Document Type","Document Type"::Invoice);
-          SETRANGE("Receipt No.",PurchRcptLine."Document No.");
-          SETRANGE("Receipt Line No.",PurchRcptLine."Line No.");
-          SETRANGE(Type,PurchaseLineSource.Type);
-          SETRANGE("No.",PurchaseLineSource."No.");
-          SETFILTER(Quantity,'<>%1',0);
-          EXIT(ISEMPTY);
-        END;
     END;
 
     LOCAL PROCEDURE FindShipmentLine@34(VAR ReturnShptLine@1004 : Record 6651;PurchaseLineSource@1003 : Record 39) : Boolean;
@@ -2128,26 +2127,25 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
         EXIT(FALSE);
 
       WITH ReturnShptLine DO BEGIN
-        SETCURRENTKEY("Return Order No.");
+        SETCURRENTKEY("Return Qty. Shipped Not Invd.");
         SETRANGE("Return Order No.",PurchaseHeader."No.");
         SETRANGE("Return Order Line No.",PurchaseLineSource."Return Shipment Line No.");
         SETRANGE(Type,PurchaseLineSource.Type);
         SETRANGE("No.",PurchaseLineSource."No.");
         SETFILTER("Return Qty. Shipped Not Invd.",'<>%1',0);
-        IF NOT FINDFIRST THEN
-          EXIT(FALSE);
+        IF FINDSET THEN
+          REPEAT
+            PurchaseLine.SETRANGE("Document Type",PurchaseLine."Document Type"::"Credit Memo");
+            PurchaseLine.SETRANGE("Return Shipment No.","Document No.");
+            PurchaseLine.SETRANGE("Return Shipment Line No.","Line No.");
+            PurchaseLine.SETRANGE(Type,PurchaseLineSource.Type);
+            PurchaseLine.SETRANGE("No.",PurchaseLineSource."No.");
+            PurchaseLine.CALCSUMS(Quantity);
+            IF ABS("Return Qty. Shipped Not Invd." - PurchaseLine.Quantity) >= ABS(PurchaseLineSource.Quantity) THEN
+              EXIT(TRUE);
+          UNTIL NEXT = 0;
+        EXIT(FALSE);
       END;
-
-      WITH PurchaseLine DO
-        IF ABS(ReturnShptLine."Return Qty. Shipped Not Invd.") >= ABS(PurchaseLineSource.Quantity) THEN BEGIN
-          SETRANGE("Document Type","Document Type"::"Credit Memo");
-          SETRANGE("Return Shipment No.",ReturnShptLine."Document No.");
-          SETRANGE("Return Shipment Line No.",ReturnShptLine."Line No.");
-          SETRANGE(Type,PurchaseLineSource.Type);
-          SETRANGE("No.",PurchaseLineSource."No.");
-          SETFILTER(Quantity,'<>%1',0);
-          EXIT(ISEMPTY);
-        END;
     END;
 
     LOCAL PROCEDURE FindRoundingSalesInvLine@42(DocumentNo@1000 : Code[20]) : Integer;

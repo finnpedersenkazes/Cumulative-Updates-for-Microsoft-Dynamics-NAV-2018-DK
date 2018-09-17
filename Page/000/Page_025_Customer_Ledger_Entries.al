@@ -2,9 +2,9 @@ OBJECT Page 25 Customer Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -135,6 +135,7 @@ OBJECT Page 25 Customer Ledger Entries
                                BEGIN
                                  CustLedgEntry.COPY(Rec);
                                  CustEntryApplyPostEntries.ApplyCustEntryFormEntry(CustLedgEntry);
+                                 CustLedgEntry.GET(CustLedgEntry."Entry No.");
                                  Rec := CustLedgEntry;
                                  CurrPage.UPDATE;
                                END;

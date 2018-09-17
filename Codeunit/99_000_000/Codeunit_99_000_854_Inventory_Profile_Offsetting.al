@@ -2,9 +2,9 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -3479,7 +3479,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
               END;
             DATABASE::"Job Planning Line":
               "Order Priority" := 230;
-            DATABASE::"Transfer Line",DATABASE::"Requisition Line":
+            DATABASE::"Transfer Line",DATABASE::"Requisition Line",DATABASE::"Planning Component":
               "Order Priority" := 300;
             DATABASE::"Assembly Header":
               "Order Priority" := 320;
@@ -3494,7 +3494,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
               END;
             DATABASE::"Purchase Line":
               "Order Priority" := 500;
-            DATABASE::"Prod. Order Component",DATABASE::"Planning Component":
+            DATABASE::"Prod. Order Component":
               CASE "Source Order Status" OF // Simulated,Planned,Firm Planned,Released,Finished
                 3:
                   "Order Priority" := 600; // Released
@@ -3525,7 +3525,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
               "Order Priority" := 450;
             DATABASE::"Assembly Line":
               "Order Priority" := 470;
-            DATABASE::"Prod. Order Component",DATABASE::"Planning Component":
+            DATABASE::"Prod. Order Component":
               CASE "Source Order Status" OF // Simulated,Planned,Firm Planned,Released,Finished
                 3:
                   "Order Priority" := 500; // Released
@@ -3533,10 +3533,8 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
                   "Order Priority" := 510; // Firm Planned
                 1:
                   "Order Priority" := 520; // Planned
-                0:
-                  "Order Priority" := 600;
               END;
-            DATABASE::"Transfer Line",DATABASE::"Requisition Line":
+            DATABASE::"Transfer Line",DATABASE::"Requisition Line",DATABASE::"Planning Component":
               "Order Priority" := 600;
             DATABASE::"Production Forecast Entry":
               "Order Priority" := 800;

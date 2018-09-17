@@ -2,9 +2,9 @@ OBJECT Page 5330 CRM Connection Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -359,9 +359,9 @@ OBJECT Page 5330 CRM Connection Setup
 
     { 28  ;2   ;Field     ;
                 Name=ItemAvailabilityWebServEnabled;
-                CaptionML=[DAN=Item Availability Web Service Enabled;
+                CaptionML=[DAN=Webtjenesten Varedisponering er aktiveret;
                            ENU=Item Availability Web Service Enabled];
-                ToolTipML=[DAN=Specifies that the Item Availability web service for Business Central is enabled.;
+                ToolTipML=[DAN=Angiver, at webtjenesten Varedisponering for Business Central er aktiveret.;
                            ENU=Specifies that the Item Availability web service for Business Central is enabled.];
                 ApplicationArea=#Suite;
                 SourceExpr=WebServiceEnabled;

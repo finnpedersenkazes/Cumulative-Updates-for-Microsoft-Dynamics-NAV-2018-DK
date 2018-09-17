@@ -2,9 +2,9 @@ OBJECT Report 2 General Journal - Test
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -135,7 +135,8 @@ OBJECT Report 2 General Journal - Test
                                  LastEntrdDate := 0D;
                                END;
 
-                               CurrentCustomerVendors := 0;
+                               TempGenJournalLineCustVendIC.RESET;
+                               TempGenJournalLineCustVendIC.DELETEALL;
                                VATEntryCreated := FALSE;
 
                                GenJnlLine2.RESET;
@@ -881,6 +882,7 @@ OBJECT Report 2 General Journal - Test
       GenJnlTemplate@1071 : Record 80;
       GenJnlLine2@1072 : Record 81;
       TempGenJnlLine@1125 : TEMPORARY Record 81;
+      TempGenJournalLineCustVendIC@1045 : TEMPORARY Record 81;
       GenJnlAlloc@1073 : Record 221;
       OldCustLedgEntry@1074 : Record 21;
       OldVendLedgEntry@1075 : Record 25;
@@ -923,7 +925,6 @@ OBJECT Report 2 General Journal - Test
       ErrorText@1110 : ARRAY [50] OF Text[250];
       TempErrorText@1111 : Text[250];
       BalAccName@1112 : Text[50];
-      CurrentCustomerVendors@1113 : Integer;
       VATEntryCreated@1114 : Boolean;
       CustPosting@1115 : Boolean;
       VendPosting@1116 : Boolean;
@@ -1089,10 +1090,8 @@ OBJECT Report 2 General Journal - Test
           LastDocType := "Document Type";
           LastDocNo := "Document No.";
           LastDate := "Posting Date";
-          IF TotalBalance = 0 THEN BEGIN
-            CurrentCustomerVendors := 0;
+          IF TotalBalance = 0 THEN
             VATEntryCreated := FALSE;
-          END;
           IF GenJnlTemplate."Force Doc. Balance" THEN BEGIN
             VATEntryCreated :=
               VATEntryCreated OR
@@ -1100,13 +1099,8 @@ OBJECT Report 2 General Journal - Test
                ("Gen. Posting Type" IN ["Gen. Posting Type"::Purchase,"Gen. Posting Type"::Sale])) OR
               (("Bal. Account Type" = "Bal. Account Type"::"G/L Account") AND ("Bal. Account No." <> '') AND
                ("Bal. Gen. Posting Type" IN ["Bal. Gen. Posting Type"::Purchase,"Bal. Gen. Posting Type"::Sale]));
-            IF (("Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor]) AND
-                ("Account No." <> '')) OR
-               (("Bal. Account Type" IN ["Bal. Account Type"::Customer,"Bal. Account Type"::Vendor]) AND
-                ("Bal. Account No." <> ''))
-            THEN
-              CurrentCustomerVendors := CurrentCustomerVendors + 1;
-            IF (CurrentCustomerVendors > 1) AND VATEntryCreated THEN
+            TempGenJournalLineCustVendIC.IsCustVendICAdded(GenJnlLine);
+            IF (TempGenJournalLineCustVendIC.COUNT > 1) AND VATEntryCreated THEN
               AddError(
                 STRSUBSTNO(
                   Text024,
@@ -1140,7 +1134,8 @@ OBJECT Report 2 General Journal - Test
           IF ("Posting Date" <> LastDate) OR
              ("Document Type" <> LastDocType) OR ("Document No." <> LastDocNo)
           THEN BEGIN
-            CurrentCustomerVendors := 0;
+            TempGenJournalLineCustVendIC.RESET;
+            TempGenJournalLineCustVendIC.DELETEALL;
             VATEntryCreated := FALSE;
             CustPosting := FALSE;
             VendPosting := FALSE;

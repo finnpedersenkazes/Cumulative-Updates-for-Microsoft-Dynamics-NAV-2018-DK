@@ -2,9 +2,9 @@ OBJECT Table 5900 Service Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -20,9 +20,11 @@ OBJECT Table 5900 Service Header
                  NoSeriesMgt.InitSeries(GetNoSeriesCode,xRec."No. Series",0D,"No.","No. Series");
                END;
 
-               ServShptHeader.SETRANGE("Order No.","No.");
-               IF NOT ServShptHeader.ISEMPTY THEN
-                 ERROR(Text008,FORMAT("Document Type"),FIELDCAPTION("No."),"No.");
+               IF "Document Type" = "Document Type"::Order THEN BEGIN
+                 ServShptHeader.SETRANGE("Order No.","No.");
+                 IF NOT ServShptHeader.ISEMPTY THEN
+                   ERROR(Text008,FORMAT("Document Type"),FIELDCAPTION("No."),"No.");
+               END;
 
                InitRecord;
 

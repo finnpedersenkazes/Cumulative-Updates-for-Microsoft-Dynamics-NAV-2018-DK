@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -284,6 +284,8 @@ OBJECT Codeunit 80 Sales-Post
       NoDeferralScheduleErr@1064 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";DAN=Du skal oprette en periodiseringsplan, fordi du har angivet periodiseringskoden %2 i linje %1.;ENU=You must create a deferral schedule because you have specified the deferral code %2 in line %1.';
       ZeroDeferralAmtErr@1060 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";DAN=Periodiseringsbel›b m† ikke v‘re 0. Linje: %1, periodiseringsskabelon: %2.;ENU=Deferral amounts cannot be 0. Line: %1, Deferral Template: %2.';
       DownloadShipmentAlsoQst@1036 : TextConst 'DAN=Du kan downloade bilaget Salg - leverance nu. Du kan ogs† †bne det fra vinduet Bogf›rte salgsleverancer p† et senere tidspunkt.\\Vil du downloade bilaget Salg - leverance nu?;ENU=You can also download the Sales - Shipment document now. Alternatively, you can access it from the Posted Sales Shipments window later.\\Do you want to download the Sales - Shipment document now?';
+      InvPickExistsErr@1062 : TextConst 'DAN=One or more related inventory picks must be registered before you can post the shipment.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
+      InvPutAwayExistsErr@1057 : TextConst 'DAN=One or more related inventory put-aways must be registered before you can post the receipt.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
 
     LOCAL PROCEDURE CopyToTempLines@180(SalesHeader@1000 : Record 36);
     VAR
@@ -417,10 +419,17 @@ OBJECT Codeunit 80 Sales-Post
         IF Ship THEN BEGIN
           InitPostATOs(SalesHeader);
           Ship := CheckTrackingAndWarehouseForShip(SalesHeader);
+          IF NOT InvtPickPutaway THEN
+            IF CheckIfInvPickExists(SalesHeader) THEN
+              ERROR(InvPickExistsErr);
         END;
 
-        IF Receive THEN
+        IF Receive THEN BEGIN
           Receive := CheckTrackingAndWarehouseForReceive(SalesHeader);
+          IF NOT InvtPickPutaway THEN
+            IF CheckIfInvPutawayExists THEN
+              ERROR(InvPutAwayExistsErr);
+        END;
 
         IF NOT (Ship OR Invoice OR Receive) THEN
           ERROR(NothingToPostErr);
@@ -603,6 +612,7 @@ OBJECT Codeunit 80 Sales-Post
     LOCAL PROCEDURE PostItemLine@170(SalesHeader@1000 : Record 36;VAR SalesLine@1001 : Record 37;VAR TempDropShptPostBuffer@1002 : TEMPORARY Record 223;VAR TempPostedATOLink@1003 : TEMPORARY Record 914);
     VAR
       DummyTrackingSpecification@1004 : Record 336;
+      SalesLineToShip@1007 : Record 37;
       QtyToInvoice@1005 : Decimal;
       QtyToInvoiceBase@1006 : Decimal;
     BEGIN
@@ -636,21 +646,29 @@ OBJECT Codeunit 80 Sales-Post
               QtyToInvoice,QtyToInvoiceBase,
               0,'',DummyTrackingSpecification,FALSE);
 
-        IF SalesLine.IsCreditDocType THEN BEGIN
-          IF ABS(SalesLine."Return Qty. to Receive") > ABS(QtyToInvoice) THEN
+        SalesLineToShip := SalesLine;
+
+        // Invoice discount amount is also included in expected sales amount posted for shipment or return receipt.
+        IF QtyToInvoice <> 0 THEN
+          SalesLineToShip."Inv. Discount Amount" :=
+            ROUND(SalesLineToShip.Quantity * SalesLineToShip."Inv. Discount Amount" / QtyToInvoice,
+              Currency."Amount Rounding Precision");
+
+        IF SalesLineToShip.IsCreditDocType THEN BEGIN
+          IF ABS(SalesLineToShip."Return Qty. to Receive") > ABS(QtyToInvoice) THEN
             ItemLedgShptEntryNo :=
               PostItemJnlLine(
-                SalesHeader,SalesLine,
-                SalesLine."Return Qty. to Receive" - QtyToInvoice,
-                SalesLine."Return Qty. to Receive (Base)" - QtyToInvoiceBase,
+                SalesHeader,SalesLineToShip,
+                SalesLineToShip."Return Qty. to Receive" - QtyToInvoice,
+                SalesLineToShip."Return Qty. to Receive (Base)" - QtyToInvoiceBase,
                 0,0,0,'',DummyTrackingSpecification,FALSE);
         END ELSE BEGIN
-          IF ABS(SalesLine."Qty. to Ship") > ABS(QtyToInvoice) + ABS(TempPostedATOLink."Assembled Quantity") THEN
+          IF ABS(SalesLineToShip."Qty. to Ship") > ABS(QtyToInvoice) + ABS(TempPostedATOLink."Assembled Quantity") THEN
             ItemLedgShptEntryNo :=
               PostItemJnlLine(
-                SalesHeader,SalesLine,
-                SalesLine."Qty. to Ship" - TempPostedATOLink."Assembled Quantity" - QtyToInvoice,
-                SalesLine."Qty. to Ship (Base)" - TempPostedATOLink."Assembled Quantity (Base)" - QtyToInvoiceBase,
+                SalesHeader,SalesLineToShip,
+                SalesLineToShip."Qty. to Ship" - TempPostedATOLink."Assembled Quantity" - QtyToInvoice,
+                SalesLineToShip."Qty. to Ship (Base)" - TempPostedATOLink."Assembled Quantity (Base)" - QtyToInvoiceBase,
                 0,0,0,'',DummyTrackingSpecification,FALSE);
         END;
       END;
@@ -719,6 +737,7 @@ OBJECT Codeunit 80 Sales-Post
       CurrExchRate@1015 : Record 330;
       PostWhseJnlLine@1011 : Boolean;
       CheckApplFromItemEntry@1014 : Boolean;
+      InvDiscAmountPerShippedQty@1016 : Decimal;
     BEGIN
       IF NOT ItemJnlRollRndg THEN BEGIN
         RemAmt := 0;
@@ -797,13 +816,15 @@ OBJECT Codeunit 80 Sales-Post
           Amount := ROUND(Amount);
           "Discount Amount" := ROUND("Discount Amount");
         END ELSE BEGIN
+          InvDiscAmountPerShippedQty := ABS(SalesLine."Inv. Discount Amount") * QtyToBeShipped / SalesLine.Quantity;
+          Amount := QtyToBeShipped * SalesLine."Unit Price";
           IF SalesHeader."Prices Including VAT" THEN
             Amount :=
-              -((QtyToBeShipped * SalesLine."Unit Price" * (1 - SalesLine."Line Discount %" / 100) /
-                 (1 + SalesLine."VAT %" / 100)) - RemAmt)
+              -((Amount * (1 - SalesLine."Line Discount %" / 100) - InvDiscAmountPerShippedQty) /
+                (1 + SalesLine."VAT %" / 100) - RemAmt)
           ELSE
             Amount :=
-              -((QtyToBeShipped * SalesLine."Unit Price" * (1 - SalesLine."Line Discount %" / 100)) - RemAmt);
+              -(Amount * (1 - SalesLine."Line Discount %" / 100) - InvDiscAmountPerShippedQty - RemAmt);
           RemAmt := Amount - ROUND(Amount);
           IF SalesHeader."Currency Code" <> '' THEN
             Amount :=
@@ -1822,7 +1843,6 @@ OBJECT Codeunit 80 Sales-Post
         IF (SalesLineQty = 0) OR ("Unit Price" = 0) THEN BEGIN
           "Line Amount" := 0;
           "Line Discount Amount" := 0;
-          "Inv. Discount Amount" := 0;
           "VAT Base Amount" := 0;
           Amount := 0;
           "Amount Including VAT" := 0;
@@ -5440,6 +5460,51 @@ OBJECT Codeunit 80 Sales-Post
             CheckWarehouse(TempSalesLine);
         END;
         EXIT(Receive);
+      END;
+    END;
+
+    LOCAL PROCEDURE CheckIfInvPickExists@240(SalesHeader@1004 : Record 36) : Boolean;
+    VAR
+      TempSalesLine@1000 : TEMPORARY Record 37;
+      WarehouseActivityLine@1001 : Record 5767;
+    BEGIN
+      WITH TempSalesLine DO BEGIN
+        FindNotShippedLines(SalesHeader,TempSalesLine);
+        IF ISEMPTY THEN
+          EXIT(FALSE);
+        FINDSET;
+        REPEAT
+          IF WarehouseActivityLine.ActivityExists(
+               DATABASE::"Sales Line","Document Type","Document No.","Line No.",0,
+               WarehouseActivityLine."Activity Type"::"Invt. Pick")
+          THEN
+            EXIT(TRUE);
+        UNTIL NEXT = 0;
+        EXIT(FALSE);
+      END;
+    END;
+
+    LOCAL PROCEDURE CheckIfInvPutawayExists@239() : Boolean;
+    VAR
+      TempSalesLine@1000 : TEMPORARY Record 37;
+      WarehouseActivityLine@1001 : Record 5767;
+    BEGIN
+      WITH TempSalesLine DO BEGIN
+        ResetTempLines(TempSalesLine);
+        SETFILTER(Quantity,'<>0');
+        SETFILTER("Return Qty. to Receive",'<>0');
+        SETRANGE("Return Receipt No.",'');
+        IF ISEMPTY THEN
+          EXIT(FALSE);
+        FINDSET;
+        REPEAT
+          IF WarehouseActivityLine.ActivityExists(
+               DATABASE::"Sales Line","Document Type","Document No.","Line No.",0,
+               WarehouseActivityLine."Activity Type"::"Invt. Put-away")
+          THEN
+            EXIT(TRUE);
+        UNTIL NEXT = 0;
+        EXIT(FALSE);
       END;
     END;
 

@@ -2,9 +2,9 @@ OBJECT Report 1322 Standard Purchase - Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -1040,9 +1040,9 @@ OBJECT Report 1322 Standard Purchase - Order
       ArchiveDocument@1063 : Boolean;
       VendorOrderNoLbl@1082 : TextConst 'DAN=Kreditors ordrenr.;ENU=Vendor Order No.';
       VendorInvoiceNoLbl@1084 : TextConst 'DAN=Kreditors fakturanr.;ENU=Vendor Invoice No.';
-      UnitPriceLbl@1088 : TextConst 'DAN=Unit Price (LCY);ENU=Unit Price (LCY)';
-      JobNoLbl@1094 : TextConst 'DAN=Job No.;ENU=Job No.';
-      JobTaskNoLbl@1095 : TextConst 'DAN=Job Task No.;ENU=Job Task No.';
+      UnitPriceLbl@1088 : TextConst 'DAN=Enhedspris (RV);ENU=Unit Price (LCY)';
+      JobNoLbl@1094 : TextConst 'DAN=Sagsnr.;ENU=Job No.';
+      JobTaskNoLbl@1095 : TextConst 'DAN=Sagsopgavenr.;ENU=Job Task No.';
 
     PROCEDURE InitializeRequest@4(LogInteractionParam@1003 : Boolean);
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Table 6700 Exchange Sync
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -28,7 +28,7 @@ OBJECT Table 6700 Exchange Sync
     { 2   ;   ;Enabled             ;Boolean       ;CaptionML=[DAN=Aktiveret;
                                                               ENU=Enabled] }
     { 3   ;   ;Exchange Service URI;Text250       ;DataClassification=SystemMetadata;
-                                                   CaptionML=[DAN=Exchange Service URI;
+                                                   CaptionML=[DAN=URI-adresse til Exchange-tjeneste;
                                                               ENU=Exchange Service URI] }
     { 4   ;   ;Exchange Account Password Key;GUID ;TableRelation="Service Password".Key;
                                                    CaptionML=[DAN=Adgangskoden›gle til Exchange-konto;

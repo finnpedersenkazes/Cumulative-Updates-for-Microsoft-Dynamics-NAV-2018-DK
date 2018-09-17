@@ -2,9 +2,9 @@ OBJECT Page 233 Apply Vendor Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -1247,7 +1247,7 @@ OBJECT Page 233 Apply Vendor Entries
          (ApplnType = ApplnType::"Applies-to Doc. No.")
       THEN
         EXIT(FALSE);
-      EXIT(CalcType = CalcType::Direct);
+      EXIT((CalcType = CalcType::Direct) AND NOT OK AND NOT PostingDone);
     END;
 
     [External]

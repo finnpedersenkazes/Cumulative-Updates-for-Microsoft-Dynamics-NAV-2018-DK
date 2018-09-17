@@ -2,9 +2,9 @@ OBJECT Codeunit 86 Sales-Quote to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -58,6 +58,8 @@ OBJECT Codeunit 86 Sales-Quote to Order
 
             ApprovalsMgmt.CopyApprovalEntryQuoteToOrder(RECORDID,SalesOrderHeader."No.",SalesOrderHeader.RECORDID);
             ApprovalsMgmt.DeleteApprovalEntries(RECORDID);
+
+            OnBeforeDeleteSalesQuote(Rec,SalesOrderHeader);
 
             DELETELINKS;
             DELETE;
@@ -257,6 +259,11 @@ OBJECT Codeunit 86 Sales-Quote to Order
             OrderSalesLine.AutoReserve;
 
         UNTIL QuoteSalesLine.NEXT = 0;
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeDeleteSalesQuote@4(VAR QuoteSalesHeader@1000 : Record 36;VAR OrderSalesHeader@1001 : Record 36);
+    BEGIN
     END;
 
     [Integration]

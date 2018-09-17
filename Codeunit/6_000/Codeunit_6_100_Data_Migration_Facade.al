@@ -2,9 +2,9 @@ OBJECT Codeunit 6100 Data Migration Facade
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -151,6 +151,11 @@ OBJECT Codeunit 6100 Data Migration Facade
     [Integration]
     [External]
     PROCEDURE OnSelectRowFromDashboard@5(VAR DataMigrationStatus@1000 : Record 1799);
+    BEGIN
+    END;
+
+    [Integration]
+    PROCEDURE OnMigrationCompleted@13(DataMigrationStatus@1000 : Record 1799);
     BEGIN
     END;
 

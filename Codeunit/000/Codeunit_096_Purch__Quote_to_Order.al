@@ -2,9 +2,9 @@ OBJECT Codeunit 96 Purch.-Quote to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -73,6 +73,8 @@ OBJECT Codeunit 96 Purch.-Quote to Order
 
             ApprovalsMgmt.CopyApprovalEntryQuoteToOrder(RECORDID,PurchOrderHeader."No.",PurchOrderHeader.RECORDID);
             ApprovalsMgmt.DeleteApprovalEntries(RECORDID);
+
+            OnBeforeDeletePurchQuote(Rec,PurchOrderHeader);
 
             DELETELINKS;
             DELETE;
@@ -148,6 +150,11 @@ OBJECT Codeunit 96 Purch.-Quote to Order
     PROCEDURE GetPurchOrderHeader@1(VAR PurchHeader@1000 : Record 38);
     BEGIN
       PurchHeader := PurchOrderHeader;
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeDeletePurchQuote@5(VAR QuotePurchHeader@1000 : Record 38;VAR OrderPurchHeader@1001 : Record 38);
+    BEGIN
     END;
 
     [Integration]

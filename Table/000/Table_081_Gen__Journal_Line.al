@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -3266,14 +3266,13 @@ OBJECT Table 81 Gen. Journal Line
             VendLedgEntry.SETRANGE("Vendor No.",TempGenJnlLine."Account No.");
             VendLedgEntry.SETRANGE("Applies-to ID",TempGenJnlLine."Applies-to ID");
             VendLedgEntry.SETRANGE(Open,TRUE);
-            REPEAT
-              IF TempGenJnlLine."Posting Date" < VendLedgEntry."Posting Date" THEN
-                ERROR(
-                  Text015,TempGenJnlLine."Document Type",TempGenJnlLine."Document No.",
-                  VendLedgEntry."Document Type",VendLedgEntry."Document No.");
-            UNTIL VendLedgEntry.NEXT = 0;
-            IF VendLedgEntry.FIND('-') THEN
-              ;
+            IF VendLedgEntry.FINDSET THEN
+              REPEAT
+                IF TempGenJnlLine."Posting Date" < VendLedgEntry."Posting Date" THEN
+                  ERROR(
+                    Text015,TempGenJnlLine."Document Type",TempGenJnlLine."Document No.",
+                    VendLedgEntry."Document Type",VendLedgEntry."Document No.");
+              UNTIL VendLedgEntry.NEXT = 0;
           END ELSE
             IF TempGenJnlLine."Applies-to Doc. No." <> '' THEN BEGIN
               VendLedgEntry.SETCURRENTKEY("Document No.");
@@ -3294,14 +3293,13 @@ OBJECT Table 81 Gen. Journal Line
             EmplLedgEntry.SETRANGE("Employee No.",TempGenJnlLine."Account No.");
             EmplLedgEntry.SETRANGE("Applies-to ID",TempGenJnlLine."Applies-to ID");
             EmplLedgEntry.SETRANGE(Open,TRUE);
-            REPEAT
-              IF TempGenJnlLine."Posting Date" < EmplLedgEntry."Posting Date" THEN
-                ERROR(
-                  Text015,TempGenJnlLine."Document Type",TempGenJnlLine."Document No.",
-                  EmplLedgEntry."Document Type",EmplLedgEntry."Document No.");
-            UNTIL EmplLedgEntry.NEXT = 0;
-            IF EmplLedgEntry.FIND('-') THEN
-              ;
+            IF EmplLedgEntry.FINDSET THEN
+              REPEAT
+                IF TempGenJnlLine."Posting Date" < EmplLedgEntry."Posting Date" THEN
+                  ERROR(
+                    Text015,TempGenJnlLine."Document Type",TempGenJnlLine."Document No.",
+                    EmplLedgEntry."Document Type",EmplLedgEntry."Document No.");
+              UNTIL EmplLedgEntry.NEXT = 0;
           END ELSE
             IF TempGenJnlLine."Applies-to Doc. No." <> '' THEN BEGIN
               EmplLedgEntry.SETCURRENTKEY("Document No.");
@@ -4081,6 +4079,40 @@ OBJECT Table 81 Gen. Journal Line
         EXIT(TRUE);
       GenJnlBatch.GET("Journal Template Name","Journal Batch Name");
       EXIT(GenJnlBatch."Bal. Account No." <> '');
+    END;
+
+    LOCAL PROCEDURE AddCustVendIC@228(AccountType@1000 : Option;AccountNo@1001 : Code[20]) : Boolean;
+    BEGIN
+      SETRANGE("Account Type",AccountType);
+      SETRANGE("Account No.",AccountNo);
+      IF NOT ISEMPTY THEN
+        EXIT(FALSE);
+
+      RESET;
+      IF FINDLAST THEN;
+      "Line No." += 10000;
+
+      "Account Type" := AccountType;
+      "Account No." := AccountNo;
+      INSERT;
+      EXIT(TRUE);
+    END;
+
+    PROCEDURE IsCustVendICAdded@209(GenJournalLine@1000 : Record 81) : Boolean;
+    BEGIN
+      IF (GenJournalLine."Account No." <> '') AND
+         (GenJournalLine."Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor,"Account Type"::"IC Partner"])
+      THEN
+        EXIT(AddCustVendIC(GenJournalLine."Account Type",GenJournalLine."Account No."));
+
+      IF (GenJournalLine."Bal. Account No." <> '') AND
+         (GenJournalLine."Bal. Account Type" IN ["Bal. Account Type"::Customer,
+                                                 "Bal. Account Type"::Vendor,
+                                                 "Bal. Account Type"::"IC Partner"])
+      THEN
+        EXIT(AddCustVendIC(GenJournalLine."Bal. Account Type",GenJournalLine."Bal. Account No."));
+
+      EXIT(FALSE);
     END;
 
     [External]

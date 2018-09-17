@@ -2,9 +2,9 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -1011,7 +1011,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
         HandleAsmAttachedToSalesLine(ToSalesLine);
         IF ToSalesLine.Reserve = ToSalesLine.Reserve::Always THEN
           ToSalesLine.AutoReserve;
-        OnAfterInsertToSalesLine(ToSalesLine);
+        OnAfterInsertToSalesLine(ToSalesLine,FromSalesLine);
       END ELSE
         LinesNotCopied := LinesNotCopied + 1;
       EXIT(TRUE);
@@ -5924,7 +5924,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnAfterInsertToSalesLine@1014(VAR SalesLine@1000 : Record 37);
+    LOCAL PROCEDURE OnAfterInsertToSalesLine@1014(VAR ToSalesLine@1000 : Record 37;FromSalesLine@1001 : Record 37);
     BEGIN
     END;
 

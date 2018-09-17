@@ -2,9 +2,9 @@ OBJECT Codeunit 99000813 Carry Out Action
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -161,6 +161,18 @@ OBJECT Codeunit 99000813 Carry Out Action
       ReqLine2 := ReqLine;
       ReqLine2."Worksheet Template Name" := ReqWkshTempName;
       ReqLine2."Journal Batch Name" := ReqJournalName;
+
+      IF LineNo = 0 THEN BEGIN
+        // we need to find the last line in worksheet
+        ReqLine3.SETCURRENTKEY("Worksheet Template Name","Journal Batch Name","Line No.");
+        ReqLine3.SETRANGE("Worksheet Template Name",ReqWkshTempName);
+        ReqLine3.SETRANGE("Journal Batch Name",ReqJournalName);
+        IF ReqLine3.FINDLAST THEN
+          LineNo := ReqLine3."Line No.";
+      END;
+      LineNo += 10000;
+      ReqLine2."Line No." := LineNo;
+
       IF ReqLine2."Planning Line Origin" = ReqLine2."Planning Line Origin"::"Order Planning" THEN BEGIN
         ReqLine2."Planning Line Origin" := ReqLine2."Planning Line Origin"::" ";
         ReqLine2.Level := 0;
@@ -178,17 +190,6 @@ OBJECT Codeunit 99000813 Carry Out Action
         ReqLine2."Needed Quantity (Base)" := 0;
         ReqLine2."Qty. per UOM (Demand)" := 0;
         ReqLine2."Unit Of Measure Code (Demand)" := '';
-
-        IF LineNo = 0 THEN BEGIN
-          // we need to find the last line in worksheet
-          ReqLine3.SETCURRENTKEY("Worksheet Template Name","Journal Batch Name","Line No.");
-          ReqLine3.SETRANGE("Worksheet Template Name",ReqWkshTempName);
-          ReqLine3.SETRANGE("Journal Batch Name",ReqJournalName);
-          IF ReqLine3.FINDLAST THEN
-            LineNo := ReqLine3."Line No.";
-        END;
-        LineNo += 10000;
-        ReqLine2."Line No." := LineNo;
       END;
       ReqLine2.INSERT;
 

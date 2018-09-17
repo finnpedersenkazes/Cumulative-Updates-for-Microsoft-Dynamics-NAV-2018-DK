@@ -2,9 +2,9 @@ OBJECT Page 77 Resource List
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -472,7 +472,7 @@ OBJECT Page 77 Resource List
                 Visible=FALSE }
 
     { 90  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.;
+                ToolTipML=[DAN=Angiver, om adgangen til dataemnet skal begr‘nses under daglig drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om personlige oplysninger i dem er beskyttet.;
                            ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
                 ApplicationArea=#Jobs;
                 SourceExpr="Privacy Blocked";

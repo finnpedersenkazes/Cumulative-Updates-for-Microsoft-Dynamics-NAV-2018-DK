@@ -2,9 +2,9 @@ OBJECT Codeunit 1330 Instruction Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -20,8 +20,8 @@ OBJECT Codeunit 1330 Instruction Mgt.
       WarnUnpostedDocumentsDescriptionTxt@1005 : TextConst 'DAN=Vis en advarsel, n†r du lukker et bilag, som du ikke har bogf›rt.;ENU=Show warning when you close a document that you have not posted.';
       ConfirmAfterPostingDocumentsTxt@1004 : TextConst 'DAN=Bekr‘ft efter bogf›ring af bilag.;ENU=Confirm after posting documents.';
       ConfirmAfterPostingDocumentsDescriptionTxt@1003 : TextConst 'DAN=Vis advarsel, n†r du bogf›rer et bilag, hvor du kan v‘lge at f† vist det bogf›rte bilag.;ENU=Show warning when you post a document where you can choose to view the posted document.';
-      ConfirmPostingAfterCurrentFiscalYearTxt@1002 : TextConst 'DAN=Confirm posting after the current fiscal year.;ENU=Confirm posting after the current fiscal year.';
-      ConfirmPostingAfterCurrentFiscalYearDescriptionTxt@1001 : TextConst 'DAN=Show warning when you post entries where the posting date is after the current fiscal year.;ENU=Show warning when you post entries where the posting date is after the current fiscal year.';
+      ConfirmPostingAfterCurrentFiscalYearTxt@1002 : TextConst 'DAN=Bekr‘ft bogf›ring efter det aktuelle regnskabs†r.;ENU=Confirm posting after the current fiscal year.';
+      ConfirmPostingAfterCurrentFiscalYearDescriptionTxt@1001 : TextConst 'DAN=Vis advarsel, n†r du bogf›rer poster, hvor bogf›ringsdatoen ligger efter det aktuelle regnskabs†r.;ENU=Show warning when you post entries where the posting date is after the current fiscal year.';
       MarkBookingAsInvoicedWarningTxt@1007 : TextConst 'DAN=Bekr‘ft, at booking er markeret som faktureret.;ENU=Confirm marking booking as invoiced.';
       MarkBookingAsInvoicedWarningDescriptionTxt@1008 : TextConst 'DAN=Vis advarsel, n†r du markerer en bookingaftale som faktureret.;ENU=Show warning when you mark a Booking appointment as invoiced.';
       OfficeUpdateNotificationTxt@1009 : TextConst 'DAN=Underret bruger om opdatering til Outlook-tilf›jelsesprogram.;ENU=Notify user of Outlook add-in update.';

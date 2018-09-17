@@ -2,9 +2,9 @@ OBJECT Table 39 Purchase Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -73,21 +73,16 @@ OBJECT Table 39 Purchase Line
                  SalesOrderLine.MODIFY;
                END;
 
-               IF "Special Order Sales Line No." <> 0 THEN BEGIN
+               IF ("Special Order Sales Line No." <> 0) AND ("Quantity Invoiced" = 0) THEN BEGIN
                  LOCKTABLE;
                  SalesOrderLine.LOCKTABLE;
-                 IF "Document Type" = "Document Type"::Order THEN BEGIN
-                   SalesOrderLine.GET(SalesOrderLine."Document Type"::Order,"Special Order Sales No.","Special Order Sales Line No.");
+                 IF SalesOrderLine.GET(
+                      SalesOrderLine."Document Type"::Order,"Special Order Sales No.","Special Order Sales Line No.")
+                 THEN BEGIN
                    SalesOrderLine."Special Order Purchase No." := '';
                    SalesOrderLine."Special Order Purch. Line No." := 0;
                    SalesOrderLine.MODIFY;
-                 END ELSE
-                   IF SalesOrderLine.GET(SalesOrderLine."Document Type"::Order,"Special Order Sales No.","Special Order Sales Line No.") THEN
-                     BEGIN
-                     SalesOrderLine."Special Order Purchase No." := '';
-                     SalesOrderLine."Special Order Purch. Line No." := 0;
-                     SalesOrderLine.MODIFY;
-                   END;
+                 END;
                END;
 
                NonstockItemMgt.DelNonStockPurch(Rec);
@@ -805,14 +800,7 @@ OBJECT Table 39 Purchase Line
                                                                 TestStatusOpen;
                                                                 TESTFIELD(Quantity);
                                                                 IF xRec."Line Discount Amount" <> "Line Discount Amount" THEN
-                                                                  IF ROUND(Quantity * "Direct Unit Cost",Currency."Amount Rounding Precision") <> 0 THEN
-                                                                    "Line Discount %" :=
-                                                                      ROUND(
-                                                                        "Line Discount Amount" /
-                                                                        ROUND(Quantity * "Direct Unit Cost",Currency."Amount Rounding Precision") * 100,
-                                                                        0.00001)
-                                                                  ELSE
-                                                                    "Line Discount %" := 0;
+                                                                  UpdateLineDiscPct;
                                                                 "Inv. Discount Amount" := 0;
                                                                 "Inv. Disc. Amount to Invoice" := 0;
                                                                 UpdateAmounts;
@@ -2863,6 +2851,7 @@ OBJECT Table 39 Purchase Line
       PurchSetupRead@1096 : Boolean;
       CannotFindDescErr@1035 : TextConst '@@@="%1 = Type caption %2 = Description";DAN=Kan ikke finde %1 med beskrivelsen %2.\\S›rg for at bruge den korrekte type.;ENU=Cannot find %1 with Description %2.\\Make sure to use the correct type.';
       CommentLbl@1024 : TextConst 'DAN=Bem‘rkning;ENU=Comment';
+      LineDiscountPctErr@1036 : TextConst 'DAN=The value in the Line Discount % field must be between 0 and 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
 
     [External]
     PROCEDURE InitOutstanding@16();
@@ -5378,6 +5367,21 @@ OBJECT Table 39 Purchase Line
       SETRANGE(Type,LineType);
       SETRANGE("No.",OldNo);
       MODIFYALL("No.",NewNo,TRUE);
+    END;
+
+    LOCAL PROCEDURE UpdateLineDiscPct@132();
+    VAR
+      LineDiscountPct@1000 : Decimal;
+    BEGIN
+      IF ROUND(Quantity * "Direct Unit Cost",Currency."Amount Rounding Precision") <> 0 THEN BEGIN
+        LineDiscountPct := ROUND(
+            "Line Discount Amount" / ROUND(Quantity * "Direct Unit Cost",Currency."Amount Rounding Precision") * 100,
+            0.00001);
+        IF NOT (LineDiscountPct IN [0..100]) THEN
+          ERROR(LineDiscountPctErr);
+        "Line Discount %" := LineDiscountPct;
+      END ELSE
+        "Line Discount %" := 0;
     END;
 
     [Integration]

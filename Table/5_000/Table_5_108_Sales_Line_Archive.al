@@ -2,9 +2,9 @@ OBJECT Table 5108 Sales Line Archive
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -248,7 +248,6 @@ OBJECT Table 5108 Sales Line Archive
                                                    CaptionML=[DAN=Skattegruppekode;
                                                               ENU=Tax Group Code] }
     { 88  ;   ;VAT Clause Code     ;Code20        ;TableRelation="VAT Clause";
-                                                   DataClassification=ToBeClassified;
                                                    CaptionML=[DAN=Momsklausulkode;
                                                               ENU=VAT Clause Code] }
     { 89  ;   ;VAT Bus. Posting Group;Code20      ;TableRelation="VAT Business Posting Group";

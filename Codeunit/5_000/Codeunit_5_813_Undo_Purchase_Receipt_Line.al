@@ -2,9 +2,9 @@ OBJECT Codeunit 5813 Undo Purchase Receipt Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -48,7 +48,7 @@ OBJECT Codeunit 5813 Undo Purchase Receipt Line
       NextLineNo@1015 : Integer;
       Text004@1010 : TextConst 'DAN=Denne leverance er allerede blevet faktureret. Annuller modtagelse kan kun anvendes p† leverancer, der er blevet bogf›rt, men som ikke er blevet faktureret.;ENU=This receipt has already been invoiced. Undo Receipt can be applied only to posted, but not invoiced receipts.';
       Text005@1011 : TextConst 'DAN=Annuller modtagelse kan kun anvendes for linjer af typen Artikel. V‘lg en linje af typen Artikel, og gentag proceduren.;ENU=Undo Receipt can be performed only for lines of type Item. Please select a line of the Item type and repeat the procedure.';
-      AllLinesCorrectedErr@1000 : TextConst 'DAN=All lines have been already corrected.;ENU=All lines have been already corrected.';
+      AllLinesCorrectedErr@1000 : TextConst 'DAN=Alle linjer er allerede blevet rettet.;ENU=All lines have been already corrected.';
 
     [External]
     PROCEDURE SetHideDialog@6(NewHideDialog@1000 : Boolean);

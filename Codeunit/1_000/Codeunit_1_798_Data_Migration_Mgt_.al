@@ -2,9 +2,9 @@ OBJECT Codeunit 1798 Data Migration Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -670,6 +670,23 @@ OBJECT Codeunit 1798 Data Migration Mgt.
         STRSUBSTNO('Data Migration (%1)',MigrationType),
         VERBOSITY::Error,
         ErrorMessage);
+    END;
+
+    PROCEDURE CheckIfMigrationIsCompleted@21(CurrentDataMigrationStatus@1000 : Record 1799);
+    VAR
+      DataMigrationStatus@1001 : Record 1799;
+      DataMigrationFacade@1003 : Codeunit 6100;
+    BEGIN
+      DataMigrationStatus.SETRANGE("Migration Type",CurrentDataMigrationStatus."Migration Type");
+      DataMigrationStatus.SETFILTER("Destination Table ID",'<>%1',CurrentDataMigrationStatus."Destination Table ID");
+      DataMigrationStatus.SETFILTER(
+        Status,
+        '%1|%2|%3',
+        DataMigrationStatus.Status::"In Progress",
+        DataMigrationStatus.Status::Pending,
+        DataMigrationStatus.Status::"Completed with Errors");
+      IF DataMigrationStatus.ISEMPTY THEN
+        DataMigrationFacade.OnMigrationCompleted(CurrentDataMigrationStatus);
     END;
 
     BEGIN

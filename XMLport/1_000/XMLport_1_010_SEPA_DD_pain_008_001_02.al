@@ -2,9 +2,9 @@ OBJECT XMLport 1010 SEPA DD pain.008.001.02
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -131,10 +131,6 @@ OBJECT XMLport 1010 SEPA DD pain.008.001.02
 
     { [{9CA51BA0-46E2-46B3-A14C-0B28D61E299D}];3 ;PmtTpInf            ;Element ;Text     }
 
-    { [{5E01D811-0DCD-4BC3-A4C9-7277DED06DCD}];4 ;InstrPrty           ;Element ;Field   ;
-                                                  DataType=Code;
-                                                  SourceField=PaymentExportDataGroup::SEPA Instruction Priority Text }
-
     { [{1D5A56C5-3B10-42BC-A930-65DAE73CDB35}];4 ;SvcLvl              ;Element ;Text     }
 
     { [{5126454D-9F23-4FEB-A798-3D6EE6C3E628}];5 ;Cd                  ;Element ;Text    ;
@@ -243,13 +239,6 @@ OBJECT XMLport 1010 SEPA DD pain.008.001.02
     { [{8B27A404-9DBA-4290-9088-581F891EDE98}];5 ;EndToEndId          ;Element ;Field   ;
                                                   DataType=Text;
                                                   SourceField=PaymentExportData::End-to-End ID }
-
-    { [{6DC0F9C3-E082-405A-91C7-E171AE430745}];4 ;PmtTpInf            ;Element ;Text    ;
-                                                  VariableName=DrctDbtTxInfPmtTpInf }
-
-    { [{951D6B08-09A6-4878-877B-0E5E2FD1C523}];5 ;InstrPrty           ;Element ;Field   ;
-                                                  DataType=Code;
-                                                  SourceField=PaymentExportData::SEPA Instruction Priority Text }
 
     { [{351B1C68-E833-44B1-85CB-6C1DFD29A96A}];4 ;InstdAmt            ;Element ;Field   ;
                                                   DataType=Decimal;

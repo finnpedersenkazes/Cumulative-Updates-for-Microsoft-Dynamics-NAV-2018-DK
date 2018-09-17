@@ -2,9 +2,9 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -87,6 +87,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
             IF User.FINDFIRST THEN
               IF UserSetup.GET(EntityNo) THEN BEGIN
                 // Redirect to use the User Setup table
+                EntityTypeTableNo := DATABASE::"User Setup";
                 RecRef.GETTABLE(UserSetup);
                 CreateRelatedData(RecRef,EntityTypeTableNo,EntityNo,PackageCode,ActionType,GeneratePreview,DataSensitivityOption);
               END;
@@ -128,10 +129,14 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       END;
 
       CreateEntities;
+      IF EntityTypeTableNo = DATABASE::"User Setup" THEN
+        EntityTypeTableNo := DATABASE::User;
+
       IF DataPrivacyEntities.GET(EntityTypeTableNo) THEN
-        IF EntityTypeTableNo = DATABASE::User THEN
-          EntityKeyField := 1
-        ELSE
+        IF EntityTypeTableNo = DATABASE::User THEN BEGIN
+          EntityKeyField := 1;
+          EntityTypeTableNo := DATABASE::"User Setup";
+        END ELSE
           EntityKeyField := DataPrivacyEntities."Key Field No.";
 
       CreatePackage(ConfigPackage,PackageCode,PackageName);
@@ -295,7 +300,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
             PackageCodeKeep := 'SPC' + TempEntityNumber;
             PackageCodeTemp := 'SP*' + TempEntityNumber;
           END;
-        DATABASE::User:
+        DATABASE::"User Setup":
           BEGIN
             PackageCodeKeep := 'USR' + TempEntityNumber;
             PackageCodeTemp := 'US*' + TempEntityNumber;
@@ -530,7 +535,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
         DATABASE::"Service Cr.Memo Header",
         DATABASE::"Return Shipment Header",
         DATABASE::"Return Receipt Header":
-          IF ContactPerson.GET(FieldValue) THEN // FieldValue is the EntityNo for this method
+          IF ContactPerson.GET(FORMAT(FieldValue,20)) THEN // FieldValue is the EntityNo for this method
             IF ContactCompany.GET(ContactPerson."Company No.") THEN
               FieldValue := FieldValue + ' | ' + ContactCompany."No.";
       END;

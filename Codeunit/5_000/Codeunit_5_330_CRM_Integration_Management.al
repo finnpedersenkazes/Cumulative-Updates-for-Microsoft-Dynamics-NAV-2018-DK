@@ -2,9 +2,9 @@ OBJECT Codeunit 5330 CRM Integration Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -64,8 +64,8 @@ OBJECT Codeunit 5330 CRM Integration Management
       CRMConnectionURLWrongErr@1051 : TextConst '@@@="%1 = CRM product name";DAN=URL-adressen er forkert. Indtast URL-adressen til %1-forbindelsen.;ENU=The URL is incorrect. Enter the URL for the %1 connection.';
       NoOf@1052 : ',Scheduled,Failed,Skipped,Total';
       CRMConnSetupWizardQst@1013 : TextConst '@@@="%1 = CRM product name";DAN=Vil du †bne guiden til assisteret ops‘tning for Konfiguration af %1-forbindelse?;ENU=Do you want to open the %1 Connection assisted setup wizard?';
-      DoYouWantEnableWebServiceQst@1028 : TextConst 'DAN=Do you want to enable the Item Availability web service?;ENU=Do you want to enable the Item Availability web service?';
-      DoYouWantDisableWebServiceQst@1025 : TextConst 'DAN=Do you want to disable the Item Availability web service?;ENU=Do you want to disable the Item Availability web service?';
+      DoYouWantEnableWebServiceQst@1028 : TextConst 'DAN=Vil du aktivere webtjenesten Varedisponering?;ENU=Do you want to enable the Item Availability web service?';
+      DoYouWantDisableWebServiceQst@1025 : TextConst 'DAN=Vil du deaktivere webtjenesten Varedisponering?;ENU=Do you want to disable the Item Availability web service?';
 
     [External]
     PROCEDURE IsCRMIntegrationEnabled@5() : Boolean;

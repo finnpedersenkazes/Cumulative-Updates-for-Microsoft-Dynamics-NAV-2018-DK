@@ -2,9 +2,9 @@ OBJECT Table 91 User Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -221,7 +221,7 @@ OBJECT Table 91 User Setup
       Text003@1002 : TextConst 'DAN="Du kan ikke have b†de %1 og %2. ";ENU="You cannot have both a %1 and %2. "';
       Text005@1004 : TextConst 'DAN=Du kan ikke have godkendelsesgr‘nser, der er mindre end nul.;ENU=You cannot have approval limits less than zero.';
       SalesPersonPurchaser@1011 : Record 13;
-      PrivacyBlockedGenericErr@1013 : TextConst '@@@="%1 = salesperson / purchaser code.";DAN=Privacy Blocked must not be true for Salesperson / Purchaser %1.;ENU=Privacy Blocked must not be true for Salesperson / Purchaser %1.';
+      PrivacyBlockedGenericErr@1013 : TextConst '@@@="%1 = salesperson / purchaser code.";DAN=Beskyttelse af personlige oplysninger sp‘rret m† ikke v‘re g‘ldende for s‘lgeren/indk›beren %1.;ENU=Privacy Blocked must not be true for Salesperson / Purchaser %1.';
 
     [External]
     PROCEDURE CreateApprovalUserSetup@3(User@1000 : Record 2000000120);

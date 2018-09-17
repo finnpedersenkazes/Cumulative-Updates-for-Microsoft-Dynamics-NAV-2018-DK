@@ -2,9 +2,9 @@ OBJECT Page 9307 Purchase Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -24,6 +24,8 @@ OBJECT Page 9307 Purchase Order List
                BEGIN
                  IF GETFILTER(Receive) <> '' THEN
                    FilterPartialReceived;
+                 IF GETFILTER(Invoice) <> '' THEN
+                   FilterPartialInvoiced;
 
                  SetSecurityFilterOnRespCenter;
 
@@ -32,8 +34,22 @@ OBJECT Page 9307 Purchase Order List
                  CopyBuyFromVendorFilter;
                END;
 
-    OnFindRecord=BEGIN
-                   EXIT(FIND(Which) AND ShowHeader);
+    OnFindRecord=VAR
+                   NextRecNotFound@1001 : Boolean;
+                 BEGIN
+                   IF NOT FIND(Which) THEN
+                     EXIT(FALSE);
+
+                   IF ShowHeader THEN
+                     EXIT(TRUE);
+
+                   REPEAT
+                     NextRecNotFound := NEXT <= 0;
+                     IF ShowHeader THEN
+                       EXIT(TRUE);
+                   UNTIL NextRecNotFound;
+
+                   EXIT(FALSE);
                  END;
 
     OnNextRecord=VAR
@@ -404,11 +420,17 @@ OBJECT Page 9307 Purchase Order List
                       PromotedCategory=Process;
                       OnAction=VAR
                                  PurchaseHeader@1003 : Record 38;
+                                 ApplicationAreaSetup@1004 : Record 9178;
                                  PurchaseBatchPostMgt@1002 : Codeunit 1372;
                                  BatchProcessingMgt@1001 : Codeunit 1380;
                                  BatchPostParameterTypes@1000 : Codeunit 1370;
+                                 LinesInstructionMgt@1005 : Codeunit 1320;
                                BEGIN
+                                 IF ApplicationAreaSetup.IsFoundationEnabled THEN
+                                   LinesInstructionMgt.PurchaseCheckAllLinesHaveQuantityAssigned(Rec);
+
                                  CurrPage.SETSELECTIONFILTER(PurchaseHeader);
+
                                  IF PurchaseHeader.COUNT > 1 THEN BEGIN
                                    BatchProcessingMgt.AddParameter(BatchPostParameterTypes.Invoice,TRUE);
                                    BatchProcessingMgt.AddParameter(BatchPostParameterTypes.Receive,TRUE);
@@ -814,32 +836,6 @@ OBJECT Page 9307 Purchase Order List
         EXIT(TRUE);
 
       EXIT(CashFlowManagement.GetTaxAmountFromPurchaseOrder(Rec) <> 0);
-    END;
-
-    LOCAL PROCEDURE FilterPartialReceived@1();
-    VAR
-      PurchaseHeaderOriginal@1000 : Record 38;
-      PurchaseLine@1002 : Record 39;
-      ReceiveFilter@1004 : Text;
-      IsMarked@1003 : Boolean;
-      ReceiveValue@1001 : Boolean;
-    BEGIN
-      ReceiveFilter := GETFILTER(Receive);
-      SETRANGE(Receive);
-      EVALUATE(ReceiveValue,ReceiveFilter);
-
-      PurchaseHeaderOriginal := Rec;
-      IF FINDSET THEN
-        REPEAT
-          PurchaseLine.SETRANGE("Document Type","Document Type");
-          PurchaseLine.SETRANGE("Document No.","No.");
-          PurchaseLine.SETFILTER("Quantity Received",'<>%1',0);
-          IsMarked := ReceiveValue AND NOT PurchaseLine.ISEMPTY;
-          MARK(IsMarked);
-        UNTIL NEXT = 0;
-
-      Rec := PurchaseHeaderOriginal;
-      MARKEDONLY(TRUE);
     END;
 
     BEGIN

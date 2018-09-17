@@ -2,9 +2,9 @@ OBJECT Codeunit 361 MoveEntries
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -55,7 +55,7 @@ OBJECT Codeunit 361 MoveEntries
       InvtAdjmtEntryOrder@1031 : Record 5896;
       ServLedgEntry@1023 : Record 5907;
       WarrantyLedgEntry@1024 : Record 5908;
-      CannotDeleteGLBugetEntriesErr@1026 : TextConst '@@@="%1 - G/L Account No., %2 - Date, %3 - G/L Budget Name. You cannot delete G/L Account 1000 because it has budget ledger entries\ after 25/01/2018 in G/L Budget Name = Budget_2018.";DAN=You cannot delete G/L account %1 because it contains budget ledger entries after %2 for G/L budget name %3.;ENU=You cannot delete G/L account %1 because it contains budget ledger entries after %2 for G/L budget name %3.';
+      CannotDeleteGLBugetEntriesErr@1026 : TextConst '@@@="%1 - G/L Account No., %2 - Date, %3 - G/L Budget Name. You cannot delete G/L Account 1000 because it has budget ledger entries\ after 25/01/2018 in G/L Budget Name = Budget_2018.";DAN=Du kan ikke slette finanskontoen %1, da den indeholder budgetfinansposter efter %2 for finansbudgetnavnet %3.;ENU=You cannot delete G/L account %1 because it contains budget ledger entries after %2 for G/L budget name %3.';
       Text013@1028 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes forudbetalte kontraktposter i %3.;ENU=You cannot delete %1 %2 because prepaid contract entries exist in %3.';
       Text014@1029 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der er †bne, forudbetalte kontraktposter i %3.;ENU=You cannot delete %1 %2, because open prepaid contract entries exist in %3.';
       Text015@1030 : TextConst 'DAN=Du kan ikke slette %1 %2, fordi der findes udest†ende k›bsreturvareordrelinjer.;ENU=You cannot delete %1 %2 because there are outstanding purchase return order lines.';

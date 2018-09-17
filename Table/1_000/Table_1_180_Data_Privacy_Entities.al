@@ -2,9 +2,9 @@ OBJECT Table 1180 Data Privacy Entities
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -32,8 +32,7 @@ OBJECT Table 1180 Data Privacy Entities
     { 5   ;   ;Entity Filter       ;BLOB          ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Enhedsfilter;
                                                               ENU=Entity Filter] }
-    { 6   ;   ;Include             ;Boolean       ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Inkluder;
+    { 6   ;   ;Include             ;Boolean       ;CaptionML=[DAN=Inkluder;
                                                               ENU=Include] }
     { 7   ;   ;Fields              ;Integer       ;FieldClass=FlowField;
                                                    CalcFormula=Count(Field WHERE (TableNo=FIELD(Table No.),
@@ -41,32 +40,26 @@ OBJECT Table 1180 Data Privacy Entities
                                                                                   Class=CONST(Normal)));
                                                    CaptionML=[DAN=Felter;
                                                               ENU=Fields] }
-    { 8   ;   ;Status              ;Option        ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Status;
+    { 8   ;   ;Status              ;Option        ;CaptionML=[DAN=Status;
                                                               ENU=Status];
                                                    OptionCaptionML=[DAN=Gennemgang n›dvendig,Gennemset;
                                                                     ENU=Review Needed,Reviewed];
                                                    OptionString=Review Needed,Reviewed }
-    { 9   ;   ;Reviewed            ;Boolean       ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Gennemset;
+    { 9   ;   ;Reviewed            ;Boolean       ;CaptionML=[DAN=Gennemset;
                                                               ENU=Reviewed] }
-    { 10  ;   ;Status 2            ;Option        ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Status 2;
+    { 10  ;   ;Status 2            ;Option        ;CaptionML=[DAN=Status 2;
                                                               ENU=Status 2];
                                                    OptionCaptionML=[DAN=Gennemgang n›dvendig,Gennemset;
                                                                     ENU=Review Needed,Reviewed];
                                                    OptionString=Review Needed,Reviewed }
-    { 11  ;   ;Page No.            ;Integer       ;DataClassification=ToBeClassified;
+    { 11  ;   ;Page No.            ;Integer       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Sidenummer;
                                                               ENU=Page No.] }
-    { 12  ;   ;Similar Fields Reviewed;Boolean    ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Lignende felter gennemset;
+    { 12  ;   ;Similar Fields Reviewed;Boolean    ;CaptionML=[DAN=Lignende felter gennemset;
                                                               ENU=Similar Fields Reviewed] }
-    { 13  ;   ;Similar Fields Label;Text120       ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Etiket for lignende felter;
+    { 13  ;   ;Similar Fields Label;Text120       ;CaptionML=[DAN=Etiket for lignende felter;
                                                               ENU=Similar Fields Label] }
-    { 14  ;   ;Default Data Sensitivity;Option    ;DataClassification=ToBeClassified;
-                                                   CaptionML=[DAN=Standarddataf›lsomhed;
+    { 14  ;   ;Default Data Sensitivity;Option    ;CaptionML=[DAN=Standarddataf›lsomhed;
                                                               ENU=Default Data Sensitivity];
                                                    OptionCaptionML=[DAN=Ikke klassificerede,F›lsomme,Personlige,Virksomhedens fortrolige,Normal;
                                                                     ENU=Unclassified,Sensitive,Personal,Company Confidential,Normal];

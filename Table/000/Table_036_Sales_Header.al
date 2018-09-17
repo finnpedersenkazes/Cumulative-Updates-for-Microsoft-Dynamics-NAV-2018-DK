@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
   }
   PROPERTIES
   {
@@ -2192,7 +2192,8 @@ OBJECT Table 36 Sales Header
       Text009@1009 : TextConst 'DAN=Hvis du sletter dette dokument, opst†r der et hul i nummerserien for leverancer. Der oprettes en tom leverance %1 for at udfylde hullet i nummerserien.\\Vil du forts‘tte?;ENU=Deleting this document will cause a gap in the number series for shipments. An empty shipment %1 will be created to fill this gap in the number series.\\Do you want to continue?';
       Text012@1012 : TextConst 'DAN=Hvis du sletter dette dokument, opst†r der et hul i nummerserien for bogf›rte fakturaer. Der oprettes en tom bogf›rt faktura %1 for at udfylde hullet i nummerserien.\\Vil du forts‘tte?;ENU=Deleting this document will cause a gap in the number series for posted invoices. An empty posted invoice %1 will be created to fill this gap in the number series.\\Do you want to continue?';
       Text014@1014 : TextConst 'DAN=Hvis du sletter dette dokument, opst†r der et hul i nummerserien for bogf›rte kreditnotaer. Der oprettes en tom bogf›rt kreditnota %1 for at udfylde hullet i nummerserien.\\Vil du forts‘tte?;ENU=Deleting this document will cause a gap in the number series for posted credit memos. An empty posted credit memo %1 will be created to fill this gap in the number series.\\Do you want to continue?';
-      Text015@1015 : TextConst 'DAN=Hvis du ‘ndrer %1, slettes de eksisterende salgslinjer, og der oprettes nye salgslinjer p† baggrund af de nye oplysninger i hovedet.\\Vil du ‘ndre %1?;ENU=If you change %1, the existing sales lines will be deleted and new sales lines based on the new information on the header will be created.\\Do you want to change %1?';
+      RecreateSalesLinesMsg@1015 : TextConst '@@@=%1: FieldCaption;DAN=Hvis du ‘ndrer %1, slettes de eksisterende salgslinjer, og der oprettes nye salgslinjer p† baggrund af de nye oplysninger i hovedet.\\Vil du forts‘tte?;ENU=If you change %1, the existing sales lines will be deleted and new sales lines based on the new information on the header will be created.\\Do you want to continue?';
+      ResetItemChargeAssignMsg@1075 : TextConst '@@@=%1: FieldCaption;DAN=Hvis du ‘ndrer %1, slettes de eksisterende salgslinjer, og der oprettes nye salgslinjer p† baggrund af de nye oplysninger i hovedet.\Bel›bet for tildeling af varegebyr nulstilles til 0.\\Vil du forts‘tte?;ENU=If you change %1, the existing sales lines will be deleted and new sales lines based on the new information on the header will be created.\The amount of the item charge assignment will be reset to 0.\\Do you want to continue?';
       Text017@1017 : TextConst 'DAN=Du skal slette de eksisterende salgslinjer, f›r du kan ‘ndre %1.;ENU=You must delete the existing sales lines before you can change %1.';
       Text018@1018 : TextConst 'DAN=Du har ‘ndret %1 p† salgshovedet, men det er ikke blevet ‘ndret p† de eksisterende salgslinjer.\;ENU=You have changed %1 on the sales header, but it has not been changed on the existing sales lines.\';
       Text019@1019 : TextConst 'DAN=Du skal opdatere de eksisterende salgslinjer manuelt.;ENU=You must update the existing sales lines manually.';
@@ -2578,14 +2579,19 @@ OBJECT Table 36 Sales Header
       ATOLink@1010 : Record 904;
       TransferExtendedText@1005 : Codeunit 378;
       ExtendedTextAdded@1002 : Boolean;
+      ConfirmText@1007 : Text;
     BEGIN
       IF SalesLinesExist THEN BEGIN
         IF GetHideValidationDialog OR NOT GUIALLOWED THEN
           Confirmed := TRUE
-        ELSE
-          Confirmed :=
-            CONFIRM(
-              Text015,FALSE,ChangedFieldName);
+        ELSE BEGIN
+          IF HasItemChargeAssignment THEN
+            ConfirmText := ResetItemChargeAssignMsg
+          ELSE
+            ConfirmText := RecreateSalesLinesMsg;
+          Confirmed := CONFIRM(ConfirmText,FALSE,ChangedFieldName);
+        END;
+
         IF Confirmed THEN BEGIN
           SalesLine.LOCKTABLE;
           ItemChargeAssgntSales.LOCKTABLE;
@@ -2597,8 +2603,6 @@ OBJECT Table 36 Sales Header
           IF SalesLine.FINDSET THEN BEGIN
             TempReservEntry.DELETEALL;
             RecreateReservEntryReqLine(TempSalesLine,TempATOLink,ATOLink);
-            ItemChargeAssgntSales.SETRANGE("Document Type","Document Type");
-            ItemChargeAssgntSales.SETRANGE("Document No.","No.");
             TransferItemChargeAssgntSalesToTemp(ItemChargeAssgntSales,TempItemChargeAssgntSales);
             SalesLine.DELETEALL(TRUE);
             SalesLine.INIT;
@@ -2665,6 +2669,7 @@ OBJECT Table 36 Sales Header
           ERROR(
             Text017,ChangedFieldName);
       END;
+
       SalesLine.BlockDynamicTracking(FALSE);
     END;
 
@@ -4100,6 +4105,8 @@ OBJECT Table 36 Sales Header
 
     LOCAL PROCEDURE TransferItemChargeAssgntSalesToTemp@69(VAR ItemChargeAssgntSales@1001 : Record 5809;VAR TempItemChargeAssgntSales@1000 : TEMPORARY Record 5809);
     BEGIN
+      ItemChargeAssgntSales.SETRANGE("Document Type","Document Type");
+      ItemChargeAssgntSales.SETRANGE("Document No.","No.");
       IF ItemChargeAssgntSales.FINDSET THEN BEGIN
         REPEAT
           TempItemChargeAssgntSales.INIT;
@@ -4185,9 +4192,17 @@ OBJECT Table 36 Sales Header
     END;
 
     [Integration(TRUE)]
-    [External]
-    PROCEDURE OnCheckSalesReleaseRestrictions@81();
+    LOCAL PROCEDURE OnCheckSalesReleaseRestrictions@81();
     BEGIN
+    END;
+
+    [External]
+    PROCEDURE CheckSalesReleaseRestrictions@162();
+    VAR
+      ApprovalsMgmt@1000 : Codeunit 1535;
+    BEGIN
+      OnCheckSalesReleaseRestrictions;
+      ApprovalsMgmt.PrePostApprovalCheckSales(Rec);
     END;
 
     [External]
@@ -4376,6 +4391,16 @@ OBJECT Table 36 Sales Header
       END;
 
       EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE HasItemChargeAssignment@152() : Boolean;
+    VAR
+      ItemChargeAssgntSales@1000 : Record 5809;
+    BEGIN
+      ItemChargeAssgntSales.SETRANGE("Document Type","Document Type");
+      ItemChargeAssgntSales.SETRANGE("Document No.","No.");
+      ItemChargeAssgntSales.SETFILTER("Amount to Assign",'<>%1',0);
+      EXIT(NOT ItemChargeAssgntSales.ISEMPTY);
     END;
 
     LOCAL PROCEDURE CopySellToCustomerAddressFieldsFromCustomer@90(VAR SellToCustomer@1000 : Record 18);

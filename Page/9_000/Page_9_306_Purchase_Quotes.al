@@ -2,9 +2,9 @@ OBJECT Page 9306 Purchase Quotes
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -120,11 +120,17 @@ OBJECT Page 9306 Purchase Quotes
                                  ENU=&Print];
                       ToolTipML=[DAN=G›r dig klar til at udskrive bilaget. Der †bnes et rapportanmodningsvindue for bilaget, hvor du kan angive, hvad der skal medtages p† udskriften.;
                                  ENU=Prepare to print the document. A report request window for the document opens where you can specify what to include on the print-out.];
-                      ApplicationArea=#Advanced;
+                      ApplicationArea=#Suite;
                       Promoted=Yes;
                       Image=Print;
                       PromotedCategory=Process;
-                      OnAction=BEGIN
+                      OnAction=VAR
+                                 ApplicationAreaSetup@1000 : Record 9178;
+                                 LinesInstructionMgt@1001 : Codeunit 1320;
+                               BEGIN
+                                 IF ApplicationAreaSetup.IsFoundationEnabled THEN
+                                   LinesInstructionMgt.PurchaseCheckAllLinesHaveQuantityAssigned(Rec);
+
                                  DocPrint.PrintPurchHeader(Rec);
                                END;
                                 }

@@ -2,9 +2,9 @@ OBJECT Table 17 G/L Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -256,6 +256,7 @@ OBJECT Table 17 G/L Entry
     {    ;G/L Account No.,Job No.,Posting Date    ;SumIndexFields=Amount }
     {    ;Posting Date,G/L Account No.,Dimension Set ID;
                                                    SumIndexFields=Amount }
+    {    ;Gen. Bus. Posting Group,Gen. Prod. Posting Group }
   }
   FIELDGROUPS
   {

@@ -2,15 +2,23 @@ OBJECT Table 1799 Data Migration Status
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
-    OnModify=BEGIN
+    OnModify=VAR
+               DataMigrationMgt@1000 : Codeunit 1798;
+             BEGIN
                IF ("Total Number" <> 0) AND ("Migrated Number" <= "Total Number") THEN
                  "Progress Percent" := "Migrated Number" / "Total Number" * 10000; // 10000 = 100%
+
+               IF Status IN [Status::Completed,
+                             Status::Failed,
+                             Status::Stopped]
+               THEN
+                 DataMigrationMgt.CheckIfMigrationIsCompleted(Rec);
              END;
 
     CaptionML=[DAN=Status for dataoverf›rsel;

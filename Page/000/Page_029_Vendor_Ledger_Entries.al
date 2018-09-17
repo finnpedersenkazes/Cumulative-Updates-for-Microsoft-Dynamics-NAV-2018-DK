@@ -2,9 +2,9 @@ OBJECT Page 29 Vendor Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=25-05-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.22292;
   }
   PROPERTIES
   {
@@ -124,6 +124,7 @@ OBJECT Page 29 Vendor Ledger Entries
                                BEGIN
                                  VendLedgEntry.COPY(Rec);
                                  VendEntryApplyPostEntries.ApplyVendEntryFormEntry(VendLedgEntry);
+                                 VendLedgEntry.GET(VendLedgEntry."Entry No.");
                                  Rec := VendLedgEntry;
                                  CurrPage.UPDATE;
                                END;
