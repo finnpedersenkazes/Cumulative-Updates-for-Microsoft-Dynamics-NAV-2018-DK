@@ -2,9 +2,9 @@ OBJECT Codeunit 550 VAT Rate Change Conversion
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -271,6 +271,7 @@ OBJECT Codeunit 550 VAT Rate Change Conversion
       VATRateChangeLogEntry."Record ID" := RecRef.RECORDID;
       VATRateChangeLogEntry."Table ID" := RecRef.NUMBER;
       Field.SETRANGE(TableNo,RecRef.NUMBER);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETRANGE(RelationTableNo,DATABASE::"Gen. Product Posting Group");
       IF Field.FIND('+') THEN
         REPEAT

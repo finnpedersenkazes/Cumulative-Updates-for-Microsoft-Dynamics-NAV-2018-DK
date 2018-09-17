@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -936,6 +936,7 @@ OBJECT Table 81 Gen. Journal Line
                                                                    ["Recurring Method"::"B  Balance","Recurring Method"::"RB Reversing Balance"]
                                                                 THEN
                                                                   TESTFIELD("Currency Code",'');
+                                                                UpdateSalesPurchLCY;
                                                               END;
 
                                                    CaptionML=[DAN=Gentagelsesprincip;
@@ -3004,7 +3005,9 @@ OBJECT Table 81 Gen. Journal Line
     BEGIN
       "Sales/Purch. (LCY)" := 0;
       IF (NOT "System-Created Entry") AND ("Document Type" IN ["Document Type"::Invoice,"Document Type"::"Credit Memo"]) THEN BEGIN
-        IF ("Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor]) AND ("Bal. Account No." <> '') THEN
+        IF ("Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor]) AND
+           (("Bal. Account No." <> '') OR ("Recurring Method" <> "Recurring Method"::" "))
+        THEN
           "Sales/Purch. (LCY)" := "Amount (LCY)" + "Bal. VAT Amount (LCY)";
         IF ("Bal. Account Type" IN ["Bal. Account Type"::Customer,"Bal. Account Type"::Vendor]) AND ("Account No." <> '') THEN
           "Sales/Purch. (LCY)" := -("Amount (LCY)" - "VAT Amount (LCY)");
@@ -3058,9 +3061,7 @@ OBJECT Table 81 Gen. Journal Line
             VALIDATE("Account No.",AccNo);
         END;
         SetAmountWithCustLedgEntry;
-        "Applies-to Doc. Type" := CustLedgEntry."Document Type";
-        "Applies-to Doc. No." := CustLedgEntry."Document No.";
-        "Applies-to ID" := '';
+        UpdateDocumentTypeAndAppliesTo(CustLedgEntry."Document Type",CustLedgEntry."Document No.");
       END;
     END;
 
@@ -3116,9 +3117,7 @@ OBJECT Table 81 Gen. Journal Line
             VALIDATE("Account No.",AccNo);
         END;
         SetAmountWithVendLedgEntry;
-        "Applies-to Doc. Type" := VendLedgEntry."Document Type";
-        "Applies-to Doc. No." := VendLedgEntry."Document No.";
-        "Applies-to ID" := '';
+        UpdateDocumentTypeAndAppliesTo(VendLedgEntry."Document Type",VendLedgEntry."Document No.");
       END;
     END;
 
@@ -3174,9 +3173,7 @@ OBJECT Table 81 Gen. Journal Line
             VALIDATE("Account No.",AccNo);
         END;
         SetAmountWithEmplLedgEntry;
-        "Applies-to Doc. Type" := EmplLedgEntry."Document Type";
-        "Applies-to Doc. No." := EmplLedgEntry."Document No.";
-        "Applies-to ID" := '';
+        UpdateDocumentTypeAndAppliesTo(EmplLedgEntry."Document Type",EmplLedgEntry."Document No.");
       END;
     END;
 
@@ -3596,10 +3593,8 @@ OBJECT Table 81 Gen. Journal Line
 
     LOCAL PROCEDURE SetAppliesToFields@140(DocType@1000 : Option;DocNo@1001 : Code[20];ExtDocNo@1002 : Code[35]);
     BEGIN
-      "Document Type" := "Document Type"::Payment;
-      "Applies-to Doc. Type" := DocType;
-      "Applies-to Doc. No." := DocNo;
-      "Applies-to ID" := '';
+      UpdateDocumentTypeAndAppliesTo(DocType,DocNo);
+
       IF ("Applies-to Doc. Type" = "Applies-to Doc. Type"::Invoice) AND
          ("Document Type" = "Document Type"::Payment)
       THEN
@@ -5643,6 +5638,27 @@ OBJECT Table 81 Gen. Journal Line
       DateFilterCalc@1000 : Codeunit 358;
     BEGIN
       "Last Modified DateTime" := DateFilterCalc.ConvertToUtcDateTime(CURRENTDATETIME);
+    END;
+
+    LOCAL PROCEDURE UpdateDocumentTypeAndAppliesTo@210(DocType@1000 : Integer;DocNo@1001 : Code[20]);
+    BEGIN
+      "Applies-to Doc. Type" := DocType;
+      "Applies-to Doc. No." := DocNo;
+      "Applies-to ID" := '';
+
+      IF "Document Type" <> "Document Type"::" " THEN
+        EXIT;
+      IF NOT ("Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor]) THEN
+        EXIT;
+      CASE "Applies-to Doc. Type" OF
+        "Applies-to Doc. Type"::Payment:
+          "Document Type" := "Document Type"::Invoice;
+        "Applies-to Doc. Type"::"Credit Memo":
+          "Document Type" := "Document Type"::Refund;
+        "Applies-to Doc. Type"::Invoice,
+        "Applies-to Doc. Type"::Refund:
+          "Document Type" := "Document Type"::Payment;
+      END;
     END;
 
     PROCEDURE UpdateAccountID@1166();

@@ -2,9 +2,9 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -3058,7 +3058,8 @@ OBJECT Table 37 Sales Line
         Resource.GET("No.");
     END;
 
-    LOCAL PROCEDURE UpdateUnitPrice@2(CalledByFieldNo@1000 : Integer);
+    [External]
+    PROCEDURE UpdateUnitPrice@2(CalledByFieldNo@1000 : Integer);
     BEGIN
       OnBeforeUpdateUnitPrice(Rec,xRec,CalledByFieldNo,CurrFieldNo);
 
@@ -3337,7 +3338,8 @@ OBJECT Table 37 Sales Line
       END;
     END;
 
-    LOCAL PROCEDURE CheckItemAvailable@4(CalledByFieldNo@1000 : Integer);
+    [External]
+    PROCEDURE CheckItemAvailable@4(CalledByFieldNo@1000 : Integer);
     BEGIN
       IF Reserve = Reserve::Always THEN
         EXIT;
@@ -3938,7 +3940,8 @@ OBJECT Table 37 Sales Line
       END;
     END;
 
-    LOCAL PROCEDURE TestStatusOpen@33();
+    [External]
+    PROCEDURE TestStatusOpen@33();
     BEGIN
       IF StatusCheckSuspended THEN
         EXIT;

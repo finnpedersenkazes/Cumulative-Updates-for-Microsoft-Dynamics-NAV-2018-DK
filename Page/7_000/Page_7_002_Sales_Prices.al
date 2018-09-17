@@ -2,9 +2,9 @@ OBJECT Page 7002 Sales Prices
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -203,7 +203,7 @@ OBJECT Page 7002 Sales Prices
                             }
 
     { 38  ;2   ;Field     ;
-                Name=SalesCodeFilterCtrl2;
+                Name=CurrencyCodeFilterCtrl;
                 CaptionML=[DAN=Valutakodefilter;
                            ENU=Currency Code Filter];
                 ToolTipML=[DAN=Angiver et filter for de salgspriser, der vises.;
@@ -284,8 +284,7 @@ OBJECT Page 7002 Sales Prices
                            ENU=Specifies the code for the currency of the sales price.];
                 ApplicationArea=#Advanced;
                 SourceExpr="Currency Code";
-                Visible=FALSE;
-                Editable=CurrencyCodeControlEditable }
+                Visible=FALSE }
 
     { 8   ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver, hvordan hver enhed af varen eller ressourcen m†les, f.eks. i enheder eller timer. Som standard inds‘ttes v‘rdien i feltet Basisenhed p† kortet vare eller ressource.;
@@ -378,7 +377,6 @@ OBJECT Page 7002 Sales Prices
       IsLookupMode@1017 : Boolean;
       SalesTypeControlEditable@1012 : Boolean;
       SalesCodeControlEditable@1013 : Boolean;
-      CurrencyCodeControlEditable@1016 : Boolean;
       MultipleCustomersSelectedErr@1018 : TextConst 'DAN=Mere end ‚n debitor bruger salgspriserne. Hvis du vil kopiere priser, m† feltet Salgskodefilter kun indeholde ‚n debitor.;ENU=More than one customer uses these sales prices. To copy prices, the Sales Code Filter field must contain one customer only.';
       IncorrectSalesTypeToCopyPricesErr@1010 : TextConst 'DAN=Hvis du vil kopiere salgspriser, skal feltet Salgstypefilter indeholde debitor.;ENU=To copy sales prices, The Sales Type Filter field must contain Customer.';
 
@@ -579,7 +577,6 @@ OBJECT Page 7002 Sales Prices
       SalesTypeControlEditable := GETFILTER("Sales Type") = '';
       SalesCodeControlEditable :=
         SalesCodeControlEditable AND (GETFILTER("Sales Code") = '');
-      CurrencyCodeControlEditable := GETFILTER("Currency Code") = '';
     END;
 
     LOCAL PROCEDURE FilterLines@6();

@@ -2,9 +2,9 @@ OBJECT Table 91 User Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -63,6 +63,7 @@ OBJECT Table 91 User Setup
                                                                 UserSetup@1000 : Record 91;
                                                               BEGIN
                                                                 IF "Salespers./Purch. Code" <> '' THEN BEGIN
+                                                                  ValidateSalesPersonPurchOnUserSetup(Rec);
                                                                   UserSetup.SETCURRENTKEY("Salespers./Purch. Code");
                                                                   UserSetup.SETRANGE("Salespers./Purch. Code","Salespers./Purch. Code");
                                                                   IF UserSetup.FINDFIRST THEN
@@ -219,6 +220,8 @@ OBJECT Table 91 User Setup
       Text001@1000 : TextConst 'DAN=S‘lger-/indk›berkoden %1 er allerede tildelt til bruger-id''et %2.;ENU=The %1 Salesperson/Purchaser code is already assigned to another User ID %2.';
       Text003@1002 : TextConst 'DAN="Du kan ikke have b†de %1 og %2. ";ENU="You cannot have both a %1 and %2. "';
       Text005@1004 : TextConst 'DAN=Du kan ikke have godkendelsesgr‘nser, der er mindre end nul.;ENU=You cannot have approval limits less than zero.';
+      SalesPersonPurchaser@1011 : Record 13;
+      PrivacyBlockedGenericErr@1013 : TextConst '@@@="%1 = salesperson / purchaser code.";DAN=Privacy Blocked must not be true for Salesperson / Purchaser %1.;ENU=Privacy Blocked must not be true for Salesperson / Purchaser %1.';
 
     [External]
     PROCEDURE CreateApprovalUserSetup@3(User@1000 : Record 2000000120);
@@ -303,6 +306,14 @@ OBJECT Table 91 User Setup
         SalespersonPurchaser."E-Mail" := COPYSTR("E-Mail",1,MAXSTRLEN(SalespersonPurchaser."E-Mail"));
         SalespersonPurchaser.MODIFY;
       END;
+    END;
+
+    LOCAL PROCEDURE ValidateSalesPersonPurchOnUserSetup@298(UserSetup2@1000 : Record 91);
+    BEGIN
+      IF UserSetup2."Salespers./Purch. Code" <> '' THEN
+        IF SalesPersonPurchaser.GET(UserSetup2."Salespers./Purch. Code") THEN
+          IF SalesPersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalesPersonPurchaser) THEN
+            ERROR(PrivacyBlockedGenericErr,UserSetup2."Salespers./Purch. Code")
     END;
 
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Codeunit 8611 Config. Package Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -32,6 +32,7 @@ OBJECT Codeunit 8611 Config. Package Management
       ConfigProgressBar@1005 : Codeunit 8615;
       ConfigValidateMgt@1014 : Codeunit 8617;
       ConfigMgt@1007 : Codeunit 8616;
+      TypeHelper@1021 : Codeunit 10;
       ValidationFieldID@1037 : Integer;
       RecordsInsertedCount@1017 : Integer;
       RecordsModifiedCount@1018 : Integer;
@@ -1074,6 +1075,7 @@ OBJECT Codeunit 8611 Config. Package Management
         Field.SETRANGE("No.",FieldID);
       Field.SETRANGE(Class,Field.Class::Normal);
       Field.SETRANGE(Enabled,TRUE);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
     END;
 
     [External]
@@ -1885,9 +1887,7 @@ OBJECT Codeunit 8611 Config. Package Management
     VAR
       Field@1002 : Record 2000000041;
     BEGIN
-      Field.SETRANGE(TableNo,TableId);
-      Field.SETRANGE("No.",FieldId);
-      IF Field.FINDFIRST THEN
+      IF TypeHelper.GetField(TableId,FieldId,Field) THEN
         EXIT(Field.Type = Field.Type::BLOB);
       EXIT(FALSE);
     END;
@@ -1903,11 +1903,8 @@ OBJECT Codeunit 8611 Config. Package Management
     VAR
       Field@1002 : Record 2000000041;
     BEGIN
-      Field.SETRANGE(TableNo,TableId);
-      Field.SETRANGE("No.",FieldId);
-      IF Field.FINDFIRST THEN
+      IF TypeHelper.GetField(TableId,FieldId,Field) THEN
         EXIT(Field.Type = Field.Type::MediaSet);
-
       EXIT(FALSE);
     END;
 
@@ -1951,11 +1948,8 @@ OBJECT Codeunit 8611 Config. Package Management
     VAR
       Field@1002 : Record 2000000041;
     BEGIN
-      Field.SETRANGE(TableNo,TableId);
-      Field.SETRANGE("No.",FieldId);
-      IF Field.FINDFIRST THEN
+      IF TypeHelper.GetField(TableId,FieldId,Field) THEN
         EXIT(Field.Type = Field.Type::Media);
-
       EXIT(FALSE);
     END;
 

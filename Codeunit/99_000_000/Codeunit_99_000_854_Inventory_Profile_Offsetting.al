@@ -2,9 +2,9 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -254,8 +254,6 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
     VAR
       ProdOrderComp@1004 : Record 5407;
     BEGIN
-      IF NOT PlanMRP THEN
-        EXIT;
       IF ProdOrderComp.FindLinesWithItemToPlan(Item,TRUE) THEN
         REPEAT
           IF ProdOrderComp."Due Date" <> 0D THEN BEGIN

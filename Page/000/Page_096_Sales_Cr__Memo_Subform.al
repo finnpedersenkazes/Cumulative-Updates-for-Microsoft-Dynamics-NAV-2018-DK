@@ -2,9 +2,9 @@ OBJECT Page 96 Sales Cr. Memo Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -991,14 +991,18 @@ OBJECT Page 96 Sales Cr. Memo Subform
     END;
 
     LOCAL PROCEDURE CalculateTotals@8();
+    VAR
+      SalesCalcDiscountByType@1000 : Codeunit 56;
     BEGIN
       GetTotalSalesHeader;
       TotalSalesHeader.CALCFIELDS("Recalculate Invoice Disc.");
 
       IF ("Document No." <> '') AND (TotalSalesHeader."Customer Posting Group" <> '') AND
          TotalSalesHeader."Recalculate Invoice Disc."
-      THEN
-        CODEUNIT.RUN(CODEUNIT::"Sales - Calc Discount By Type",Rec);
+      THEN BEGIN
+        SalesCalcDiscountByType.CalcInvoiceDiscOnLine(TRUE);
+        SalesCalcDiscountByType.RUN(Rec);
+      END;
 
       DocumentTotals.CalculateSalesTotals(TotalSalesLine,VATAmount,Rec);
       AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);

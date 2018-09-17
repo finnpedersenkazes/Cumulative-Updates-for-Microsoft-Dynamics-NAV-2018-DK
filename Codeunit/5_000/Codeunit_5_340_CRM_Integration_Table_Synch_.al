@@ -2,9 +2,9 @@ OBJECT Codeunit 5340 CRM Integration Table Synch.
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -45,6 +45,7 @@ OBJECT Codeunit 5340 CRM Integration Table Synch.
       SynchronizeEmptySetErr@1001 : TextConst 'DAN=Der blev gjort et fors›g p† at synkronisere et tomt s‘t records.;ENU=Attempted to synchronize an empty set of records.';
       CRMIntTableSubscriber@1000 : Codeunit 5341;
       CRMProductName@1004 : Codeunit 5344;
+      TypeHelper@1010 : Codeunit 10;
       SupportedSourceType@1002 : ',RecordID,GUID';
       NoMappingErr@1003 : TextConst '@@@="%1=Table Caption";DAN=Ingen kobling er angivet for %1.;ENU=No mapping is set for %1.';
 
@@ -223,7 +224,9 @@ OBJECT Codeunit 5340 CRM Integration Table Synch.
       RecordRef@1002 : RecordRef;
       NewPK@1006 : Text;
     BEGIN
-      IF Field.GET(IntegrationTableMapping."Integration Table ID",IntegrationTableMapping."Integration Table UID Fld. No.") THEN
+      IF TypeHelper.GetField(
+           IntegrationTableMapping."Integration Table ID",IntegrationTableMapping."Integration Table UID Fld. No.",Field)
+      THEN
         IF Field.Type = Field.Type::Option THEN BEGIN
           RecordRef.OPEN(Field.TableNo);
           FieldRef := RecordRef.FIELD(Field."No.");

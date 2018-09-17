@@ -2,9 +2,9 @@ OBJECT Page 55 Purch. Invoice Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -1015,8 +1015,10 @@ OBJECT Page 55 Purch. Invoice Subform
     END;
 
     LOCAL PROCEDURE CalcInvDisc@1();
+    VAR
+      PurchCalcDiscount@1000 : Codeunit 70;
     BEGIN
-      CODEUNIT.RUN(CODEUNIT::"Purch.-Calc.Discount",Rec);
+      PurchCalcDiscount.CalculateInvoiceDiscountOnLine(Rec);
     END;
 
     LOCAL PROCEDURE ExplodeBOM@3();

@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -3726,7 +3726,9 @@ OBJECT Table 38 Purchase Header
         EXIT;
 
       IF UserSetup."Salespers./Purch. Code" <> '' THEN
-        VALIDATE("Purchaser Code",UserSetup."Salespers./Purch. Code");
+        IF SalespersonPurchaser.GET(UserSetup."Salespers./Purch. Code") THEN
+          IF NOT SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN
+            VALIDATE("Purchaser Code",UserSetup."Salespers./Purch. Code");
     END;
 
     PROCEDURE OnAfterValidateBuyFromVendorNo@77(VAR PurchaseHeader@1000 : Record 38;VAR xPurchaseHeader@1001 : Record 38);

@@ -2,9 +2,9 @@ OBJECT Table 5304 Outlook Synch. Field
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -215,6 +215,8 @@ OBJECT Table 5304 Outlook Synch. Field
                                                                 ELSE
                                                                   Field.GET("Table No.","Field No.");
 
+                                                                TypeHelper.TestFieldIsNotObsolete(Field);
+
                                                                 IF Field.Class = Field.Class::FlowFilter THEN
                                                                   ERROR(Text002,Field.Class);
 
@@ -280,9 +282,11 @@ OBJECT Table 5304 Outlook Synch. Field
 
                                                                 IF "Table No." = 0 THEN BEGIN
                                                                   Field.GET("Master Table No.","Field No.");
+                                                                  TypeHelper.TestFieldIsNotObsolete(Field);
                                                                   RecRef.OPEN("Master Table No.",TRUE);
                                                                 END ELSE BEGIN
                                                                   Field.GET("Table No.","Field No.");
+                                                                  TypeHelper.TestFieldIsNotObsolete(Field);
                                                                   RecRef.OPEN("Table No.",TRUE);
                                                                 END;
 
@@ -352,6 +356,7 @@ OBJECT Table 5304 Outlook Synch. Field
       Text012@1021 : TextConst 'DAN=Feltet %1 kan ikke v‘lges, fordi det er deaktiveret.;ENU=You cannot select the %1 field because it is disabled.';
       Text013@1002 : TextConst 'DAN=Denne v‘rdi kan ikke anvendes, fordi der findes en Outlook-egenskab med dette navn.;ENU=You cannot use this value because an Outlook property with this name exists.';
       Text014@1022 : TextConst 'DAN=Den post, du fors›ger at oprette, findes allerede.;ENU=The entry you are trying to create already exists.';
+      TypeHelper@1014 : Codeunit 10;
 
     LOCAL PROCEDURE GetMasterInformation@2();
     BEGIN
@@ -377,6 +382,7 @@ OBJECT Table 5304 Outlook Synch. Field
       IF ("Outlook Property" <> '') AND ("Field No." <> 0) THEN BEGIN
         IF "Table No." = 0 THEN BEGIN
           Field.GET("Master Table No.","Field No.");
+          TypeHelper.TestFieldIsNotObsolete(Field);
           IF OSynchProcessLine.CheckKeyField("Master Table No.","Field No.") OR (Field.Class = Field.Class::FlowField) THEN
             IsReadOnlyNavision := TRUE;
         END ELSE BEGIN
@@ -387,6 +393,7 @@ OBJECT Table 5304 Outlook Synch. Field
           IF OSynchFilter.FIND('-') THEN
             REPEAT
               Field.GET(OSynchFilter."Master Table No.",OSynchFilter."Master Table Field No.");
+              TypeHelper.TestFieldIsNotObsolete(Field);
               IF OSynchProcessLine.CheckKeyField("Master Table No.",OSynchFilter."Master Table Field No.") OR
                  (Field.Class = Field.Class::FlowField)
               THEN
@@ -493,10 +500,10 @@ OBJECT Table 5304 Outlook Synch. Field
     PROCEDURE GetFieldCaption@6() : Text;
     BEGIN
       IF "Table No." <> 0 THEN BEGIN
-        IF Field.GET("Table No.","Field No.") THEN
+        IF TypeHelper.GetField("Table No.","Field No.",Field) THEN
           EXIT(Field."Field Caption")
       END ELSE
-        IF Field.GET("Master Table No.","Field No.") THEN
+        IF TypeHelper.GetField("Master Table No.","Field No.",Field) THEN
           EXIT(Field."Field Caption");
 
       EXIT('');

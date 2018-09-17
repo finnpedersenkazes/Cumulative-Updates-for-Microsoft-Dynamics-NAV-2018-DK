@@ -2,9 +2,9 @@ OBJECT Codeunit 5330 CRM Integration Management
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -64,6 +64,8 @@ OBJECT Codeunit 5330 CRM Integration Management
       CRMConnectionURLWrongErr@1051 : TextConst '@@@="%1 = CRM product name";DAN=URL-adressen er forkert. Indtast URL-adressen til %1-forbindelsen.;ENU=The URL is incorrect. Enter the URL for the %1 connection.';
       NoOf@1052 : ',Scheduled,Failed,Skipped,Total';
       CRMConnSetupWizardQst@1013 : TextConst '@@@="%1 = CRM product name";DAN=Vil du †bne guiden til assisteret ops‘tning for Konfiguration af %1-forbindelse?;ENU=Do you want to open the %1 Connection assisted setup wizard?';
+      DoYouWantEnableWebServiceQst@1028 : TextConst 'DAN=Do you want to enable the Item Availability web service?;ENU=Do you want to enable the Item Availability web service?';
+      DoYouWantDisableWebServiceQst@1025 : TextConst 'DAN=Do you want to disable the Item Availability web service?;ENU=Do you want to disable the Item Availability web service?';
 
     [External]
     PROCEDURE IsCRMIntegrationEnabled@5() : Boolean;
@@ -1366,7 +1368,7 @@ OBJECT Codeunit 5330 CRM Integration Management
       WebServiceManagement@1001 : Codeunit 9750;
     BEGIN
       WebServiceManagement.CreateTenantWebService(
-        TenantWebService."Object Type"::Page,PAGE::"Product Item Availability",'ProductItemAvailability',TRUE);
+        TenantWebService."Object Type"::Page,PAGE::"Product Item Availability",GetProductItemAvailabilityServiceName,TRUE);
     END;
 
     LOCAL PROCEDURE GetIntegrationAdminRoleID@29() : Text;
@@ -1521,6 +1523,61 @@ OBJECT Codeunit 5330 CRM Integration Management
       END ELSE
         EXIT(FALSE);
       EXIT(TRUE);
+    END;
+
+    PROCEDURE IsItemAvailabilityWebServiceEnabled@143() : Boolean;
+    VAR
+      TenantWebService@1000 : Record 2000000168;
+    BEGIN
+      IF TenantWebService.GET(TenantWebService."Object Type"::Page,GetProductItemAvailabilityServiceName) THEN
+        EXIT(TenantWebService.Published);
+      EXIT(FALSE);
+    END;
+
+    PROCEDURE GetItemAvailabilityWebServiceURL@144() : Text[250];
+    VAR
+      TenantWebService@1000 : Record 2000000168;
+      TempWebServiceAggregate@1001 : TEMPORARY Record 9900;
+      CRMConnectionSetup@1002 : Record 5330;
+    BEGIN
+      IF NOT TenantWebService.GET(TenantWebService."Object Type"::Page,GetProductItemAvailabilityServiceName) THEN
+        EXIT('');
+      TempWebServiceAggregate.TRANSFERFIELDS(TenantWebService);
+      TempWebServiceAggregate.INSERT;
+      EXIT(COPYSTR(TempWebServiceAggregate.GetODataUrl,1,MAXSTRLEN(CRMConnectionSetup."Dynamics NAV OData URL")));
+    END;
+
+    PROCEDURE UnPublishOnWebService@154(VAR CRMConnectionSetup@1001 : Record 5330);
+    VAR
+      TenantWebService@1000 : Record 2000000168;
+    BEGIN
+      IF CONFIRM(DoYouWantDisableWebServiceQst) THEN BEGIN
+        IF TenantWebService.GET(TenantWebService."Object Type"::Page,GetProductItemAvailabilityServiceName) THEN BEGIN
+          TenantWebService.VALIDATE(Published,FALSE);
+          TenantWebService.MODIFY;
+        END;
+        CRMConnectionSetup."Dynamics NAV OData URL" := '';
+        CRMConnectionSetup.MODIFY;
+      END;
+    END;
+
+    PROCEDURE PublishWebService@149(VAR CRMConnectionSetup@1004 : Record 5330);
+    VAR
+      CRMIntegrationManagement@1000 : Codeunit 5330;
+    BEGIN
+      IF NOT CONFIRM(DoYouWantEnableWebServiceQst) THEN
+        EXIT;
+
+      CRMIntegrationManagement.SetupItemAvailabilityService;
+      CRMConnectionSetup.VALIDATE(
+        "Dynamics NAV OData URL",
+        CRMIntegrationManagement.GetItemAvailabilityWebServiceURL);
+      CRMConnectionSetup.MODIFY;
+    END;
+
+    LOCAL PROCEDURE GetProductItemAvailabilityServiceName@155() : Text[250];
+    BEGIN
+      EXIT('ProductItemAvailability');
     END;
 
     BEGIN

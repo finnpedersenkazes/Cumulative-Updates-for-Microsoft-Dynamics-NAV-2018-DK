@@ -2,9 +2,9 @@ OBJECT Page 43 Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -50,6 +50,8 @@ OBJECT Page 43 Sales Invoice
                END;
 
     OnAfterGetRecord=BEGIN
+                       ShowQuoteNo := "Quote No." <> '';
+
                        SetControlAppearance;
                        WorkDescription := GetWorkDescription;
                        UpdateShipToBillToGroupVisibility
@@ -973,12 +975,15 @@ OBJECT Page 43 Sales Invoice
                 SourceExpr="Shipment Date";
                 Importance=Promoted }
 
-    { 83  ;2   ;Field     ;
+    { 58  ;2   ;Group     ;
+                Visible=ShowQuoteNo;
+                GroupType=Group }
+
+    { 83  ;3   ;Field     ;
                 ToolTipML=[DAN=Angiver nummeret p† det salgstilbud, salgsordren blev oprettet fra. Du kan spore nummeret til salgstilbudsdokumenter, som du har udskrevet, gemt eller sendt pr. mail.;
                            ENU=Specifies the number of the sales quote that the sales order was created from. You can track the number to sales quote documents that you have printed, saved, or emailed.];
                 ApplicationArea=#All;
-                SourceExpr="Quote No.";
-                Visible=ShowQuoteNo }
+                SourceExpr="Quote No." }
 
     { 121 ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver, om felterne Enhedspris og Linjebel›b p† bilagslinjer skal vises med eller uden moms.;

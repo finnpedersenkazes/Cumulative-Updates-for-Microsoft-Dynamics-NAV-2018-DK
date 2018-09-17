@@ -2,9 +2,9 @@ OBJECT Codeunit 99000834 Purch. Line-Reserve
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -147,7 +147,7 @@ OBJECT Codeunit 99000834 Purch. Line-Reserve
       EXIT(ReservEntry.FINDLAST);
     END;
 
-    LOCAL PROCEDURE ReservEntryExist@21(PurchLine@1000 : Record 39) : Boolean;
+    PROCEDURE ReservEntryExist@21(PurchLine@1000 : Record 39) : Boolean;
     VAR
       ReservEntry@1001 : Record 337;
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Page 9803 Permissions
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -555,6 +555,7 @@ OBJECT Page 9803 Permissions
                 StyleExpr=ZeroObjStyleExpr;
                 OnValidate=BEGIN
                              ActivateControls;
+                             SetObjectZeroName(Rec);
                            END;
                             }
 

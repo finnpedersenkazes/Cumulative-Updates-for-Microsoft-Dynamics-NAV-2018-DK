@@ -2,9 +2,9 @@ OBJECT Table 8622 Config. Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -235,6 +235,7 @@ OBJECT Table 8622 Config. Line
   {
     VAR
       ConfigMgt@1001 : Codeunit 8616;
+      ConfigPackageMgt@1008 : Codeunit 8611;
       Text001@1000 : TextConst 'DAN=Slet linjen i stedet.;ENU=Delete the line instead.';
       Text002@1002 : TextConst 'DAN=Statussen %1 underst›ttes ikke.;ENU=The status %1 is not supported.';
       Text003@1003 : TextConst 'DAN=Den tabel, du fors›ger at omd›be, er knyttet til en pakke. Vil du fjerne denne tilknytning?;ENU=The table you are trying to rename is linked to a package. Do you want to remove the link?';
@@ -377,8 +378,7 @@ OBJECT Table 8622 Config. Line
       ConfigRelatedField@1002 : Record 8624;
       Field@1001 : Record 2000000041;
     BEGIN
-      Field.SETRANGE(TableNo,"Table ID");
-      Field.SETRANGE(Class,Field.Class::Normal);
+      ConfigPackageMgt.SetFieldFilter(Field,"Table ID",0);
       IF Field.FINDSET THEN
         REPEAT
           IF Field.RelationTableNo <> 0 THEN

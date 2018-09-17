@@ -2,9 +2,9 @@ OBJECT Page 5201 Employee List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -301,6 +301,13 @@ OBJECT Page 5201 Employee List
                            ENU=Specifies a resource number for the employee.];
                 ApplicationArea=#Jobs;
                 SourceExpr="Resource No.";
+                Visible=FALSE }
+
+    { 95  ;2   ;Field     ;
+                ToolTipML=[DAN=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#BasicHR;
+                SourceExpr="Privacy Blocked";
                 Visible=FALSE }
 
     { 14  ;2   ;Field     ;

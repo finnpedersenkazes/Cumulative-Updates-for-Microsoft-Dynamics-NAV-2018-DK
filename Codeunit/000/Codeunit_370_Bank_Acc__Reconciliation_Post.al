@@ -2,9 +2,9 @@ OBJECT Codeunit 370 Bank Acc. Reconciliation Post
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -131,7 +131,8 @@ OBJECT Codeunit 370 Bank Acc. Reconciliation Post
           ERROR(Text004,Difference,TotalDiff);
 
         // Get bank
-        UpdateBank(BankAccRecon,TotalAmount);
+        IF NOT PostPaymentsOnly THEN
+          UpdateBank(BankAccRecon,TotalAmount);
 
         CASE "Statement Type" OF
           "Statement Type"::"Bank Reconciliation":

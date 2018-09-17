@@ -2,9 +2,9 @@ OBJECT Table 246 Requisition Line
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -240,11 +240,7 @@ OBJECT Table 246 Requisition Line
                                                                 ELSE
                                                                   UpdateDescription;
 
-                                                                IF IsLocationCodeAlterable THEN
-                                                                  IF ("Vendor No." <> '') AND NOT IsDropShipment THEN
-                                                                    "Location Code" := Vend."Location Code"
-                                                                  ELSE
-                                                                    "Location Code" := '';
+                                                                GetLocationCode;
 
                                                                 "Order Address Code" := '';
 
@@ -2761,6 +2757,26 @@ OBJECT Table 246 Requisition Line
         IF SalesLine.GET(SalesLine."Document Type"::Order,"Sales Order No.","Sales Order Line No.") THEN
           EXIT(SalesLine."Drop Shipment");
       EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE GetLocationCode@75();
+    BEGIN
+      IF IsLocationCodeAlterable THEN BEGIN
+        IF NOT IsDropShipmentOrSpecialOrder THEN
+          IF "Vendor No." <> '' THEN
+            "Location Code" := Vend."Location Code"
+          ELSE
+            "Location Code" := '';
+      END;
+    END;
+
+    LOCAL PROCEDURE IsDropShipmentOrSpecialOrder@67() : Boolean;
+    VAR
+      SalesLine@1000 : Record 37;
+    BEGIN
+      IF "Replenishment System" = "Replenishment System"::Purchase THEN
+        IF SalesLine.GET(SalesLine."Document Type"::Order,"Sales Order No.","Sales Order Line No.") THEN
+          EXIT(SalesLine."Drop Shipment" OR SalesLine."Special Order");
     END;
 
     LOCAL PROCEDURE IsLocationCodeAlterable@66() : Boolean;

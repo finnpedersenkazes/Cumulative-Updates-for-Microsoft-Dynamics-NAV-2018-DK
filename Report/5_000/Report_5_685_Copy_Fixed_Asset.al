@@ -2,9 +2,9 @@ OBJECT Report 5685 Copy Fixed Asset
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -76,8 +76,6 @@ OBJECT Report 5685 Copy Fixed Asset
                    IF NumberofCopies < 1 THEN
                      NumberofCopies := 1;
                    FANo := FANo2;
-
-                   OnOpenRequestPage(FANo,NumberofCopies,FirstFANo,UseFANoSeries);
                  END;
 
     }
@@ -163,17 +161,13 @@ OBJECT Report 5685 Copy Fixed Asset
       FANo2 := NewFANo;
     END;
 
+    [External]
     PROCEDURE InitializeRequest@2(NewFANo@1000 : Code[20];NewNumberofCopies@1001 : Integer;NewFirstFANo@1002 : Code[20];NewUseFANoSeries@1003 : Boolean);
     BEGIN
       NumberofCopies := NewNumberofCopies;
       FirstFANo := NewFirstFANo;
       UseFANoSeries := NewUseFANoSeries;
       FANo := NewFANo;
-    END;
-
-    [Integration]
-    LOCAL PROCEDURE OnOpenRequestPage@3(FANo@1000 : Code[20];NumberofCopies@1001 : Integer;FirstFANo@1002 : Code[20];UseFANoSeries@1003 : Boolean);
-    BEGIN
     END;
 
     BEGIN

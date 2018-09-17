@@ -2,9 +2,9 @@ OBJECT Table 6700 Exchange Sync
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -27,6 +27,9 @@ OBJECT Table 6700 Exchange Sync
                                                    NotBlank=Yes }
     { 2   ;   ;Enabled             ;Boolean       ;CaptionML=[DAN=Aktiveret;
                                                               ENU=Enabled] }
+    { 3   ;   ;Exchange Service URI;Text250       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Exchange Service URI;
+                                                              ENU=Exchange Service URI] }
     { 4   ;   ;Exchange Account Password Key;GUID ;TableRelation="Service Password".Key;
                                                    CaptionML=[DAN=Adgangskoden›gle til Exchange-konto;
                                                               ENU=Exchange Account Password Key] }
@@ -68,6 +71,15 @@ OBJECT Table 6700 Exchange Sync
 
       IF PasswordText <> '' THEN
         CheckEncryption;
+    END;
+
+    PROCEDURE GetExchangeEndpoint@7() Endpoint : Text[250];
+    VAR
+      ExchangeWebServicesServer@1000 : Codeunit 5321;
+    BEGIN
+      Endpoint := "Exchange Service URI";
+      IF Endpoint = '' THEN
+        Endpoint := COPYSTR(ExchangeWebServicesServer.GetEndpoint,1,250);
     END;
 
     LOCAL PROCEDURE CheckEncryption@6();

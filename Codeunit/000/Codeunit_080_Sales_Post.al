@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -3210,6 +3210,8 @@ OBJECT Codeunit 80 Sales-Post
     END;
 
     LOCAL PROCEDURE TransferReservToItemJnlLine@32(VAR SalesOrderLine@1000 : Record 37;VAR ItemJnlLine@1001 : Record 83;QtyToBeShippedBase@1002 : Decimal;VAR TempTrackingSpecification2@1003 : TEMPORARY Record 336;VAR CheckApplFromItemEntry@1004 : Boolean);
+    VAR
+      RemainingQuantity@1005 : Decimal;
     BEGIN
       // Handle Item Tracking and reservations, also on drop shipment
       IF QtyToBeShippedBase = 0 THEN
@@ -3224,6 +3226,7 @@ OBJECT Codeunit 80 Sales-Post
           ReserveSalesLine.TransferSalesLineToItemJnlLine(
             SalesOrderLine,ItemJnlLine,QtyToBeShippedBase,CheckApplFromItemEntry,FALSE)
       ELSE BEGIN
+        ReserveSalesLine.SetApplySpecificItemTracking(TRUE);
         TempTrackingSpecification2.RESET;
         TempTrackingSpecification2.SetSourceFilter(
           DATABASE::"Purchase Line",1,SalesOrderLine."Purchase Order No.",SalesOrderLine."Purch. Order Line No.",FALSE);
@@ -3232,7 +3235,6 @@ OBJECT Codeunit 80 Sales-Post
           ReserveSalesLine.TransferSalesLineToItemJnlLine(
             SalesOrderLine,ItemJnlLine,QtyToBeShippedBase,CheckApplFromItemEntry,FALSE)
         ELSE BEGIN
-          ReserveSalesLine.SetApplySpecificItemTracking(TRUE);
           ReserveSalesLine.SetOverruleItemTracking(TRUE);
           ReserveSalesLine.SetItemTrkgAlreadyOverruled(ItemTrkgAlreadyOverruled);
           TempTrackingSpecification2.FINDSET;
@@ -3241,8 +3243,11 @@ OBJECT Codeunit 80 Sales-Post
           REPEAT
             ItemJnlLine.CopyTrackingFromSpec(TempTrackingSpecification2);
             ItemJnlLine."Applies-to Entry" := TempTrackingSpecification2."Item Ledger Entry No.";
-            ReserveSalesLine.TransferSalesLineToItemJnlLine(SalesOrderLine,ItemJnlLine,
-              TempTrackingSpecification2."Quantity (Base)",CheckApplFromItemEntry,FALSE);
+            RemainingQuantity :=
+              ReserveSalesLine.TransferSalesLineToItemJnlLine(
+                SalesOrderLine,ItemJnlLine,TempTrackingSpecification2."Quantity (Base)",CheckApplFromItemEntry,FALSE);
+            IF RemainingQuantity <> 0 THEN
+              ERROR(ItemTrackingMismatchErr);
           UNTIL TempTrackingSpecification2.NEXT = 0;
           ItemJnlLine.ClearTracking;
           ItemJnlLine."Applies-to Entry" := 0;
@@ -3270,24 +3275,26 @@ OBJECT Codeunit 80 Sales-Post
       IF NOT ReservEntry.ISEMPTY THEN
         ItemTrackingMgt.SumUpItemTracking(ReservEntry,TempTrackingSpecification2,FALSE,TRUE);
       TempTrackingSpecification2.SETFILTER("Qty. to Handle (Base)",'<>0');
-      IF TempTrackingSpecification2.ISEMPTY THEN
+      IF TempTrackingSpecification2.ISEMPTY THEN BEGIN
+        ReserveSalesLine.SetApplySpecificItemTracking(TRUE);
         ReservePurchLine.TransferPurchLineToItemJnlLine(
           PurchOrderLine,ItemJnlLine,QtyToBeShippedBase,CheckApplToItemEntry)
-      ELSE BEGIN
+      END ELSE BEGIN
         ReservePurchLine.SetOverruleItemTracking(TRUE);
         ItemTrkgAlreadyOverruled := TRUE;
         TempTrackingSpecification2.FINDSET;
         IF -TempTrackingSpecification2."Quantity (Base)" / QtyToBeShippedBase < 0 THEN
           ERROR(ItemTrackingWrongSignErr);
-        REPEAT
-          ItemJnlLine.CopyTrackingFromSpec(TempTrackingSpecification2);
-          RemainingQuantity :=
-            ReservePurchLine.TransferPurchLineToItemJnlLine(
-              PurchOrderLine,ItemJnlLine,
-              -TempTrackingSpecification2."Qty. to Handle (Base)",CheckApplToItemEntry);
-          IF RemainingQuantity <> 0 THEN
-            ERROR(ItemTrackingMismatchErr);
-        UNTIL TempTrackingSpecification2.NEXT = 0;
+        IF ReservePurchLine.ReservEntryExist(PurchOrderLine) THEN
+          REPEAT
+            ItemJnlLine.CopyTrackingFromSpec(TempTrackingSpecification2);
+            RemainingQuantity :=
+              ReservePurchLine.TransferPurchLineToItemJnlLine(
+                PurchOrderLine,ItemJnlLine,
+                -TempTrackingSpecification2."Qty. to Handle (Base)",CheckApplToItemEntry);
+            IF RemainingQuantity <> 0 THEN
+              ERROR(ItemTrackingMismatchErr);
+          UNTIL TempTrackingSpecification2.NEXT = 0;
         ItemJnlLine.ClearTracking;
         ItemJnlLine."Applies-to Entry" := 0;
       END;

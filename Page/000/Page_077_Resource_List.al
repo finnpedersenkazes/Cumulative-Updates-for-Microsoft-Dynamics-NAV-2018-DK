@@ -2,9 +2,9 @@ OBJECT Page 77 Resource List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -469,6 +469,13 @@ OBJECT Page 77 Resource List
                            ENU=Specifies the VAT specification of the involved item or resource to link transactions made for this record with the appropriate general ledger account according to the VAT posting setup.];
                 ApplicationArea=#Jobs;
                 SourceExpr="VAT Prod. Posting Group";
+                Visible=FALSE }
+
+    { 90  ;2   ;Field     ;
+                ToolTipML=[DAN=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#Jobs;
+                SourceExpr="Privacy Blocked";
                 Visible=FALSE }
 
     { 8   ;2   ;Field     ;

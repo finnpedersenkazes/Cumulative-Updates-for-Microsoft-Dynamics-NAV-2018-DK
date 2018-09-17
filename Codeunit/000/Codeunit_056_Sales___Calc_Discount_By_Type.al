@@ -2,9 +2,9 @@ OBJECT Codeunit 56 Sales - Calc Discount By Type
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -28,6 +28,7 @@ OBJECT Codeunit 56 Sales - Calc Discount By Type
     VAR
       InvDiscBaseAmountIsZeroErr@1000 : TextConst 'DAN=Der er intet bel›b, hvor du kan anvende en fakturarabat.;ENU=There is no amount that you can apply an invoice discount to.';
       AmountInvDiscErr@1002 : TextConst '@@@=%1 will be "Invoice Discount Amount";DAN=Manuelt %1 er ikke tilladt.;ENU=Manual %1 is not allowed.';
+      CalcInvoiceDiscountOnSalesLine@1001 : Boolean;
 
     [External]
     PROCEDURE ApplyDefaultInvoiceDiscount@70(InvoiceDiscountAmount@1000 : Decimal;VAR SalesHeader@1001 : Record 36);
@@ -81,12 +82,16 @@ OBJECT Codeunit 56 Sales - Calc Discount By Type
     LOCAL PROCEDURE ApplyInvDiscBasedOnPct@73(VAR SalesHeader@1001 : Record 36);
     VAR
       SalesLine@1000 : Record 37;
+      SalesCalcDiscount@1002 : Codeunit 60;
     BEGIN
       WITH SalesHeader DO BEGIN
         SalesLine.SETRANGE("Document No.","No.");
         SalesLine.SETRANGE("Document Type","Document Type");
         IF SalesLine.FINDFIRST THEN BEGIN
-          CODEUNIT.RUN(CODEUNIT::"Sales-Calc. Discount",SalesLine);
+          IF CalcInvoiceDiscountOnSalesLine THEN
+            SalesCalcDiscount.CalculateInvoiceDiscountOnLine(SalesLine)
+          ELSE
+            CODEUNIT.RUN(CODEUNIT::"Sales-Calc. Discount",SalesLine);
           GET("Document Type","No.");
         END;
       END;
@@ -217,6 +222,11 @@ OBJECT Codeunit 56 Sales - Calc Discount By Type
     [Integration]
     LOCAL PROCEDURE OnAfterResetRecalculateInvoiceDisc@3(VAR SalesHeader@1000 : Record 36);
     BEGIN
+    END;
+
+    PROCEDURE CalcInvoiceDiscOnLine@10(CalcInvoiceDiscountOnLine@1000 : Boolean);
+    BEGIN
+      CalcInvoiceDiscountOnSalesLine := CalcInvoiceDiscountOnLine;
     END;
 
     BEGIN

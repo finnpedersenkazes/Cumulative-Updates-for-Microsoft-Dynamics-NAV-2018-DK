@@ -2,9 +2,9 @@ OBJECT Codeunit 419 File Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -407,7 +407,9 @@ OBJECT Codeunit 419 File Management
 
       FOR i := 1 TO ArrayLength DO BEGIN
         ClientFilePath := ArrayHelper.GetValue(i - 1);
-        RelativeServerPath := COPYSTR(ClientFilePath.Replace(DirectoryPath,''),2); // COPYSTR to remove leading \
+        RelativeServerPath := ClientFilePath.Replace(DirectoryPath,'');
+        IF PathHelper.IsPathRooted(RelativeServerPath) THEN
+          RelativeServerPath := DELCHR(RelativeServerPath,'<','\');
         ServerFilePath := CombinePath(ServerDirectoryPath,RelativeServerPath);
         ServerCreateDirectory(GetDirectoryName(ServerFilePath));
         UploadFileSilentToServerPath(ClientFilePath,ServerFilePath);

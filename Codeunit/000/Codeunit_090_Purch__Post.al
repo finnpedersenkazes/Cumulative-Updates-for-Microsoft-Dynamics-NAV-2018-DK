@@ -2,9 +2,9 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -860,11 +860,14 @@ OBJECT Codeunit 90 Purch.-Post
         CollectPurchaseLineReservEntries(TempReservationEntry,ItemJnlLine);
         OriginalItemJnlLine := ItemJnlLine;
 
+        TempHandlingSpecification.RESET;
+        TempHandlingSpecification.DELETEALL;
         IF PurchLine."Job No." <> '' THEN BEGIN
           PostJobConsumptionBeforePurch := IsPurchaseReturn;
           IF PostJobConsumptionBeforePurch THEN
             PostItemJnlLineJobConsumption(
-              PurchHeader,PurchLine,OriginalItemJnlLine,TempReservationEntry,QtyToBeInvoiced,QtyToBeReceived);
+              PurchHeader,PurchLine,OriginalItemJnlLine,TempReservationEntry,QtyToBeInvoiced,QtyToBeReceived,
+              TempHandlingSpecification,0);
         END;
 
         OnBeforeItemJnlPostLine(ItemJnlLine,PurchLine);
@@ -877,7 +880,8 @@ OBJECT Codeunit 90 Purch.-Post
         IF PurchLine."Job No." <> '' THEN
           IF NOT PostJobConsumptionBeforePurch THEN
             PostItemJnlLineJobConsumption(
-              PurchHeader,PurchLine,OriginalItemJnlLine,TempReservationEntry,QtyToBeInvoiced,QtyToBeReceived);
+              PurchHeader,PurchLine,OriginalItemJnlLine,TempReservationEntry,QtyToBeInvoiced,QtyToBeReceived,
+              TempHandlingSpecification,"Item Shpt. Entry No.");
 
         IF PostWhseJnlLine THEN BEGIN
           PostItemJnlLineWhseLine(TempWhseJnlLine,TempWhseTrackingSpecification,PurchLine,PostJobConsumptionBeforePurch);
@@ -3651,6 +3655,7 @@ OBJECT Codeunit 90 Purch.-Post
         ReserveSalesLine.TransferSalesLineToItemJnlLine(
           SalesOrderLine,ItemJnlLine,QtyToBeShippedBase,CheckApplFromItemEntry,FALSE)
       ELSE BEGIN
+        ReserveSalesLine.SetApplySpecificItemTracking(TRUE);
         TempTrackingSpecification.RESET;
         TempTrackingSpecification.SetSourceFilter(
           DATABASE::"Purchase Line",PurchLine."Document Type",PurchLine."Document No.",PurchLine."Line No.",FALSE);
@@ -3659,7 +3664,6 @@ OBJECT Codeunit 90 Purch.-Post
           ReserveSalesLine.TransferSalesLineToItemJnlLine(
             SalesOrderLine,ItemJnlLine,QtyToBeShippedBase,CheckApplFromItemEntry,FALSE)
         ELSE BEGIN
-          ReserveSalesLine.SetApplySpecificItemTracking(TRUE);
           ReserveSalesLine.SetOverruleItemTracking(TRUE);
           TempTrackingSpecification.FINDSET;
           IF TempTrackingSpecification."Quantity (Base)" / QtyToBeShippedBase < 0 THEN
@@ -4403,7 +4407,7 @@ OBJECT Codeunit 90 Purch.-Post
       END;
     END;
 
-    LOCAL PROCEDURE PostItemJnlLineJobConsumption@59(PurchHeader@1007 : Record 38;VAR PurchLine@1000 : Record 39;ItemJournalLine@1008 : Record 83;VAR TempPurchReservEntry@1009 : TEMPORARY Record 337;QtyToBeInvoiced@1004 : Decimal;QtyToBeReceived@1002 : Decimal);
+    LOCAL PROCEDURE PostItemJnlLineJobConsumption@59(PurchHeader@1007 : Record 38;VAR PurchLine@1000 : Record 39;ItemJournalLine@1008 : Record 83;VAR TempPurchReservEntry@1009 : TEMPORARY Record 337;QtyToBeInvoiced@1004 : Decimal;QtyToBeReceived@1002 : Decimal;VAR TempTrackingSpecification@1001 : TEMPORARY Record 336;PurchItemLedgEntryNo@1005 : Integer);
     VAR
       ItemLedgEntry@1102 : Record 32;
       TempReservationEntry@1003 : TEMPORARY Record 337;
@@ -4429,7 +4433,7 @@ OBJECT Codeunit 90 Purch.-Post
 
           IF QtyToBeReceived <> 0 THEN
             CopyJobConsumptionReservation(
-              TempReservationEntry,TempPurchReservEntry,ItemJournalLine."Entry Type",ItemJournalLine."Line No.");
+              TempReservationEntry,TempPurchReservEntry,ItemJournalLine,TempTrackingSpecification,PurchItemLedgEntryNo,IsServiceItem);
 
           ItemJnlPostLine.RunPostWithReservation(ItemJournalLine,TempReservationEntry);
 
@@ -4440,7 +4444,7 @@ OBJECT Codeunit 90 Purch.-Post
         END;
     END;
 
-    LOCAL PROCEDURE CopyJobConsumptionReservation@175(VAR TempReservEntryJobCons@1001 : TEMPORARY Record 337;VAR TempReservEntryPurchase@1002 : TEMPORARY Record 337;SourceSubtype@1003 : Option;SourceRefNo@1004 : Integer);
+    LOCAL PROCEDURE CopyJobConsumptionReservation@175(VAR TempReservEntryJobCons@1001 : TEMPORARY Record 337;VAR TempReservEntryPurchase@1002 : TEMPORARY Record 337;VAR ItemJournalLine@1003 : Record 83;VAR TempTrackingSpecification@1005 : TEMPORARY Record 336;PurchItemLedgEntryNo@1004 : Integer;IsServiceItem@1006 : Boolean);
     VAR
       NextReservationEntryNo@1000 : Integer;
     BEGIN
@@ -4459,13 +4463,24 @@ OBJECT Codeunit 90 Purch.-Post
             Quantity := -Quantity;
             "Qty. to Handle (Base)" := -"Qty. to Handle (Base)";
             "Qty. to Invoice (Base)" := -"Qty. to Invoice (Base)";
-            "Source Subtype" := SourceSubtype;
-            "Source Ref. No." := SourceRefNo;
+            "Source Subtype" := ItemJournalLine."Entry Type";
+            "Source Ref. No." := ItemJournalLine."Line No.";
+
+            IF NOT (ItemJournalLine.IsPurchaseReturn OR IsServiceItem) THEN BEGIN
+              TempTrackingSpecification.SETRANGE("Serial No.","Serial No.");
+              TempTrackingSpecification.SETRANGE("Lot No.","Lot No.");
+              IF TempTrackingSpecification.FINDFIRST THEN
+                "Appl.-to Item Entry" := TempTrackingSpecification."Item Ledger Entry No.";
+            END;
+
             INSERT;
           END;
 
           NextReservationEntryNo := NextReservationEntryNo + 1;
-        UNTIL TempReservEntryPurchase.NEXT = 0;
+        UNTIL TempReservEntryPurchase.NEXT = 0
+      ELSE
+        IF NOT (ItemJournalLine.IsPurchaseReturn OR IsServiceItem) THEN
+          ItemJournalLine."Applies-to Entry" := PurchItemLedgEntryNo;
     END;
 
     LOCAL PROCEDURE GetAppliedItemLedgEntryNo@226(VAR ItemJournalLine@1000 : Record 83;QtyReceived@1003 : Decimal);

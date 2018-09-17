@@ -2,9 +2,9 @@ OBJECT Codeunit 5895 Inventory Adjustment
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -89,17 +89,18 @@ OBJECT Codeunit 5895 Inventory Adjustment
     VAR
       TempItem@1004 : TEMPORARY Record 27;
       TempInventoryAdjmtEntryOrder@1000 : TEMPORARY Record 5896;
+      TempAvgCostAdjmtEntryPoint@1001 : TEMPORARY Record 5804;
       IsFirstTime@1005 : Boolean;
     BEGIN
       InitializeAdjmt;
 
       IsFirstTime := TRUE;
       WHILE (InvtToAdjustExist(TempItem) OR IsFirstTime) AND NOT LevelExceeded DO BEGIN
-        MakeSingleLevelAdjmt(TempItem);
+        MakeSingleLevelAdjmt(TempItem,TempAvgCostAdjmtEntryPoint);
         IF AssemblyToAdjustExists(TempInventoryAdjmtEntryOrder) THEN
-          MakeAssemblyAdjmt(TempInventoryAdjmtEntryOrder);
+          MakeAssemblyAdjmt(TempInventoryAdjmtEntryOrder,TempAvgCostAdjmtEntryPoint);
         IF WIPToAdjustExist(TempInventoryAdjmtEntryOrder) THEN
-          MakeWIPAdjmt(TempInventoryAdjmtEntryOrder);
+          MakeWIPAdjmt(TempInventoryAdjmtEntryOrder,TempAvgCostAdjmtEntryPoint);
         IsFirstTime := FALSE;
       END;
 
@@ -172,9 +173,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE MakeSingleLevelAdjmt@12(VAR TheItem@1001 : Record 27);
-    VAR
-      TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804;
+    LOCAL PROCEDURE MakeSingleLevelAdjmt@12(VAR TheItem@1001 : Record 27;VAR TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804);
     BEGIN
       LevelNo[1] := LevelNo[1] + 1;
 
@@ -192,21 +191,20 @@ OBJECT Codeunit 5895 Inventory Adjustment
             Item := TheItem;
             GetItem("No.");
             UpDateWindow(WindowAdjmtLevel,"No.",WindowAdjust,WindowFWLevel,WindowEntry,0);
+            CollectAvgCostAdjmtEntryPointToUpdate(TempAvgCostAdjmtEntryPoint,TheItem."No.");
 
-            TempAvgCostAdjmtEntryPoint.RESET;
-            TempAvgCostAdjmtEntryPoint.DELETEALL;
             REPEAT
               LevelExceeded := FALSE;
-              AdjustItemAppliedCost(TempAvgCostAdjmtEntryPoint);
+              AdjustItemAppliedCost;
             UNTIL NOT LevelExceeded;
 
-            AdjustItemAvgCost(TempAvgCostAdjmtEntryPoint);
-            PostAdjmtBuf;
+            AdjustItemAvgCost;
+            PostAdjmtBuf(TempAvgCostAdjmtEntryPoint);
             UpdateItemUnitCost(TempAvgCostAdjmtEntryPoint);
           UNTIL (TheItem.NEXT = 0) OR LevelExceeded;
     END;
 
-    LOCAL PROCEDURE AdjustItemAppliedCost@4(VAR TempAvgCostAdjmtEntryPoint@1003 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE AdjustItemAppliedCost@4();
     VAR
       ItemLedgEntry@1002 : Record 32;
       TempItemLedgEntry@1000 : TEMPORARY Record 32;
@@ -224,14 +222,14 @@ OBJECT Codeunit 5895 Inventory Adjustment
 
             RndgResidualBuf.AddAdjustedCost("Entry No.",0,0,"Completely Invoiced");
 
-            AppliedQty := ForwardAppliedCost(ItemLedgEntry,FALSE,TempAvgCostAdjmtEntryPoint);
+            AppliedQty := ForwardAppliedCost(ItemLedgEntry,FALSE);
 
             EliminateRndgResidual(ItemLedgEntry,AppliedQty);
           UNTIL (TempItemLedgEntry.NEXT = 0) OR LevelExceeded;
         END;
     END;
 
-    LOCAL PROCEDURE ForwardAppliedCost@1(ItemLedgEntry@1000 : Record 32;Recursion@1002 : Boolean;VAR TempAvgCostAdjmtEntryPoint@1001 : TEMPORARY Record 5804) AppliedQty : Decimal;
+    LOCAL PROCEDURE ForwardAppliedCost@1(ItemLedgEntry@1000 : Record 32;Recursion@1002 : Boolean) AppliedQty : Decimal;
     VAR
       AppliedEntryToAdjust@1004 : Boolean;
     BEGIN
@@ -251,11 +249,11 @@ OBJECT Codeunit 5895 Inventory Adjustment
 
         UpDateWindow(WindowAdjmtLevel,WindowItem,WindowAdjust,LevelNo[3],WindowEntry,0);
 
-        AppliedQty := ForwardCostToOutbndEntries(ItemLedgEntry,Recursion,AppliedEntryToAdjust,TempAvgCostAdjmtEntryPoint);
+        AppliedQty := ForwardCostToOutbndEntries(ItemLedgEntry,Recursion,AppliedEntryToAdjust);
 
-        ForwardCostToInbndTransEntries("Entry No.",Recursion,TempAvgCostAdjmtEntryPoint);
+        ForwardCostToInbndTransEntries("Entry No.",Recursion);
 
-        ForwardCostToInbndEntries("Entry No.",TempAvgCostAdjmtEntryPoint);
+        ForwardCostToInbndEntries("Entry No.");
 
         IF OutboundSalesEntryToAdjust(ItemLedgEntry) OR
            InboundTransferEntryToAdjust(ItemLedgEntry)
@@ -269,16 +267,16 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE ForwardAppliedCostRecursion@61(ItemLedgEntry@1000 : Record 32;VAR TempAvgCostAdjmtEntryPoint@1001 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE ForwardAppliedCostRecursion@61(ItemLedgEntry@1000 : Record 32);
     BEGIN
       IF NOT ItemLedgEntry."Applied Entry to Adjust" THEN BEGIN
-        ForwardAppliedCost(ItemLedgEntry,TRUE,TempAvgCostAdjmtEntryPoint);
+        ForwardAppliedCost(ItemLedgEntry,TRUE);
         IF LevelNo[3] > 0 THEN
           LevelNo[3] := LevelNo[3] - 1;
       END;
     END;
 
-    LOCAL PROCEDURE ForwardCostToOutbndEntries@27(ItemLedgEntry@1001 : Record 32;Recursion@1000 : Boolean;VAR AppliedEntryToAdjust@1004 : Boolean;VAR TempAvgCostAdjmtEntryPoint@1002 : TEMPORARY Record 5804) AppliedQty : Decimal;
+    LOCAL PROCEDURE ForwardCostToOutbndEntries@27(ItemLedgEntry@1001 : Record 32;Recursion@1000 : Boolean;VAR AppliedEntryToAdjust@1004 : Boolean) AppliedQty : Decimal;
     VAR
       ItemApplnEntry@1003 : Record 339;
       InboundCompletelyInvoiced@1005 : Boolean;
@@ -287,13 +285,13 @@ OBJECT Codeunit 5895 Inventory Adjustment
       WITH ItemApplnEntry DO
         IF AppliedOutbndEntryExists(ItemLedgEntry."Entry No.",TRUE,ItemLedgEntry.Open) THEN
           REPEAT
-            IF NOT AdjustAppliedOutbndEntries("Outbound Item Entry No.",Recursion,TempAvgCostAdjmtEntryPoint,InboundCompletelyInvoiced) THEN
+            IF NOT AdjustAppliedOutbndEntries("Outbound Item Entry No.",Recursion,InboundCompletelyInvoiced) THEN
               AppliedEntryToAdjust := InboundCompletelyInvoiced OR ItemLedgEntry.Open OR NOT ItemLedgEntry."Completely Invoiced";
             AppliedQty += Quantity;
           UNTIL NEXT = 0;
     END;
 
-    LOCAL PROCEDURE AdjustAppliedOutbndEntries@2(OutbndItemLedgEntryNo@1000 : Integer;Recursion@1031 : Boolean;VAR TempAvgCostAdjmtEntryPoint@1007 : TEMPORARY Record 5804;VAR InboundCompletelyInvoiced@1009 : Boolean) : Boolean;
+    LOCAL PROCEDURE AdjustAppliedOutbndEntries@2(OutbndItemLedgEntryNo@1000 : Integer;Recursion@1031 : Boolean;VAR InboundCompletelyInvoiced@1009 : Boolean) : Boolean;
     VAR
       OutbndItemLedgEntry@1001 : Record 32;
       OutbndValueEntry@1003 : Record 5802;
@@ -349,18 +347,14 @@ OBJECT Codeunit 5895 Inventory Adjustment
 
             IF StandardCostMirroring AND NOT "Expected Cost" THEN
               CreateCostAdjmtBuf(
-                OutbndValueEntry,AdjustedCostElementBuf,OutbndItemLedgEntry."Posting Date",
-                "Entry Type"::Variance,TempAvgCostAdjmtEntryPoint)
+                OutbndValueEntry,AdjustedCostElementBuf,OutbndItemLedgEntry."Posting Date","Entry Type"::Variance)
             ELSE
               CreateCostAdjmtBuf(
-                OutbndValueEntry,AdjustedCostElementBuf,OutbndItemLedgEntry."Posting Date",
-                "Entry Type",TempAvgCostAdjmtEntryPoint);
+                OutbndValueEntry,AdjustedCostElementBuf,OutbndItemLedgEntry."Posting Date","Entry Type");
 
             IF NOT "Expected Cost" THEN BEGIN
-              CreateIndirectCostAdjmt(
-                OldCostElementBuf,AdjustedCostElementBuf,OutbndValueEntry,"Entry Type"::"Indirect Cost",TempAvgCostAdjmtEntryPoint);
-              CreateIndirectCostAdjmt(
-                OldCostElementBuf,AdjustedCostElementBuf,OutbndValueEntry,"Entry Type"::Variance,TempAvgCostAdjmtEntryPoint);
+              CreateIndirectCostAdjmt(OldCostElementBuf,AdjustedCostElementBuf,OutbndValueEntry,"Entry Type"::"Indirect Cost");
+              CreateIndirectCostAdjmt(OldCostElementBuf,AdjustedCostElementBuf,OutbndValueEntry,"Entry Type"::Variance);
             END;
             FINDLAST;
             SETRANGE("Document No.");
@@ -374,7 +368,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
         THEN
           OutbndItemLedgEntry.SetCompletelyInvoiced;
 
-        ForwardAppliedCostRecursion(OutbndItemLedgEntry,TempAvgCostAdjmtEntryPoint);
+        ForwardAppliedCostRecursion(OutbndItemLedgEntry);
 
         ItemApplnEntry.SetInboundToUpdated(OutbndItemLedgEntry);
 
@@ -449,20 +443,31 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE CreateCostAdjmtBuf@92(OutbndValueEntry@1000 : Record 5802;CostElementBuf@1001 : Record 5820;ItemLedgEntryPostingDate@1003 : Date;EntryType@1004 : Option;VAR TempAvgCostAdjmtEntryPoint@1002 : TEMPORARY Record 5804) : Boolean;
+    LOCAL PROCEDURE CollectAvgCostAdjmtEntryPointToUpdate@24(VAR TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804;ItemNo@1001 : Code[20]);
+    VAR
+      AvgCostAdjmtEntryPoint@1002 : Record 5804;
+    BEGIN
+      WITH AvgCostAdjmtEntryPoint DO BEGIN
+        SETRANGE("Item No.",ItemNo);
+        SETRANGE("Cost Is Adjusted",FALSE);
+        IF FINDSET THEN
+          REPEAT
+            InsertEntryPointToUpdate(TempAvgCostAdjmtEntryPoint,"Item No.","Variant Code","Location Code");
+          UNTIL NEXT = 0;
+      END;
+    END;
+
+    LOCAL PROCEDURE CreateCostAdjmtBuf@92(OutbndValueEntry@1000 : Record 5802;CostElementBuf@1001 : Record 5820;ItemLedgEntryPostingDate@1003 : Date;EntryType@1004 : Option) : Boolean;
     BEGIN
       WITH CostElementBuf DO
-        IF UpdateAdjmtBuf(
-             OutbndValueEntry,"Actual Cost","Actual Cost (ACY)",ItemLedgEntryPostingDate,EntryType,
-             TempAvgCostAdjmtEntryPoint)
-        THEN BEGIN
-          UpdateAvgCostAdjmtEntryPoint(OutbndValueEntry,TempAvgCostAdjmtEntryPoint);
+        IF UpdateAdjmtBuf(OutbndValueEntry,"Actual Cost","Actual Cost (ACY)",ItemLedgEntryPostingDate,EntryType) THEN BEGIN
+          UpdateAvgCostAdjmtEntryPoint(OutbndValueEntry);
           EXIT(TRUE);
         END;
       EXIT(FALSE);
     END;
 
-    LOCAL PROCEDURE CreateIndirectCostAdjmt@40(VAR CostElementBuf@1005 : Record 5820;VAR AdjustedCostElementBuf@1004 : Record 5820;OutbndValueEntry@1000 : Record 5802;EntryType@1001 : Option;VAR TempAvgCostAdjmtEntryPoint@1003 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE CreateIndirectCostAdjmt@40(VAR CostElementBuf@1005 : Record 5820;VAR AdjustedCostElementBuf@1004 : Record 5820;OutbndValueEntry@1000 : Record 5802;EntryType@1001 : Option);
     VAR
       ItemJnlLine@1008 : Record 83;
       OrigValueEntry@1002 : Record 5802;
@@ -481,22 +486,22 @@ OBJECT Codeunit 5895 Inventory Adjustment
         InitAdjmtJnlLine(
           ItemJnlLine,OrigValueEntry,OrigValueEntry."Entry Type",OrigValueEntry."Variance Type");
         PostItemJnlLine(ItemJnlLine,OrigValueEntry,NewAdjustedCost,NewAdjustedCostACY);
-        UpdateAvgCostAdjmtEntryPoint(OrigValueEntry,TempAvgCostAdjmtEntryPoint);
+        UpdateAvgCostAdjmtEntryPoint(OrigValueEntry);
       END;
     END;
 
-    LOCAL PROCEDURE ForwardCostToInbndTransEntries@39(ItemLedgEntryNo@1001 : Integer;Recursion@1000 : Boolean;VAR TempAvgCostAdjmtEntryPoint@1003 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE ForwardCostToInbndTransEntries@39(ItemLedgEntryNo@1001 : Integer;Recursion@1000 : Boolean);
     VAR
       ItemApplnEntry@1002 : Record 339;
     BEGIN
       WITH ItemApplnEntry DO
         IF AppliedInbndTransEntryExists(ItemLedgEntryNo,TRUE) THEN
           REPEAT
-            AdjustAppliedInbndTransEntries(ItemApplnEntry,Recursion,TempAvgCostAdjmtEntryPoint);
+            AdjustAppliedInbndTransEntries(ItemApplnEntry,Recursion);
           UNTIL NEXT = 0;
     END;
 
-    LOCAL PROCEDURE AdjustAppliedInbndTransEntries@13(TransItemApplnEntry@1000 : Record 339;Recursion@1014 : Boolean;VAR TempAvgCostAdjmtEntryPoint@1004 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE AdjustAppliedInbndTransEntries@13(TransItemApplnEntry@1000 : Record 339;Recursion@1014 : Boolean);
     VAR
       TransValueEntry@1002 : Record 5802;
       TransItemLedgEntry@1003 : Record 32;
@@ -507,7 +512,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       WITH TransItemApplnEntry DO BEGIN
         TransItemLedgEntry.GET("Item Ledger Entry No.");
         IF NOT TransItemLedgEntry."Completely Invoiced" THEN
-          AdjustNotInvdRevaluation(TransItemLedgEntry,TransItemApplnEntry,TempAvgCostAdjmtEntryPoint);
+          AdjustNotInvdRevaluation(TransItemLedgEntry,TransItemApplnEntry);
 
         CalcTransEntryOldCost(CostElementBuf,TransValueEntry,"Item Ledger Entry No.");
 
@@ -527,14 +532,13 @@ OBJECT Codeunit 5895 Inventory Adjustment
              AdjustedCostElementBuf."Actual Cost" - CostElementBuf."Actual Cost",
              AdjustedCostElementBuf."Actual Cost (ACY)" - CostElementBuf."Actual Cost (ACY)",
              TransItemLedgEntry."Posting Date",
-             TransValueEntry."Entry Type",
-             TempAvgCostAdjmtEntryPoint)
+             TransValueEntry."Entry Type")
         THEN
           EntryAdjusted := TRUE;
 
         IF EntryAdjusted THEN BEGIN
-          UpdateAvgCostAdjmtEntryPoint(TransValueEntry,TempAvgCostAdjmtEntryPoint);
-          ForwardAppliedCostRecursion(TransItemLedgEntry,TempAvgCostAdjmtEntryPoint);
+          UpdateAvgCostAdjmtEntryPoint(TransValueEntry);
+          ForwardAppliedCostRecursion(TransItemLedgEntry);
         END;
       END;
     END;
@@ -563,18 +567,18 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE ForwardCostToInbndEntries@48(ItemLedgEntryNo@1001 : Integer;VAR TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE ForwardCostToInbndEntries@48(ItemLedgEntryNo@1001 : Integer);
     VAR
       ItemApplnEntry@1002 : Record 339;
     BEGIN
       WITH ItemApplnEntry DO
         IF AppliedInbndEntryExists(ItemLedgEntryNo,TRUE) THEN
           REPEAT
-            AdjustAppliedInbndEntries(ItemApplnEntry,TempAvgCostAdjmtEntryPoint);
+            AdjustAppliedInbndEntries(ItemApplnEntry);
           UNTIL NEXT = 0;
     END;
 
-    LOCAL PROCEDURE AdjustAppliedInbndEntries@9(VAR InbndItemApplnEntry@1000 : Record 339;VAR TempAvgCostAdjmtEntryPoint@1001 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE AdjustAppliedInbndEntries@9(VAR InbndItemApplnEntry@1000 : Record 339);
     VAR
       OutbndItemLedgEntry@1003 : Record 32;
       InbndValueEntry@1004 : Record 5802;
@@ -611,8 +615,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
               InbndValueEntry."Valued Quantity" / InbndItemLedgEntry.Quantity);
 
             IF CreateCostAdjmtBuf(
-                 InbndValueEntry,DocCostElementBuf,InbndItemLedgEntry."Posting Date",InbndValueEntry."Entry Type",
-                 TempAvgCostAdjmtEntryPoint)
+                 InbndValueEntry,DocCostElementBuf,InbndItemLedgEntry."Posting Date",InbndValueEntry."Entry Type")
             THEN
               EntryAdjusted := TRUE;
 
@@ -631,8 +634,8 @@ OBJECT Codeunit 5895 Inventory Adjustment
         END;
 
         IF EntryAdjusted THEN BEGIN
-          UpdateAvgCostAdjmtEntryPoint(InbndValueEntry,TempAvgCostAdjmtEntryPoint);
-          ForwardAppliedCostRecursion(InbndItemLedgEntry,TempAvgCostAdjmtEntryPoint);
+          UpdateAvgCostAdjmtEntryPoint(InbndValueEntry);
+          ForwardAppliedCostRecursion(InbndItemLedgEntry);
         END;
       END;
     END;
@@ -948,7 +951,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE AdjustItemAvgCost@8(VAR TempAvgCostAdjmtEntryPointToUpd@1006 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE AdjustItemAvgCost@8();
     VAR
       TempOutbndValueEntry@1002 : TEMPORARY Record 5802;
       TempExcludedValueEntry@1003 : TEMPORARY Record 5802;
@@ -978,7 +981,6 @@ OBJECT Codeunit 5895 Inventory Adjustment
               EXIT;
 
             SetAvgCostAjmtFilter(TempAvgCostAdjmtEntryPoint);
-            CopyAdjmtEntryPointToBuf(TempAvgCostAdjmtEntryPoint,TempAvgCostAdjmtEntryPointToUpd);
             TempAvgCostAdjmtEntryPoint.DELETEALL;
             TempAvgCostAdjmtEntryPoint.RESET;
 
@@ -996,7 +998,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
               REPEAT
                 UpDateWindow(WindowAdjmtLevel,WindowItem,WindowAdjust,WindowFWLevel,WindowEntry,RemainingOutbnd);
                 RemainingOutbnd -= 1;
-                AdjustOutbndAvgEntry(TempOutbndValueEntry,TempExcludedValueEntry,TempAvgCostAdjmtEntryPointToUpd);
+                AdjustOutbndAvgEntry(TempOutbndValueEntry,TempExcludedValueEntry);
                 UpdateConsumpAvgEntry(TempOutbndValueEntry);
               UNTIL TempOutbndValueEntry.NEXT = 0;
 
@@ -1124,7 +1126,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       EXIT(CALCDATE('<+1D>',CurrentDate));
     END;
 
-    LOCAL PROCEDURE AdjustOutbndAvgEntry@11(VAR OutbndValueEntry@1000 : Record 5802;VAR ExcludedValueEntry@1002 : Record 5802;VAR TempAvgCostAdjmtEntryPoint@1003 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE AdjustOutbndAvgEntry@11(VAR OutbndValueEntry@1000 : Record 5802;VAR ExcludedValueEntry@1002 : Record 5802);
     VAR
       OutbndItemLedgEntry@1007 : Record 32;
       OldCostElementBuf@1016 : TEMPORARY Record 5820;
@@ -1153,8 +1155,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
             "Actual Cost (ACY)" := "Actual Cost (ACY)" - OldCostElementBuf."Actual Cost (ACY)";
           END;
           IF UpdateAdjmtBuf(
-               OutbndValueEntry,"Actual Cost","Actual Cost (ACY)",OutbndItemLedgEntry."Posting Date",
-               OutbndValueEntry."Entry Type",TempAvgCostAdjmtEntryPoint)
+               OutbndValueEntry,"Actual Cost","Actual Cost (ACY)",OutbndItemLedgEntry."Posting Date",OutbndValueEntry."Entry Type")
           THEN
             EntryAdjusted := TRUE;
         END;
@@ -1163,7 +1164,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
           IF OutbndItemLedgEntry."Entry Type" = OutbndItemLedgEntry."Entry Type"::Consumption THEN
             OutbndItemLedgEntry.SetAppliedEntryToAdjust(FALSE);
 
-          ForwardAvgCostToInbndEntries(OutbndItemLedgEntry."Entry No.",TempAvgCostAdjmtEntryPoint);
+          ForwardAvgCostToInbndEntries(OutbndItemLedgEntry."Entry No.");
         END;
       END;
     END;
@@ -1359,12 +1360,11 @@ OBJECT Codeunit 5895 Inventory Adjustment
       EXIT(FixedApplQty);
     END;
 
-    LOCAL PROCEDURE UpdateAvgCostAdjmtEntryPoint@7(ValueEntry@1000 : Record 5802;VAR TempAvgCostAdjmtEntryPoint@1002 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE UpdateAvgCostAdjmtEntryPoint@7(ValueEntry@1000 : Record 5802);
     VAR
       AvgCostAdjmtEntryPoint@1001 : Record 5804;
     BEGIN
       AvgCostAdjmtEntryPoint.UpdateValuationDate(ValueEntry);
-      InsertEntryPointToUpdate(TempAvgCostAdjmtEntryPoint,ValueEntry."Item No.",ValueEntry."Variant Code",ValueEntry."Location Code");
     END;
 
     LOCAL PROCEDURE UpdateConsumpAvgEntry@21(ValueEntry@1000 : Record 5802);
@@ -1400,7 +1400,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE ForwardAvgCostToInbndEntries@83(ItemLedgEntryNo@1001 : Integer;VAR TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE ForwardAvgCostToInbndEntries@83(ItemLedgEntryNo@1001 : Integer);
     VAR
       ItemApplnEntry@1002 : Record 339;
     BEGIN
@@ -1408,12 +1408,12 @@ OBJECT Codeunit 5895 Inventory Adjustment
         IF AppliedInbndEntryExists(ItemLedgEntryNo,TRUE) THEN
           REPEAT
             LevelNo[3] := 0;
-            AdjustAppliedInbndEntries(ItemApplnEntry,TempAvgCostAdjmtEntryPoint);
+            AdjustAppliedInbndEntries(ItemApplnEntry);
             IF LevelExceeded THEN BEGIN
               LevelExceeded := FALSE;
 
               UpDateWindow(WindowAdjmtLevel,WindowItem,WindowAdjust,LevelNo[3],WindowEntry,WindowOutbndEntry);
-              AdjustItemAppliedCost(TempAvgCostAdjmtEntryPoint);
+              AdjustItemAppliedCost;
               UpDateWindow(WindowAdjmtLevel,WindowItem,Text008,WindowFWLevel,WindowEntry,WindowOutbndEntry);
             END;
           UNTIL NEXT = 0;
@@ -1438,7 +1438,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE MakeWIPAdjmt@62(VAR SourceInvtAdjmtEntryOrder@1000 : Record 5896);
+    LOCAL PROCEDURE MakeWIPAdjmt@62(VAR SourceInvtAdjmtEntryOrder@1000 : Record 5896;VAR TempAvgCostAdjmtEntryPoint@1004 : TEMPORARY Record 5804);
     VAR
       InvtAdjmtEntryOrder@1003 : Record 5896;
       CalcInventoryAdjmtOrder@1002 : Codeunit 5896;
@@ -1454,7 +1454,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
 
               InvtAdjmtEntryOrder := SourceInvtAdjmtEntryOrder;
               CalcInventoryAdjmtOrder.Calculate(SourceInvtAdjmtEntryOrder,TempInvtAdjmtBuf);
-              PostOutputAdjmtBuf;
+              PostOutputAdjmtBuf(TempAvgCostAdjmtEntryPoint);
 
               IF NOT "Completely Invoiced" THEN BEGIN
                 InvtAdjmtEntryOrder.GetUnitCostsFromItem;
@@ -1482,19 +1482,19 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE PostOutputAdjmtBuf@19();
+    LOCAL PROCEDURE PostOutputAdjmtBuf@19(VAR TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804);
     BEGIN
       WITH TempInvtAdjmtBuf DO BEGIN
         RESET;
         IF FINDSET THEN
           REPEAT
-            PostOutput(TempInvtAdjmtBuf);
+            PostOutput(TempInvtAdjmtBuf,TempAvgCostAdjmtEntryPoint);
           UNTIL NEXT = 0;
         DELETEALL;
       END;
     END;
 
-    LOCAL PROCEDURE PostOutput@28(InvtAdjmtBuf@1003 : Record 5895);
+    LOCAL PROCEDURE PostOutput@28(InvtAdjmtBuf@1003 : Record 5895;VAR TempAvgCostAdjmtEntryPoint@1002 : TEMPORARY Record 5804);
     VAR
       ItemJnlLine@1005 : Record 83;
       OrigItemLedgEntry@1001 : Record 32;
@@ -1523,6 +1523,8 @@ OBJECT Codeunit 5895 Inventory Adjustment
         OrigItemLedgEntry.GET("Item Ledger Entry No.");
         IF NOT OrigItemLedgEntry."Completely Invoiced" THEN
           OrigItemLedgEntry.SetCompletelyInvoiced;
+
+        InsertEntryPointToUpdate(TempAvgCostAdjmtEntryPoint,"Item No.","Variant Code","Location Code");
       END;
     END;
 
@@ -1543,7 +1545,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE MakeAssemblyAdjmt@77(VAR SourceInvtAdjmtEntryOrder@1000 : Record 5896);
+    LOCAL PROCEDURE MakeAssemblyAdjmt@77(VAR SourceInvtAdjmtEntryOrder@1000 : Record 5896;VAR TempAvgCostAdjmtEntryPoint@1004 : TEMPORARY Record 5804);
     VAR
       InvtAdjmtEntryOrder@1003 : Record 5896;
       CalcInventoryAdjmtOrder@1002 : Codeunit 5896;
@@ -1559,7 +1561,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
 
               InvtAdjmtEntryOrder := SourceInvtAdjmtEntryOrder;
               CalcInventoryAdjmtOrder.Calculate(SourceInvtAdjmtEntryOrder,TempInvtAdjmtBuf);
-              PostOutputAdjmtBuf;
+              PostOutputAdjmtBuf(TempAvgCostAdjmtEntryPoint);
 
               IF NOT "Completely Invoiced" THEN BEGIN
                 InvtAdjmtEntryOrder.GetCostsFromItem(1);
@@ -1572,7 +1574,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
           UNTIL NEXT = 0;
     END;
 
-    LOCAL PROCEDURE UpdateAdjmtBuf@18(OrigValueEntry@1000 : Record 5802;NewAdjustedCost@1001 : Decimal;NewAdjustedCostACY@1002 : Decimal;ItemLedgEntryPostingDate@1005 : Date;EntryType@1007 : Option;VAR TempAvgCostAdjmtEntryPoint@1006 : TEMPORARY Record 5804) : Boolean;
+    LOCAL PROCEDURE UpdateAdjmtBuf@18(OrigValueEntry@1000 : Record 5802;NewAdjustedCost@1001 : Decimal;NewAdjustedCostACY@1002 : Decimal;ItemLedgEntryPostingDate@1005 : Date;EntryType@1007 : Option) : Boolean;
     VAR
       ItemLedgEntry@1004 : Record 32;
       ItemApplnEntry@1003 : Record 339;
@@ -1580,9 +1582,6 @@ OBJECT Codeunit 5895 Inventory Adjustment
     BEGIN
       IF NOT HasNewCost(NewAdjustedCost,NewAdjustedCostACY) THEN
         EXIT(FALSE);
-
-      InsertEntryPointToUpdate(
-        TempAvgCostAdjmtEntryPoint,OrigValueEntry."Item No.",OrigValueEntry."Variant Code",OrigValueEntry."Location Code");
 
       IF OrigValueEntry."Valued By Average Cost" THEN BEGIN
         AvgCostRndgBuf.UpdRoundingCheck(
@@ -1648,7 +1647,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE PostAdjmtBuf@17();
+    LOCAL PROCEDURE PostAdjmtBuf@17(VAR TempAvgCostAdjmtEntryPoint@1002 : TEMPORARY Record 5804);
     VAR
       ItemJnlLine@1001 : Record 83;
       OrigValueEntry@1000 : Record 5802;
@@ -1658,6 +1657,8 @@ OBJECT Codeunit 5895 Inventory Adjustment
         IF FINDSET THEN BEGIN
           REPEAT
             OrigValueEntry.GET("Entry No.");
+            InsertEntryPointToUpdate(
+              TempAvgCostAdjmtEntryPoint,OrigValueEntry."Item No.",OrigValueEntry."Variant Code",OrigValueEntry."Location Code");
             IF OrigValueEntry."Expected Cost" THEN BEGIN
               IF HasNewCost("Cost Amount (Expected)","Cost Amount (Expected) (ACY)") THEN BEGIN
                 InitAdjmtJnlLine(ItemJnlLine,OrigValueEntry,"Entry Type","Variance Type");
@@ -1861,15 +1862,18 @@ OBJECT Codeunit 5895 Inventory Adjustment
         IF "Costing Method" <> "Costing Method"::Standard THEN BEGIN
           IF TempAvgCostAdjmtEntryPoint.FINDSET THEN
             REPEAT
-              FilterSKU := (TempAvgCostAdjmtEntryPoint."Location Code" <> '') AND (TempAvgCostAdjmtEntryPoint."Variant Code" <> '');
+              FilterSKU := (TempAvgCostAdjmtEntryPoint."Location Code" <> '') OR (TempAvgCostAdjmtEntryPoint."Variant Code" <> '');
               ItemCostMgt.UpdateUnitCost(
                 Item,TempAvgCostAdjmtEntryPoint."Location Code",TempAvgCostAdjmtEntryPoint."Variant Code",0,0,TRUE,FilterSKU,FALSE,0);
             UNTIL TempAvgCostAdjmtEntryPoint.NEXT = 0
           ELSE
-            ItemCostMgt.UpdateUnitCost(Item,'','',0,0,TRUE,FALSE,FALSE,0);
+            MODIFY;
         END ELSE
           MODIFY;
       END;
+
+      TempAvgCostAdjmtEntryPoint.RESET;
+      TempAvgCostAdjmtEntryPoint.DELETEALL;
     END;
 
     LOCAL PROCEDURE GetItem@14(ItemNo@1001 : Code[20]);
@@ -1998,7 +2002,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
       END;
     END;
 
-    LOCAL PROCEDURE AdjustNotInvdRevaluation@100(TransItemLedgEntry@1000 : Record 32;TransItemApplnEntry@1001 : Record 339;VAR TempAvgCostAdjmtEntryPoint@1006 : TEMPORARY Record 5804);
+    LOCAL PROCEDURE AdjustNotInvdRevaluation@100(TransItemLedgEntry@1000 : Record 32;TransItemApplnEntry@1001 : Record 339);
     VAR
       TransValueEntry@1002 : Record 5802;
       OrigItemLedgEntry@1003 : Record 32;
@@ -2018,8 +2022,7 @@ OBJECT Codeunit 5895 Inventory Adjustment
               AdjustedCostElementBuf."Actual Cost" - CostElementBuf."Actual Cost",
               AdjustedCostElementBuf."Actual Cost (ACY)" - CostElementBuf."Actual Cost (ACY)",
               TransItemLedgEntry."Posting Date",
-              "Entry Type",
-              TempAvgCostAdjmtEntryPoint);
+              "Entry Type");
           UNTIL NEXT = 0;
         END;
     END;
@@ -2248,15 +2251,6 @@ OBJECT Codeunit 5895 Inventory Adjustment
       ExcludedValueEntry.DELETEALL;
       AvgCostExceptionBuf.DELETEALL;
       RevaluationPoint.DELETEALL;
-    END;
-
-    LOCAL PROCEDURE CopyAdjmtEntryPointToBuf@24(VAR AvgCostAdjmtEntryPoint@1000 : Record 5804;VAR TempAvgCostAdjmtEntryPoint@1001 : TEMPORARY Record 5804);
-    BEGIN
-      WITH AvgCostAdjmtEntryPoint DO
-        IF FINDSET THEN
-          REPEAT
-            InsertEntryPointToUpdate(TempAvgCostAdjmtEntryPoint,"Item No.","Variant Code","Location Code");
-          UNTIL NEXT = 0;
     END;
 
     LOCAL PROCEDURE InsertEntryPointToUpdate@55(VAR TempAvgCostAdjmtEntryPoint@1000 : TEMPORARY Record 5804;ItemNo@1001 : Code[20];VariantCode@1002 : Code[10];LocationCode@1003 : Code[10]);

@@ -2,9 +2,9 @@ OBJECT Codeunit 40 LogInManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -128,6 +128,9 @@ OBJECT Codeunit 40 LogInManagement
       UserSetupFound@1005 : Boolean;
       RegisterTime@1006 : Boolean;
     BEGIN
+      IF LogInDate = 0D THEN
+        EXIT;
+
       IF LogInWorkDate <> 0D THEN
         IF LogInWorkDate = LogInDate THEN
           WORKDATE := TODAY

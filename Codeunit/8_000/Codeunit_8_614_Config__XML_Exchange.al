@@ -2,9 +2,9 @@ OBJECT Codeunit 8614 Config. XML Exchange
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -21,6 +21,7 @@ OBJECT Codeunit 8614 Config. XML Exchange
       ConfigValidateMgt@1021 : Codeunit 8617;
       ConfigMgt@1014 : Codeunit 8616;
       ConfigPckgCompressionMgt@1016 : Codeunit 8619;
+      TypeHelper@1024 : Codeunit 10;
       XMLDOMMgt@1012 : Codeunit 6224;
       ErrorTypeEnum@1027 : 'General,TableRelation';
       Advanced@1001 : Boolean;
@@ -210,7 +211,7 @@ OBJECT Codeunit 8614 Config. XML Exchange
           IF ConfigPackageField.FINDSET THEN
             REPEAT
               FieldRef := RecRef.FIELD(ConfigPackageField."Field ID");
-              IF Field.GET(RecRef.NUMBER,FieldRef.NUMBER) THEN BEGIN
+              IF TypeHelper.GetField(RecRef.NUMBER,FieldRef.NUMBER,Field) THEN BEGIN
                 FieldNode :=
                   PackageXML.CreateElement(GetFieldElementName(ConfigValidateMgt.CheckName(FieldRef.NAME)));
                 FieldNode.InnerText := FormatFieldValue(FieldRef,ConfigPackage);

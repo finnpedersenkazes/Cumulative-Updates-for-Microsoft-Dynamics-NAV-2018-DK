@@ -2,9 +2,9 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -253,7 +253,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
               BEGIN
                 FromSalesHeader.CALCFIELDS("Work Description");
                 TRANSFERFIELDS(FromSalesHeader,FALSE);
-                UpdateSalesHeader(ToSalesHeader,OldSalesHeader,FromDocType);
+                UpdateSalesHeaderWhenCopyFromSalesHeader(ToSalesHeader,OldSalesHeader,FromDocType);
               END;
             SalesDocType::"Posted Shipment":
               BEGIN
@@ -559,16 +559,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
             PurchDocType::"Credit Memo":
               BEGIN
                 TRANSFERFIELDS(FromPurchHeader,FALSE);
-                "Last Receiving No." := '';
-                Status := Status::Open;
-                "IC Status" := "IC Status"::New;
-                IF "Document Type" <> "Document Type"::Order THEN
-                  "Prepayment %" := 0;
-                IF FromDocType IN [PurchDocType::Quote,PurchDocType::"Blanket Order"] THEN
-                  IF OldPurchHeader."Posting Date" = 0D THEN
-                    "Posting Date" := WORKDATE
-                  ELSE
-                    "Posting Date" := OldPurchHeader."Posting Date";
+                UpdatePurchHeaderWhenCopyFromPurchHeader(ToPurchHeader,OldPurchHeader,FromDocType);
               END;
             PurchDocType::"Posted Receipt":
               BEGIN
@@ -1026,10 +1017,10 @@ OBJECT Codeunit 6620 Copy Document Mgt.
       EXIT(TRUE);
     END;
 
-    LOCAL PROCEDURE UpdateSalesHeader@162(VAR ToSalesHeader@1000 : Record 36;OriginalSalesHeader@1001 : Record 36;FromDocType@1002 : Option);
+    LOCAL PROCEDURE UpdateSalesHeaderWhenCopyFromSalesHeader@162(VAR SalesHeader@1000 : Record 36;OriginalSalesHeader@1001 : Record 36;FromDocType@1002 : Option);
     BEGIN
-      WITH ToSalesHeader DO BEGIN
-        "Last Shipping No." := '';
+      ClearSalesLastNoSFields(SalesHeader);
+      WITH SalesHeader DO BEGIN
         Status := Status::Open;
         IF "Document Type" <> "Document Type"::Order THEN
           "Prepayment %" := 0;
@@ -1042,6 +1033,17 @@ OBJECT Codeunit 6620 Copy Document Mgt.
             "Posting Date" := WORKDATE
           ELSE
             "Posting Date" := OriginalSalesHeader."Posting Date";
+      END;
+    END;
+
+    LOCAL PROCEDURE ClearSalesLastNoSFields@191(VAR SalesHeader@1000 : Record 36);
+    BEGIN
+      WITH SalesHeader DO BEGIN
+        "Last Shipping No." := '';
+        "Last Posting No." := '';
+        "Last Prepayment No." := '';
+        "Last Prepmt. Cr. Memo No." := '';
+        "Last Return Receipt No." := '';
       END;
     END;
 
@@ -1291,6 +1293,33 @@ OBJECT Codeunit 6620 Copy Document Mgt.
       END ELSE
         LinesNotCopied := LinesNotCopied + 1;
       EXIT(TRUE);
+    END;
+
+    LOCAL PROCEDURE UpdatePurchHeaderWhenCopyFromPurchHeader@205(VAR PurchaseHeader@1000 : Record 38;OriginalPurchaseHeader@1001 : Record 38;FromDocType@1002 : Option);
+    BEGIN
+      ClearPurchLastNoSFields(PurchaseHeader);
+      WITH PurchaseHeader DO BEGIN
+        Status := Status::Open;
+        "IC Status" := "IC Status"::New;
+        IF "Document Type" <> "Document Type"::Order THEN
+          "Prepayment %" := 0;
+        IF FromDocType IN [PurchDocType::Quote,PurchDocType::"Blanket Order"] THEN
+          IF OriginalPurchaseHeader."Posting Date" = 0D THEN
+            "Posting Date" := WORKDATE
+          ELSE
+            "Posting Date" := OriginalPurchaseHeader."Posting Date";
+      END;
+    END;
+
+    LOCAL PROCEDURE ClearPurchLastNoSFields@197(VAR PurchaseHeader@1000 : Record 38);
+    BEGIN
+      WITH PurchaseHeader DO BEGIN
+        "Last Receiving No." := '';
+        "Last Posting No." := '';
+        "Last Prepayment No." := '';
+        "Last Prepmt. Cr. Memo No." := '';
+        "Last Return Shipment No." := '';
+      END;
     END;
 
     LOCAL PROCEDURE UpdatePurchLine@135(VAR ToPurchHeader@1000 : Record 38;VAR ToPurchLine@1001 : Record 39;VAR FromPurchHeader@1005 : Record 38;VAR FromPurchLine@1002 : Record 39;VAR CopyThisLine@1004 : Boolean;RecalculateAmount@1006 : Boolean;FromPurchDocType@1008 : Option;VAR CopyPostedDeferral@1009 : Boolean);
@@ -1721,7 +1750,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
                   ToSalesLine."Outstanding Quantity" := FromSalesLine.Quantity - FromSalesLine."Qty. to Assemble to Order";
                 ToSalesLine."Qty. to Assemble to Order" := 0;
                 ToSalesLine."Drop Shipment" := FromSalesLine."Drop Shipment";
-                CheckItemAvailable(ToSalesHeader,ToSalesLine);
+                CheckItemAvailability(ToSalesHeader,ToSalesLine);
 
                 IF "Document Type" = "Document Type"::Order THEN BEGIN
                   ToSalesLine."Outstanding Quantity" := FromSalesLine.Quantity;
@@ -1762,7 +1791,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
                   "Outstanding Quantity" := FromSalesShptLine.Quantity - FromPostedAsmHeader.Quantity;
               "Qty. to Assemble to Order" := 0;
               "Drop Shipment" := FromSalesShptLine."Drop Shipment";
-              CheckItemAvailable(ToSalesHeader,ToSalesLine);
+              CheckItemAvailability(ToSalesHeader,ToSalesLine);
 
               IF "Document Type" = "Document Type"::Order THEN
                 IF FromSalesShptLine.AsmToShipmentExists(FromPostedAsmHeader) THEN BEGIN
@@ -1798,7 +1827,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
               "Qty. per Unit of Measure" := FromSalesInvLine."Qty. per Unit of Measure";
               "Outstanding Quantity" := FromSalesInvLine.Quantity;
               "Drop Shipment" := FromSalesInvLine."Drop Shipment";
-              CheckItemAvailable(ToSalesHeader,ToSalesLine);
+              CheckItemAvailability(ToSalesHeader,ToSalesLine);
             END;
           UNTIL FromSalesInvLine.NEXT = 0;
       END;
@@ -1827,7 +1856,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
               "Qty. per Unit of Measure" := FromReturnRcptLine."Qty. per Unit of Measure";
               "Outstanding Quantity" := FromReturnRcptLine.Quantity;
               "Drop Shipment" := FALSE;
-              CheckItemAvailable(ToSalesHeader,ToSalesLine);
+              CheckItemAvailability(ToSalesHeader,ToSalesLine);
             END;
           UNTIL FromReturnRcptLine.NEXT = 0;
       END;
@@ -1857,13 +1886,13 @@ OBJECT Codeunit 6620 Copy Document Mgt.
               "Qty. per Unit of Measure" := FromSalesCrMemoLine."Qty. per Unit of Measure";
               "Outstanding Quantity" := FromSalesCrMemoLine.Quantity;
               "Drop Shipment" := FALSE;
-              CheckItemAvailable(ToSalesHeader,ToSalesLine);
+              CheckItemAvailability(ToSalesHeader,ToSalesLine);
             END;
           UNTIL FromSalesCrMemoLine.NEXT = 0;
       END;
     END;
 
-    LOCAL PROCEDURE CheckItemAvailable@5(VAR ToSalesHeader@1001 : Record 36;VAR ToSalesLine@1000 : Record 37);
+    LOCAL PROCEDURE CheckItemAvailability@5(VAR ToSalesHeader@1001 : Record 36;VAR ToSalesLine@1000 : Record 37);
     BEGIN
       IF HideDialog THEN
         EXIT;

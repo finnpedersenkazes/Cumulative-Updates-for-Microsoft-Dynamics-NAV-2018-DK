@@ -2,9 +2,9 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -129,9 +129,10 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
           GLSetup.GET;
         END;
 
-        IF GenJnlTemplate.Recurring THEN
-          ProcessLines(TempMarkedGenJnlLine)
-        ELSE
+        IF GenJnlTemplate.Recurring THEN BEGIN
+          ProcessLines(TempMarkedGenJnlLine);
+          COPY(TempMarkedGenJnlLine);
+        END ELSE
           ProcessLines(GenJnlLine);
       END;
     END;

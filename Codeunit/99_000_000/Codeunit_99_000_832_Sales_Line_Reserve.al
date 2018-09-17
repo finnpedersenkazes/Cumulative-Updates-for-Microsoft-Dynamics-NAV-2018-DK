@@ -2,9 +2,9 @@ OBJECT Codeunit 99000832 Sales Line-Reserve
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -257,10 +257,6 @@ OBJECT Codeunit 99000832 Sales Line-Reserve
       OldReservEntry.Lock;
       // Handle Item Tracking on drop shipment:
       CLEAR(CreateReservEntry);
-      IF ApplySpecificItemTracking AND (ItemJnlLine."Applies-to Entry" <> 0) THEN BEGIN
-        CreateReservEntry.SetItemLedgEntryNo(ItemJnlLine."Applies-to Entry");
-        CheckApplFromItemEntry := FALSE;
-      END;
 
       IF OverruleItemTracking THEN
         IF ItemJnlLine.TrackingExists THEN BEGIN
@@ -283,6 +279,11 @@ OBJECT Codeunit 99000832 Sales Line-Reserve
       IF ReservEngineMgt.InitRecordSet(OldReservEntry) THEN BEGIN
         REPEAT
           OldReservEntry.TestItemFields(SalesLine."No.",SalesLine."Variant Code",SalesLine."Location Code");
+
+          IF ApplySpecificItemTracking AND (ItemJnlLine."Applies-to Entry" <> 0) THEN BEGIN
+            CreateReservEntry.SetItemLedgEntryNo(ItemJnlLine."Applies-to Entry");
+            CheckApplFromItemEntry := FALSE;
+          END;
 
           IF ItemJnlLine."Assemble to Order" THEN
             OldReservEntry."Appl.-to Item Entry" :=

@@ -2,9 +2,9 @@ OBJECT Table 5335 Integration Table Mapping
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -43,8 +43,10 @@ OBJECT Table 5335 Integration Table Mapping
     { 5   ;   ;Integration Table UID Fld. No.;Integer;
                                                    OnValidate=VAR
                                                                 Field@1000 : Record 2000000041;
+                                                                TypeHelper@1001 : Codeunit 10;
                                                               BEGIN
                                                                 Field.GET("Integration Table ID","Integration Table UID Fld. No.");
+                                                                TypeHelper.TestFieldIsNotObsolete(Field);
                                                                 "Int. Table UID Field Type" := Field.Type;
                                                               END;
 

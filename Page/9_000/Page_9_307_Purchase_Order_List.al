@@ -2,9 +2,9 @@ OBJECT Page 9307 Purchase Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -22,6 +22,9 @@ OBJECT Page 9307 Purchase Order List
     OnOpenPage=VAR
                  PurchasesPayablesSetup@1000 : Record 312;
                BEGIN
+                 IF GETFILTER(Receive) <> '' THEN
+                   FilterPartialReceived;
+
                  SetSecurityFilterOnRespCenter;
 
                  JobQueueActive := PurchasesPayablesSetup.JobQueueActive;
@@ -722,14 +725,16 @@ OBJECT Page 9307 Purchase Order List
                 ToolTipML=[DAN=Angiver bel›bet ekskl. moms for de bestilte varer, som er blevet modtaget, men endnu ikke faktureret.;
                            ENU=Specifies the amount excluding VAT for the items on the order that have been received but are not yet invoiced.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="A. Rcd. Not Inv. Ex. VAT (LCY)" }
+                SourceExpr="A. Rcd. Not Inv. Ex. VAT (LCY)";
+                Visible=FALSE }
 
     { 26  ;2   ;Field     ;
                 Name=Amount Received Not Invoiced (LCY);
                 ToolTipML=[DAN=Angiver summen i RV for varer, der er modtaget, men endnu ikke er blevet faktureret. V‘rdien i feltet Bel›b modt. ufaktureret (RV) bruges til poster i tabellen K›bslinje med dokumenttypen Ordre til at beregne og opdatere indholdet i feltet.;
                            ENU=Specifies the sum, in LCY, for items that have been received but have not yet been invoiced. The value in the Amt. Rcd. Not Invoiced (LCY) field is used for entries in the Purchase Line table of document type Order to calculate and update the contents of this field.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Amt. Rcd. Not Invoiced (LCY)" }
+                SourceExpr="Amt. Rcd. Not Invoiced (LCY)";
+                Visible=FALSE }
 
     { 20  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver summen af bel›b i feltet Linjebel›b p† k›bsordrelinjerne.;
@@ -809,6 +814,32 @@ OBJECT Page 9307 Purchase Order List
         EXIT(TRUE);
 
       EXIT(CashFlowManagement.GetTaxAmountFromPurchaseOrder(Rec) <> 0);
+    END;
+
+    LOCAL PROCEDURE FilterPartialReceived@1();
+    VAR
+      PurchaseHeaderOriginal@1000 : Record 38;
+      PurchaseLine@1002 : Record 39;
+      ReceiveFilter@1004 : Text;
+      IsMarked@1003 : Boolean;
+      ReceiveValue@1001 : Boolean;
+    BEGIN
+      ReceiveFilter := GETFILTER(Receive);
+      SETRANGE(Receive);
+      EVALUATE(ReceiveValue,ReceiveFilter);
+
+      PurchaseHeaderOriginal := Rec;
+      IF FINDSET THEN
+        REPEAT
+          PurchaseLine.SETRANGE("Document Type","Document Type");
+          PurchaseLine.SETRANGE("Document No.","No.");
+          PurchaseLine.SETFILTER("Quantity Received",'<>%1',0);
+          IsMarked := ReceiveValue AND NOT PurchaseLine.ISEMPTY;
+          MARK(IsMarked);
+        UNTIL NEXT = 0;
+
+      Rec := PurchaseHeaderOriginal;
+      MARKEDONLY(TRUE);
     END;
 
     BEGIN

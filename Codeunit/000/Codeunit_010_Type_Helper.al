@@ -2,9 +2,9 @@ OBJECT Codeunit 10 Type Helper
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -23,6 +23,7 @@ OBJECT Codeunit 10 Type Helper
       BitwiseAndTxt@1005 : TextConst '@@@={Locked};DAN=BitwiseAnd;ENU=BitwiseAnd';
       BitwiseOrTxt@1006 : TextConst '@@@={Locked};DAN=BitwiseOr;ENU=BitwiseOr';
       BitwiseXorTxt@1007 : TextConst '@@@={Locked};DAN=BitwiseXor;ENU=BitwiseXor';
+      ObsoleteFieldErr@1008 : TextConst '@@@=%1 - field name, %2 - table name;DAN=The field %1 of %2 table is obsolete and cannot be used.;ENU=The field %1 of %2 table is obsolete and cannot be used.';
 
     [External]
     PROCEDURE Evaluate@3(VAR Variable@1000 : Variant;String@1001 : Text;Format@1002 : Text;CultureName@1003 : Text) : Boolean;
@@ -256,14 +257,35 @@ OBJECT Codeunit 10 Type Helper
     END;
 
     [External]
+    PROCEDURE FindFields@64(TableNo@1001 : Integer;VAR Field@1000 : Record 2000000041) : Boolean;
+    BEGIN
+      Field.SETRANGE(TableNo,TableNo);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
+      EXIT(Field.FINDSET);
+    END;
+
+    [External]
+    PROCEDURE GetField@63(TableNo@1000 : Integer;FieldNo@1001 : Integer;VAR Field@1002 : Record 2000000041) : Boolean;
+    BEGIN
+      EXIT(Field.GET(TableNo,FieldNo) AND (Field.ObsoleteState <> Field.ObsoleteState::Removed));
+    END;
+
+    [External]
     PROCEDURE GetFieldLength@1(TableNo@1000 : Integer;FieldNo@1001 : Integer) : Integer;
     VAR
       Field@1002 : Record 2000000041;
     BEGIN
-      IF Field.GET(TableNo,FieldNo) THEN
+      IF GetField(TableNo,FieldNo,Field) THEN
         EXIT(Field.Len);
 
       EXIT(0);
+    END;
+
+    [External]
+    PROCEDURE TestFieldIsNotObsolete@66(Field@1000 : Record 2000000041);
+    BEGIN
+      IF Field.ObsoleteState = Field.ObsoleteState::Removed THEN
+        ERROR(ObsoleteFieldErr);
     END;
 
     [External]
@@ -280,9 +302,7 @@ OBJECT Codeunit 10 Type Helper
       IF ThisRecRef.KEYCOUNT = ThisRecRef.FIELDCOUNT THEN
         EXIT(FALSE);
 
-      Field.SETRANGE(TableNo,ThisRecRef.NUMBER);
-      Field.FINDSET;
-
+      FindFields(ThisRecRef.NUMBER,Field);
       REPEAT
         IF NOT Key.GET(ThisRecRef.NUMBER,Field."No.") THEN BEGIN
           ThisFieldRef := ThisRecRef.FIELD(Field."No.");

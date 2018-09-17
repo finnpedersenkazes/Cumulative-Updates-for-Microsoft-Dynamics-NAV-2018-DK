@@ -2,9 +2,9 @@ OBJECT Table 39 Purchase Line
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -2742,7 +2742,6 @@ OBJECT Table 39 Purchase Line
   KEYS
   {
     {    ;Document Type,Document No.,Line No.     ;SumIndexFields=Amount,Amount Including VAT;
-                                                   MaintainSIFTIndex=No;
                                                    Clustered=Yes }
     { No ;Document No.,Line No.,Document Type      }
     {    ;Document Type,Type,No.,Variant Code,Drop Shipment,Location Code,Expected Receipt Date;

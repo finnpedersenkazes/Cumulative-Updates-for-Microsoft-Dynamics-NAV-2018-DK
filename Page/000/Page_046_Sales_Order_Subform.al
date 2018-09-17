@@ -2,9 +2,9 @@ OBJECT Page 46 Sales Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -1404,8 +1404,10 @@ OBJECT Page 46 Sales Order Subform
 
     [External]
     PROCEDURE CalcInvDisc@6();
+    VAR
+      SalesCalcDiscount@1000 : Codeunit 60;
     BEGIN
-      CODEUNIT.RUN(CODEUNIT::"Sales-Calc. Discount",Rec);
+      SalesCalcDiscount.CalculateInvoiceDiscountOnLine(Rec);
     END;
 
     [External]

@@ -2,9 +2,9 @@ OBJECT Table 5600 Fixed Asset
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -134,6 +134,9 @@ OBJECT Table 5600 Fixed Asset
                                                    OnValidate=VAR
                                                                 FASubclass@1000 : Record 5608;
                                                               BEGIN
+                                                                IF "FA Subclass Code" = '' THEN
+                                                                  EXIT;
+
                                                                 FASubclass.GET("FA Subclass Code");
                                                                 IF "FA Class Code" <> '' THEN BEGIN
                                                                   IF FASubclass."FA Class Code" IN ['',"FA Class Code"] THEN

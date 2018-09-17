@@ -2,9 +2,9 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -30,6 +30,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       CreatingFieldDataTxt@1012 : TextConst 'DAN=Opretter feltdata...;ENU=Creating field data...';
       RemovingConfigPackageTxt@1013 : TextConst 'DAN=Fjerner konfigurationspakke...;ENU=Removing config package...';
       ConfigDeleteStatusTxt@1022 : TextConst 'DAN=records.;ENU=records.';
+      TypeHelper@1001 : Codeunit 10;
       ProgressBarText@1023 : Text;
 
     PROCEDURE InitRecords@16(EntityTypeTableNo@1002 : Integer;EntityNo@1001 : Code[50];VAR PackageCode@1004 : Code[20];ActionType@1005 : 'Export a data subject''s data,Create a data privacy configuration package';GeneratePreview@1003 : Boolean;DataSensitivityOption@1000 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
@@ -101,10 +102,13 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       TableRelationsMetadata@1017 : Record 2000000141;
       DataSensitivity@1003 : Record 2000000159;
       DataPrivacyListPage@1001 : Page 1181;
+      LocalRecRef@1008 : RecordRef;
+      FieldRef@1005 : FieldRef;
       LastTableID@1011 : Integer;
       ProcessingOrder@1012 : Integer;
       PackageName@1004 : Text[50];
       EntityKeyField@1000 : Integer;
+      FieldIndex@1009 : Integer;
     BEGIN
       PackageCode := GetPackageCode(EntityTypeTableNo,EntityNo,ActionType);
       PackageName :=
@@ -130,19 +134,28 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
         ELSE
           EntityKeyField := DataPrivacyEntities."Key Field No.";
 
+      CreatePackage(ConfigPackage,PackageCode,PackageName);
+      CreatePackageTable(PackageCode,EntityTypeTableNo);
+
+      LocalRecRef.OPEN(EntityTypeTableNo);
+      FOR FieldIndex := 1 TO LocalRecRef.FIELDCOUNT DO BEGIN
+        FieldRef := LocalRecRef.FIELDINDEX(FieldIndex);
+        IF IsInPrimaryKey(FieldRef) THEN BEGIN
+          ProcessingOrder += 1;
+          CreatePackageField(ConfigPackage.Code,EntityTypeTableNo,FieldRef.NUMBER,ProcessingOrder);
+          CreatePackageFilter(ConfigPackage.Code,EntityTypeTableNo,EntityKeyField,FORMAT(EntityNo));
+        END;
+      END;
+      LocalRecRef.CLOSE;
+
       // This will handle the fields on the master table.
       SetRangeDataSensitivity(DataSensitivity,RecRef.NUMBER,DataSensitivityOption);
       IF DataSensitivity.FINDSET THEN BEGIN
-        CreatePackage(ConfigPackage,PackageCode,PackageName);
         REPEAT
           CreatePackageTable(PackageCode,DataSensitivity."Table No");
-          LastTableID := DataSensitivity."Table No";
-          ProcessingOrder := 1;
-          IF CreatePackageField(PackageCode,DataSensitivity."Table No",DataSensitivity."Field No",ProcessingOrder) THEN
-            IF ProcessingOrder = 1 THEN
-              CreatePackageFilter(ConfigPackage.Code,DataSensitivity."Table No",EntityKeyField,FORMAT(EntityNo));
 
           ProcessingOrder += 1;
+          CreatePackageField(PackageCode,DataSensitivity."Table No",DataSensitivity."Field No",ProcessingOrder);
         UNTIL DataSensitivity.NEXT = 0;
       END;
 
@@ -342,7 +355,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       ConfigPackage@1002 : Record 8623;
     BEGIN
       IF ConfigPackage.GET(ConfigPackageCode) THEN
-        IF Field.GET(TableId,EntityKeyField) THEN
+        IF TypeHelper.GetField(TableId,EntityKeyField,Field) THEN
           IF (Field.Class = Field.Class::Normal) AND
              ((Field.Type = Field.Type::Integer) OR (Field.Type = Field.Type::Text) OR
               (Field.Type = Field.Type::Code) OR (Field.Type = Field.Type::Option))
@@ -354,7 +367,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
 
     LOCAL PROCEDURE IsValidField@19(TableId@1000 : Integer;FieldId@1002 : Integer;VAR Field@1001 : Record 2000000041) : Boolean;
     BEGIN
-      IF Field.GET(TableId,FieldId) THEN
+      IF TypeHelper.GetField(TableId,FieldId,Field) THEN
         IF (NOT ((Field.Type = Field.Type::Media) OR
                  (Field.Type = Field.Type::MediaSet) OR (Field.Type = Field.Type::BLOB) OR (Field.Type = Field.Type::GUID))) AND
            (Field.Class = Field.Class::Normal)

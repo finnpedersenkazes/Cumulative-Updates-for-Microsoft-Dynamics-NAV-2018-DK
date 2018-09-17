@@ -2,9 +2,9 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -428,7 +428,6 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
     LOCAL PROCEDURE PostOutput@25();
     VAR
       MfgItem@1012 : Record 27;
-      MfgSKU@1003 : Record 5700;
       MachCenter@1008 : Record 99000758;
       WorkCenter@1004 : Record 99000754;
       CapLedgEntry@1000 : Record 5832;
@@ -439,7 +438,6 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       DirCostAmt@1002 : Decimal;
       IndirCostAmt@1001 : Decimal;
       ValuedQty@1011 : Decimal;
-      MfgUnitCost@1010 : Decimal;
       ReTrack@1009 : Boolean;
     BEGIN
       WITH ItemJnlLine DO BEGIN
@@ -531,14 +529,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
           MfgItem.GET(ProdOrderLine."Item No.");
           MfgItem.TESTFIELD("Gen. Prod. Posting Group");
 
-          IF NOT Subcontracting THEN BEGIN
-            IF MfgSKU.GET(ProdOrderLine."Location Code",ProdOrderLine."Item No.",ProdOrderLine."Variant Code") THEN
-              MfgUnitCost := MfgSKU."Unit Cost"
-            ELSE
-              MfgUnitCost := MfgItem."Unit Cost";
-            Amount := "Output Quantity" * MfgUnitCost;
-          END;
-
+          Amount := "Output Quantity" * ProdOrderLine."Unit Cost";
           "Amount (ACY)" := ACYMgt.CalcACYAmt(Amount,"Posting Date",FALSE);
           "Gen. Bus. Posting Group" := ProdOrder."Gen. Bus. Posting Group";
           "Gen. Prod. Posting Group" := MfgItem."Gen. Prod. Posting Group";
@@ -1561,52 +1552,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
             IF FirstApplication THEN BEGIN
               FirstApplication := FALSE;
               OldItemLedgEntry.GET(ItemLedgEntry."Applies-to Entry");
-              OldItemLedgEntry.TESTFIELD("Item No.",ItemLedgEntry."Item No.");
-              OldItemLedgEntry.TESTFIELD("Variant Code",ItemLedgEntry."Variant Code");
-
-              OldItemLedgEntry.TESTFIELD(Positive,NOT ItemLedgEntry.Positive);
-              OldItemLedgEntry.TESTFIELD("Location Code",ItemLedgEntry."Location Code");
-              IF Location.GET(ItemLedgEntry."Location Code") THEN
-                IF Location."Use As In-Transit" THEN BEGIN
-                  OldItemLedgEntry.TESTFIELD("Order Type",OldItemLedgEntry."Order Type"::Transfer);
-                  OldItemLedgEntry.TESTFIELD("Order No.",ItemLedgEntry."Order No.");
-                END;
-
-              IF ItemTrackingCode."SN Specific Tracking" OR ItemLedgEntry."Drop Shipment" THEN
-                OldItemLedgEntry.TESTFIELD("Serial No.",ItemLedgEntry."Serial No.");
-              IF ItemTrackingCode."Lot Specific Tracking" OR ItemLedgEntry."Drop Shipment" THEN
-                OldItemLedgEntry.TESTFIELD("Lot No.",ItemLedgEntry."Lot No.");
-
-              IF  NOT (OldItemLedgEntry.Open AND
-                       (ABS(OldItemLedgEntry."Remaining Quantity" - OldItemLedgEntry."Reserved Quantity") >=
-                        ABS(ItemLedgEntry."Remaining Quantity" - ItemLedgEntry."Reserved Quantity")))
-              THEN BEGIN
-                IF  (ABS(OldItemLedgEntry."Remaining Quantity" - OldItemLedgEntry."Reserved Quantity") <=
-                     ABS(ItemLedgEntry."Remaining Quantity" - ItemLedgEntry."Reserved Quantity"))
-                THEN BEGIN
-                  IF NOT MoveApplication(ItemLedgEntry,OldItemLedgEntry) THEN
-                    OldItemLedgEntry.FIELDERROR("Remaining Quantity",Text004);
-                END
-                ELSE
-                  OldItemLedgEntry.TESTFIELD(Open,TRUE);
-              END;
-
-              OldItemLedgEntry.CALCFIELDS("Reserved Quantity");
-              CheckApplication(ItemLedgEntry,OldItemLedgEntry);
-
-              IF ABS(OldItemLedgEntry."Remaining Quantity") <= ABS(OldItemLedgEntry."Reserved Quantity") THEN
-                ReservationPreventsApplication(ItemLedgEntry."Applies-to Entry",ItemLedgEntry."Item No.",OldItemLedgEntry);
-
-              IF (OldItemLedgEntry."Order Type" = OldItemLedgEntry."Order Type"::Production) AND
-                 (OldItemLedgEntry."Order No." <> '')
-              THEN
-                IF NOT AllowProdApplication(OldItemLedgEntry,ItemLedgEntry) THEN
-                  ERROR(
-                    Text022,
-                    ItemLedgEntry."Entry Type",
-                    OldItemLedgEntry."Entry Type",
-                    OldItemLedgEntry."Item No.",
-                    OldItemLedgEntry."Order No.")
+              TestFirstApplyItemLedgEntry(OldItemLedgEntry,ItemLedgEntry);
             END ELSE
               EXIT;
           END ELSE BEGIN
@@ -1759,6 +1705,55 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
             EXIT;
         END;
       UNTIL FALSE;
+    END;
+
+    LOCAL PROCEDURE TestFirstApplyItemLedgEntry@153(VAR OldItemLedgEntry@1000 : Record 32;ItemLedgEntry@1001 : Record 32);
+    BEGIN
+      OldItemLedgEntry.TESTFIELD("Item No.",ItemLedgEntry."Item No.");
+      OldItemLedgEntry.TESTFIELD("Variant Code",ItemLedgEntry."Variant Code");
+      OldItemLedgEntry.TESTFIELD(Positive,NOT ItemLedgEntry.Positive);
+      OldItemLedgEntry.TESTFIELD("Location Code",ItemLedgEntry."Location Code");
+      IF Location.GET(ItemLedgEntry."Location Code") THEN
+        IF Location."Use As In-Transit" THEN BEGIN
+          OldItemLedgEntry.TESTFIELD("Order Type",OldItemLedgEntry."Order Type"::Transfer);
+          OldItemLedgEntry.TESTFIELD("Order No.",ItemLedgEntry."Order No.");
+        END;
+
+      IF ItemTrackingCode."SN Specific Tracking" THEN
+        OldItemLedgEntry.TESTFIELD("Serial No.",ItemLedgEntry."Serial No.");
+      IF ItemLedgEntry."Drop Shipment" AND (OldItemLedgEntry."Serial No." <> '') THEN
+        OldItemLedgEntry.TESTFIELD("Serial No.",ItemLedgEntry."Serial No.");
+
+      IF ItemTrackingCode."Lot Specific Tracking" THEN
+        OldItemLedgEntry.TESTFIELD("Lot No.",ItemLedgEntry."Lot No.");
+      IF ItemLedgEntry."Drop Shipment" AND (OldItemLedgEntry."Lot No." <> '') THEN
+        OldItemLedgEntry.TESTFIELD("Lot No.",ItemLedgEntry."Lot No.");
+
+      IF NOT (OldItemLedgEntry.Open AND
+              (ABS(OldItemLedgEntry."Remaining Quantity" - OldItemLedgEntry."Reserved Quantity") >=
+               ABS(ItemLedgEntry."Remaining Quantity" - ItemLedgEntry."Reserved Quantity")))
+      THEN
+        IF (ABS(OldItemLedgEntry."Remaining Quantity" - OldItemLedgEntry."Reserved Quantity") <=
+            ABS(ItemLedgEntry."Remaining Quantity" - ItemLedgEntry."Reserved Quantity"))
+        THEN BEGIN
+          IF NOT MoveApplication(ItemLedgEntry,OldItemLedgEntry) THEN
+            OldItemLedgEntry.FIELDERROR("Remaining Quantity",Text004);
+        END ELSE
+          OldItemLedgEntry.TESTFIELD(Open,TRUE);
+
+      OldItemLedgEntry.CALCFIELDS("Reserved Quantity");
+      CheckApplication(ItemLedgEntry,OldItemLedgEntry);
+
+      IF ABS(OldItemLedgEntry."Remaining Quantity") <= ABS(OldItemLedgEntry."Reserved Quantity") THEN
+        ReservationPreventsApplication(ItemLedgEntry."Applies-to Entry",ItemLedgEntry."Item No.",OldItemLedgEntry);
+
+      IF (OldItemLedgEntry."Order Type" = OldItemLedgEntry."Order Type"::Production) AND
+         (OldItemLedgEntry."Order No." <> '')
+      THEN
+        IF NOT AllowProdApplication(OldItemLedgEntry,ItemLedgEntry) THEN
+          ERROR(
+            Text022,
+            ItemLedgEntry."Entry Type",OldItemLedgEntry."Entry Type",OldItemLedgEntry."Item No.",OldItemLedgEntry."Order No.")
     END;
 
     LOCAL PROCEDURE EnsureValueEntryLoaded@76(VAR ValueEntry@1000 : Record 5802;ItemLedgEntry@1001 : Record 32);
@@ -3753,6 +3748,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       NewItemLedgEntry@1002 : Record 32;
       OldValueEntry@1003 : Record 5802;
       NewValueEntry@1000 : Record 5802;
+      AvgCostAdjmtEntryPoint@1005 : Record 5804;
       IsReserved@1006 : Boolean;
     BEGIN
       IF ItemJnlLine."Entry Type" IN [ItemJnlLine."Entry Type"::"Assembly Consumption",
@@ -3785,6 +3781,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       GlobalItemLedgEntry := NewItemLedgEntry;
 
       CalcILEExpectedAmount(OldValueEntry,OldItemLedgEntry."Entry No.");
+      AvgCostAdjmtEntryPoint.UpdateValuationDate(OldValueEntry);
       IF OldItemLedgEntry."Invoiced Quantity" = 0 THEN BEGIN
         InsertCorrValueEntry(
           OldValueEntry,NewValueEntry,OldItemLedgEntry,OldValueEntry."Document Line No.",1,

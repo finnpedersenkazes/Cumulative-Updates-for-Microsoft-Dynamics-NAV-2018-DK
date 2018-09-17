@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
+    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
   }
   PROPERTIES
   {
@@ -4727,7 +4727,9 @@ OBJECT Table 36 Sales Header
         EXIT;
 
       IF UserSetup."Salespers./Purch. Code" <> '' THEN
-        VALIDATE("Salesperson Code",UserSetup."Salespers./Purch. Code");
+        IF Salesperson.GET(UserSetup."Salespers./Purch. Code") THEN
+          IF NOT Salesperson.VerifySalesPersonPurchaserPrivacyBlocked(Salesperson) THEN
+            VALIDATE("Salesperson Code",UserSetup."Salespers./Purch. Code");
     END;
 
     PROCEDURE SelltoCustomerNoOnAfterValidate@125(VAR SalesHeader@1000 : Record 36;VAR xSalesHeader@1001 : Record 36);

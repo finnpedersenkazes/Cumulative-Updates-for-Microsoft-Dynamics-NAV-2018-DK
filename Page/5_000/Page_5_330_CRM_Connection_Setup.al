@@ -2,9 +2,9 @@ OBJECT Page 5330 CRM Connection Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -358,7 +358,25 @@ OBJECT Page 5330 CRM Connection Setup
                 Enabled="Is CRM Solution Installed" }
 
     { 28  ;2   ;Field     ;
-                ApplicationArea=#Suite }
+                Name=ItemAvailabilityWebServEnabled;
+                CaptionML=[DAN=Item Availability Web Service Enabled;
+                           ENU=Item Availability Web Service Enabled];
+                ToolTipML=[DAN=Specifies that the Item Availability web service for Business Central is enabled.;
+                           ENU=Specifies that the Item Availability web service for Business Central is enabled.];
+                ApplicationArea=#Suite;
+                SourceExpr=WebServiceEnabled;
+                Editable=FALSE;
+                StyleExpr=WebServiceEnabledStyleExpr;
+                OnDrillDown=VAR
+                              CRMIntegrationManagement@1000 : Codeunit 5330;
+                            BEGIN
+                              IF WebServiceEnabled THEN
+                                CRMIntegrationManagement.UnPublishOnWebService(Rec)
+                              ELSE
+                                CRMIntegrationManagement.PublishWebService(Rec);
+                              CurrPage.UPDATE(TRUE);
+                            END;
+                             }
 
     { 34  ;2   ;Field     ;
                 ApplicationArea=#Suite }
@@ -568,6 +586,7 @@ OBJECT Page 5330 CRM Connection Setup
       CRMVersionStyleExpr@1013 : Text;
       UserMappedToCRMUserStyleExpr@1019 : Text;
       ConnectionString@1020 : Text;
+      WebServiceEnabledStyleExpr@1024 : Text;
       ActiveJobs@1007 : Integer;
       TotalJobs@1004 : Integer;
       IsEditable@1008 : Boolean;
@@ -576,6 +595,7 @@ OBJECT Page 5330 CRM Connection Setup
       SoftwareAsAService@1015 : Boolean;
       IsConnectionStringEditable@1022 : Boolean;
       IsAutoCreateSalesOrdersEditable@1021 : Boolean;
+      WebServiceEnabled@1023 : Boolean;
 
     LOCAL PROCEDURE RefreshData@19();
     BEGIN
@@ -585,6 +605,8 @@ OBJECT Page 5330 CRM Connection Setup
       SetAutoCreateSalesOrdersEditable;
       RefreshSynchJobsData;
       UpdateEnableFlags;
+      IF NOT WebServiceEnabled THEN
+        CLEAR("Dynamics NAV OData URL");
       SetStyleExpr;
     END;
 
@@ -600,6 +622,7 @@ OBJECT Page 5330 CRM Connection Setup
       CRMSolutionInstalledStyleExpr := GetStyleExpr("Is CRM Solution Installed");
       CRMVersionStyleExpr := GetStyleExpr(IsVersionValid);
       UserMappedToCRMUserStyleExpr := GetStyleExpr("Is User Mapped To CRM User");
+      WebServiceEnabledStyleExpr := GetStyleExpr(WebServiceEnabled);
     END;
 
     LOCAL PROCEDURE SetIsConnectionStringEditable@4();
@@ -630,9 +653,12 @@ OBJECT Page 5330 CRM Connection Setup
     END;
 
     LOCAL PROCEDURE UpdateEnableFlags@3();
+    VAR
+      CRMIntegrationManagement@1000 : Codeunit 5330;
     BEGIN
       IsEditable := NOT "Is Enabled";
       IsWebCliResetEnabled := "Is CRM Solution Installed" AND "Is Enabled For User";
+      WebServiceEnabled := CRMIntegrationManagement.IsItemAvailabilityWebServiceEnabled;
     END;
 
     BEGIN

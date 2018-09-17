@@ -2,9 +2,9 @@ OBJECT Codeunit 408 DimensionManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -1044,6 +1044,7 @@ OBJECT Codeunit 408 DimensionManagement
       TempDimSetIDField@1001 : TEMPORARY Record 2000000041;
     BEGIN
       TempDimField.SETFILTER(TableNo,'<>%1&<>%2',DATABASE::"General Ledger Setup",DATABASE::"Job Task");
+      TempDimField.SETFILTER(ObsoleteState,'<>%1',TempDimField.ObsoleteState::Removed);
       TempDimField.SETFILTER(FieldName,'*Global Dimension*');
       TempDimField.SETRANGE(Type,TempDimField.Type::Code);
       TempDimField.SETRANGE(Len,20);
@@ -1087,6 +1088,7 @@ OBJECT Codeunit 408 DimensionManagement
       TempDimSetIDField.SETRANGE(RelationTableNo,DATABASE::"Dimension Set Entry");
       FillNormalFieldBuffer(TempDimSetIDField);
       TempDimField.SETFILTER(FieldName,'*Global Dimension*|*Shortcut Dimension*|*Global Dim.*');
+      TempDimField.SETFILTER(ObsoleteState,'<>%1',TempDimField.ObsoleteState::Removed);
       TempDimField.SETRANGE(Type,TempDimField.Type::Code);
       TempDimField.SETRANGE(Len,20);
       FillNormalFieldBuffer(TempDimField);
@@ -1101,6 +1103,7 @@ OBJECT Codeunit 408 DimensionManagement
         UNTIL TempDimSetIDField.NEXT = 0;
 
       TempDimField.RESET;
+      TempDimField.SETFILTER(ObsoleteState,'<>%1',TempDimField.ObsoleteState::Removed);
       TempDimField.SETFILTER(FieldName,'*Global Dim.*');
       IF TempDimField.FINDSET THEN
         REPEAT
@@ -1127,6 +1130,7 @@ OBJECT Codeunit 408 DimensionManagement
     BEGIN
       Field.SETRANGE(TableNo,TableNo);
       Field.SETFILTER(FieldName,'*' + FieldNameFilter + '*');
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETRANGE(Class,Field.Class::Normal);
       Field.SETRANGE(Type,Field.Type::Code);
       Field.SETRANGE(Len,20);
@@ -1140,6 +1144,7 @@ OBJECT Codeunit 408 DimensionManagement
     BEGIN
       Field.COPYFILTERS(TempField);
       Field.SETRANGE(Class,Field.Class::Normal);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       IF Field.FINDSET THEN
         REPEAT
           TempField := Field;

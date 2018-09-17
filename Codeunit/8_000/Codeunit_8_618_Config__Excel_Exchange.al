@@ -2,9 +2,9 @@ OBJECT Codeunit 8618 Config. Excel Exchange
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -20,6 +20,7 @@ OBJECT Codeunit 8618 Config. Excel Exchange
       FileMgt@1003 : Codeunit 419;
       ConfigProgressBar@1004 : Codeunit 8615;
       ConfigValidateMgt@1021 : Codeunit 8617;
+      TypeHelper@1027 : Codeunit 10;
       CannotCreateXmlSchemaErr@1016 : TextConst 'DAN=XML-skemaet kunne ikke oprettes.;ENU=Could not create XML Schema.';
       CreatingExcelMsg@1011 : TextConst 'DAN=Opretter Excel-regneark;ENU=Creating Excel worksheet';
       WrkbkReader@1000 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.WorkbookReader";
@@ -655,7 +656,9 @@ OBJECT Codeunit 8618 Config. Excel Exchange
       IF ConfigPackageField.FINDSET THEN BEGIN
         ColumnID := 1;
         REPEAT
-          IF Field.GET(ConfigPackageField."Table ID",ConfigPackageField."Field ID") OR ConfigPackageField.Dimension THEN BEGIN
+          IF TypeHelper.GetField(ConfigPackageField."Table ID",ConfigPackageField."Field ID",Field) OR
+             ConfigPackageField.Dimension
+          THEN BEGIN
             IF ConfigPackageField.Dimension THEN
               TableColumnName := ConfigPackageField."Field Caption" + ' ' + STRSUBSTNO('(%1)',Dimension.TABLECAPTION)
             ELSE

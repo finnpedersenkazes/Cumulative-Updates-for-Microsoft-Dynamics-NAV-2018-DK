@@ -2,9 +2,9 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -47,6 +47,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
       FieldsSyncStatus@1002 : Record 1750;
     BEGIN
       Field.SETRANGE(Enabled,TRUE);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETFILTER(
         DataClassification,
         STRSUBSTNO('%1|%2|%3',
@@ -452,6 +453,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
     BEGIN
       PrevTableNo := 0;
       Field.SETRANGE(DataClassification,Field.DataClassification::CustomerContent);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETFILTER(TableName,STRSUBSTNO('*%1*',Name));
       IF Field.FINDSET THEN BEGIN
         REPEAT
@@ -600,6 +602,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
     LOCAL PROCEDURE SetFilterOnField@44(VAR Field@1000 : Record 2000000041);
     BEGIN
       Field.SETRANGE(Enabled,TRUE);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETRANGE(Class,Field.Class::Normal);
       Field.SETFILTER(DataClassification,STRSUBSTNO('%1|%2|%3',
           Field.DataClassification::CustomerContent,
@@ -809,6 +812,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
         EXIT;
 
       // Set Everything to Normal and override later
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETFILTER(DataClassification,STRSUBSTNO('%1|%2|%3',
           Field.DataClassification::CustomerContent,
           Field.DataClassification::EndUserIdentifiableInformation,
@@ -1277,6 +1281,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
     BEGIN
       // All fields of tables that contain Entry in their name are set to Company Confidential
       Field.SETRANGE(Enabled,TRUE);
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       Field.SETFILTER(
         DataClassification,
         STRSUBSTNO('%1|%2|%3',

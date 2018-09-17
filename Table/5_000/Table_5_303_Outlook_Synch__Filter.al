@@ -2,9 +2,9 @@ OBJECT Table 5303 Outlook Synch. Filter
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -112,7 +112,7 @@ OBJECT Table 5303 Outlook Synch. Filter
                                                               ENU=Master Table No.] }
     { 10  ;   ;Master Table Field No.;Integer     ;TableRelation=Field.No. WHERE (TableNo=FIELD(Master Table No.));
                                                    OnValidate=BEGIN
-                                                                IF Field.GET("Master Table No.","Master Table Field No.") THEN
+                                                                IF TypeHelper.GetField("Master Table No.","Master Table Field No.",Field) THEN
                                                                   VALIDATE(Value,Field."Field Caption");
                                                               END;
 
@@ -141,6 +141,7 @@ OBJECT Table 5303 Outlook Synch. Filter
       Text004@1002 : TextConst 'DAN=Dette er ikke en gyldig indstilling for feltet %1. De mulige indstillinger er: ''%2''.;ENU=This is not a valid option for the %1 field. The possible options are: ''%2''.';
       Text005@1001 : TextConst 'DAN=V‘lg et gyldigt felt i tabellen %1.;ENU=Choose a valid field in the %1 table.';
       Text006@1009 : TextConst 'DAN=V‘rdien i dette felt m† ikke v‘re l‘ngere end %1.;ENU=The value in this field cannot be longer than %1.';
+      TypeHelper@1000 : Codeunit 10;
 
     [External]
     PROCEDURE SetTablesNo@1(TableLeftNo@1000 : Integer;TableRightNo@1001 : Integer);
@@ -163,10 +164,9 @@ OBJECT Table 5303 Outlook Synch. Filter
       CLEAR(FldRef);
       RecRef.OPEN("Table No.",TRUE);
 
-      IF "Field No." = 0 THEN
+      IF ("Field No." = 0) OR NOT TypeHelper.GetField("Table No.","Field No.",Field) THEN
         ERROR(Text005,RecRef.CAPTION);
 
-      Field.GET("Table No.","Field No.");
       FldRef := RecRef.FIELD("Field No.");
 
       CASE Type OF

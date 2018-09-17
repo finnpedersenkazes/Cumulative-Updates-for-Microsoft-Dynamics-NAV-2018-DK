@@ -2,9 +2,9 @@ OBJECT Table 1265 Data Exch. Field Mapping Buf.
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -275,6 +275,7 @@ OBJECT Table 1265 Data Exch. Field Mapping Buf.
       FieldList@1000 : Page 6218;
     BEGIN
       Field.SETRANGE(TableNo,"Table ID");
+      Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
       FieldList.SETTABLEVIEW(Field);
       FieldList.LOOKUPMODE(TRUE);
       IF FieldList.RUNMODAL = ACTION::LookupOK THEN BEGIN

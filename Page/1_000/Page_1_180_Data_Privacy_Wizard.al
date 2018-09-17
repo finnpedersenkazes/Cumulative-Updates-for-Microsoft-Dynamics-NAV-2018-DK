@@ -2,9 +2,9 @@ OBJECT Page 1180 Data Privacy Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=06-04-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21441;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -400,10 +400,10 @@ OBJECT Page 1180 Data Privacy Wizard
                                END;
                              END;
 
+                             OnEntityNoValidate(EntityTypeTableNo,EntityNo);
+
                              NextActionEnabled := EntityNo <> '';
                              PreviewActionEnabled := EntityNo <> '';
-
-                             OnEntityNoValidate;
                            END;
 
                 OnDrillDown=VAR
@@ -521,7 +521,7 @@ OBJECT Page 1180 Data Privacy Wizard
                                 END;
                               END;
 
-                              OnDrillDownForEntityNumber(EntityTypeTableNo); // Integration point to external devs
+                              OnDrillDownForEntityNumber(EntityTypeTableNo,EntityNo); // Integration point to external devs
 
                               NextActionEnabled := EntityNo <> '';
                               PreviewActionEnabled := EntityNo <> '';
@@ -763,12 +763,12 @@ OBJECT Page 1180 Data Privacy Wizard
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnDrillDownForEntityNumber@10(EntityTypeTableNo@1000 : Integer);
+    LOCAL PROCEDURE OnDrillDownForEntityNumber@10(EntityTypeTableNo@1000 : Integer;VAR EntityNo@1001 : Code[50]);
     BEGIN
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnEntityNoValidate@4();
+    LOCAL PROCEDURE OnEntityNoValidate@4(EntityTypeTableNo@1001 : Integer;VAR EntityNo@1000 : Code[50]);
     BEGIN
     END;
 

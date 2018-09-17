@@ -2,9 +2,9 @@ OBJECT Report 5692 Calculate Depreciation
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -41,6 +41,7 @@ OBJECT Report 5692 Calculate Depreciation
                    PageGenJnlLine@1000 : Record 81;
                    PageFAJnlLine@1001 : Record 5621;
                  BEGIN
+                   Window.CLOSE;
                    IF (FAJnlLineCreatedCount = 0) AND (GenJnlLineCreatedCount = 0) THEN BEGIN
                      MESSAGE(CompletionStatsMsg);
                      EXIT;

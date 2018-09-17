@@ -2,9 +2,9 @@ OBJECT Table 9701 Cue Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=26-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21836;
   }
   PROPERTIES
   {
@@ -44,6 +44,7 @@ OBJECT Table 9701 Cue Setup
                                                               // Filter on Table No=Table No and Type=Decimal|Integer. This should give us approximately the
                                                               // fields that are "valid" for a cue control.
                                                               Field.SETRANGE(TableNo,"Table ID");
+                                                              Field.SETFILTER(ObsoleteState,'<>%1',Field.ObsoleteState::Removed);
                                                               Filter := FORMAT(Field.Type::Decimal) + '|' + FORMAT(Field.Type::Integer);
                                                               Field.SETFILTER(Type,Filter);
                                                               FieldsLookup.SETTABLEVIEW(Field);
