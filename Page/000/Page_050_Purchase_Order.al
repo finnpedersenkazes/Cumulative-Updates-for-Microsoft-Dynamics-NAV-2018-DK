@@ -2,9 +2,9 @@ OBJECT Page 50 Purchase Order
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -49,6 +49,8 @@ OBJECT Page 50 Purchase Order
 
                   IF (NOT DocNoVisible) AND ("No." = '') THEN
                     SetBuyFromVendorFromFilter;
+
+                  CalculateCurrentShippingAndPayToOption;
                 END;
 
     OnDeleteRecord=BEGIN
@@ -1340,6 +1342,7 @@ OBJECT Page 50 Purchase Order
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=ShipToOptions;
                 Visible=NOT ShowShippingOptionsWithLocation;
+                HideValue=ShowShippingOptionsWithLocation AND (ShipToOptions = ShipToOptions::Location);
                 OnValidate=BEGIN
                              ValidateShippingOption
                            END;

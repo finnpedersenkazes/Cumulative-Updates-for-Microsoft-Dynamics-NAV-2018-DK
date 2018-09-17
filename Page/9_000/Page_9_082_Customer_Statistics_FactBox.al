@@ -2,9 +2,9 @@ OBJECT Page 9082 Customer Statistics FactBox
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -18,7 +18,6 @@ OBJECT Page 9082 Customer Statistics FactBox
 
     OnAfterGetRecord=BEGIN
                        FILTERGROUP(4);
-                       DateFilterSet := GETFILTER("Date Filter") <> '';
                      END;
 
   }
@@ -67,8 +66,7 @@ OBJECT Page 9082 Customer Statistics FactBox
                 ToolTipML=[DAN=Angiver dine forventede salgsindt‘gter fra debitoren i RV baseret p† igangv‘rende salgsordrer.;
                            ENU=Specifies your expected sales income from the customer in LCY based on ongoing sales orders.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Outstanding Orders (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Outstanding Orders (LCY)" }
 
     { 15  ;2   ;Field     ;
                 CaptionML=[DAN=Leveret ikke faktureret (RV);
@@ -76,15 +74,13 @@ OBJECT Page 9082 Customer Statistics FactBox
                 ToolTipML=[DAN=Angiver dine forventede salgsindt‘gter fra debitoren i RV baseret p† igangv‘rende salgsordrer, hvor varerne er blevet afsendt.;
                            ENU=Specifies your expected sales income from the customer in LCY based on ongoing sales orders where items have been shipped.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Shipped Not Invoiced (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Shipped Not Invoiced (LCY)" }
 
     { 2   ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver dine forventede salgsindt‘gter fra debitoren i RV baseret p† ubetalte salgsfakturaer.;
                            ENU=Specifies your expected sales income from the customer in LCY based on unpaid sales invoices.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Outstanding Invoices (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Outstanding Invoices (LCY)" }
 
     { 1   ;1   ;Group     ;
                 Name=Service;
@@ -96,22 +92,19 @@ OBJECT Page 9082 Customer Statistics FactBox
                 ToolTipML=[DAN=Angiver dine forventede serviceindt‘gter fra debitoren i RV baseret p† igangv‘rende serviceordrer.;
                            ENU=Specifies your expected service income from the customer in LCY based on ongoing service orders.];
                 ApplicationArea=#Service;
-                SourceExpr="Outstanding Serv. Orders (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Outstanding Serv. Orders (LCY)" }
 
     { 6   ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver dine forventede serviceindt‘gter fra debitoren i RV baseret p† serviceordrer, som er sendt, men ikke faktureret.;
                            ENU=Specifies your expected service income from the customer in LCY based on service orders that are shipped but not invoiced.];
                 ApplicationArea=#Service;
-                SourceExpr="Serv Shipped Not Invoiced(LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Serv Shipped Not Invoiced(LCY)" }
 
     { 3   ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver dine forventede serviceindt‘gter fra debitoren i RV baseret p† ubetalte servicefakturaer.;
                            ENU=Specifies your expected service income from the customer in LCY based on unpaid service invoices.];
                 ApplicationArea=#Service;
-                SourceExpr="Outstanding Serv.Invoices(LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Outstanding Serv.Invoices(LCY)" }
 
     { 10  ;1   ;Field     ;
                 Name=Total (LCY);
@@ -124,7 +117,6 @@ OBJECT Page 9082 Customer Statistics FactBox
                 SourceExpr=GetTotalAmountLCY;
                 AutoFormatType=1;
                 Importance=Promoted;
-                HideValue=DateFilterSet;
                 Style=Strong;
                 StyleExpr=TRUE }
 
@@ -179,8 +171,7 @@ OBJECT Page 9082 Customer Statistics FactBox
                 ToolTipML=[DAN=Angiver dine salgsindt‘gter fra debitoren baseret p† fakturerede forudbetalinger.;
                            ENU=Specifies your sales income from the customer, based on invoiced prepayments.];
                 ApplicationArea=#Prepayments;
-                SourceExpr=GetInvoicedPrepmtAmountLCY;
-                HideValue=DateFilterSet }
+                SourceExpr=GetInvoicedPrepmtAmountLCY }
 
   }
   CODE
@@ -188,7 +179,6 @@ OBJECT Page 9082 Customer Statistics FactBox
     VAR
       Text000@1024 : TextConst 'DAN=Forfaldne bel›b (RV) pr. %1;ENU=Overdue Amounts (LCY) as of %1';
       ShowCustomerNo@1000 : Boolean;
-      DateFilterSet@1001 : Boolean;
 
     LOCAL PROCEDURE ShowDetails@1102601000();
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Codeunit 41 TextManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -718,7 +718,7 @@ OBJECT Codeunit 41 TextManagement
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnBeforeMakeTextFilter@25(TextFilterText@1000 : Text;VAR Position@1001 : Integer;VAR HandledByEvent@1002 : Boolean);
+    LOCAL PROCEDURE OnBeforeMakeTextFilter@25(VAR TextFilterText@1000 : Text;VAR Position@1001 : Integer;VAR HandledByEvent@1002 : Boolean);
     BEGIN
     END;
 

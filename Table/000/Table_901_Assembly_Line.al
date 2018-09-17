@@ -2,9 +2,9 @@ OBJECT Table 901 Assembly Line
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -1042,26 +1042,6 @@ OBJECT Table 901 Assembly Line
       EXIT(NOT ISEMPTY);
     END;
 
-    LOCAL PROCEDURE GetEarliestAvailDate@35(CompanyInfo@1001 : Record 79;GrossRequirement@1002 : Decimal;ExcludeQty@1004 : Decimal;ExcludeDate@1005 : Date) : Date;
-    VAR
-      AvailableToPromise@1000 : Codeunit 5790;
-      QtyAvailable@1003 : Decimal;
-    BEGIN
-      GetItemResource;
-      SetItemFilter(Item);
-
-      EXIT(
-        AvailableToPromise.EarliestAvailabilityDate(
-          Item,
-          GrossRequirement,
-          "Due Date",
-          ExcludeQty,
-          ExcludeDate,
-          QtyAvailable,
-          CompanyInfo."Check-Avail. Time Bucket",
-          CompanyInfo."Check-Avail. Period Calc."));
-    END;
-
     LOCAL PROCEDURE SelectItemEntry@44(CurrentFieldNo@1000 : Integer);
     VAR
       ItemLedgEntry@1001 : Record 32;
@@ -1111,6 +1091,7 @@ OBJECT Table 901 Assembly Line
       AvailabilityDate@1009 : Date;
       ReservedReceipt@1000 : Decimal;
       ReservedRequirement@1003 : Decimal;
+      QtyAvailable@1014 : Decimal;
       PeriodType@1006 : 'Day,Week,Month,Quarter,Year';
       LookaheadDateFormula@1005 : DateFormula;
     BEGIN
@@ -1120,6 +1101,12 @@ OBJECT Table 901 Assembly Line
       ReservedReceipt := AvailableToPromise.CalcReservedReceipt(Item);
       ReservedRequirement := AvailableToPromise.CalcReservedRequirement(Item);
       GrossRequirement := AvailableToPromise.CalcGrossRequirement(Item);
+
+      IF OrderLineExists(OldAssemblyLine) THEN
+        IF OldAssemblyLine."Due Date" > "Due Date" THEN
+          AvailableToPromise.SetChangedAsmLine(OldAssemblyLine)
+        ELSE
+          GrossRequirement -= OldAssemblyLine."Remaining Quantity";
 
       CompanyInfo.GET;
       LookaheadDateFormula := CompanyInfo."Check-Avail. Period Calc.";
@@ -1135,15 +1122,12 @@ OBJECT Table 901 Assembly Line
             AvailableToPromise.AdjustedEndingDate(CALCDATE(LookaheadDateFormula,AvailabilityDate),PeriodType));
       END;
 
-      IF OrderLineExists(OldAssemblyLine) THEN
-        GrossRequirement := GrossRequirement - OldAssemblyLine."Remaining Quantity (Base)"
-      ELSE
-        OldAssemblyLine.INIT;
-
       EarliestDate :=
-        GetEarliestAvailDate(
-          CompanyInfo,"Remaining Quantity (Base)",
-          OldAssemblyLine."Remaining Quantity (Base)",OldAssemblyLine."Due Date");
+        AvailableToPromise.EarliestAvailabilityDate(
+          Item,"Remaining Quantity (Base)","Due Date",
+          OldAssemblyLine."Remaining Quantity (Base)",OldAssemblyLine."Due Date",
+          QtyAvailable,
+          CompanyInfo."Check-Avail. Time Bucket",CompanyInfo."Check-Avail. Period Calc.");
 
       ExpectedInventory :=
         CalcExpectedInventory(AvailableInventory,ScheduledReceipt - ReservedReceipt,GrossRequirement - ReservedRequirement);
@@ -1389,8 +1373,7 @@ OBJECT Table 901 Assembly Line
         (AssemblyLine."No." = "No.") AND
         (AssemblyLine."Location Code" = "Location Code") AND
         (AssemblyLine."Variant Code" = "Variant Code") AND
-        (AssemblyLine."Bin Code" = "Bin Code") AND
-        (AssemblyLine."Due Date" <= "Due Date"));
+        (AssemblyLine."Bin Code" = "Bin Code"));
     END;
 
     [External]

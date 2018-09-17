@@ -2,9 +2,9 @@ OBJECT Page 5330 CRM Connection Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -109,9 +109,9 @@ OBJECT Page 5330 CRM Connection Setup
                                 }
       { 41      ;1   ;Action    ;
                       Name=CoupleUsers;
-                      CaptionML=[DAN=Couple Salespersons;
+                      CaptionML=[DAN=Sammenkëdning af sëlgere;
                                  ENU=Couple Salespersons];
-                      ToolTipML=[DAN=Open the list of users in Dynamics 365 for Sales for manual coupling to salespersons in Dynamics 365, Business edition.;
+                      ToolTipML=[DAN=èbn listen over brugere i Dynamics 365 for Sales for at foretage manuel sammenkëdning med sëlgere i Dynamics 365, Business edition.;
                                  ENU=Open the list of users in Dynamics 365 for Sales for manual coupling to salespersons in Dynamics 365, Business edition.];
                       ApplicationArea=#Suite;
                       Image=CoupledUsers;

@@ -2,9 +2,9 @@ OBJECT Codeunit 703 Find Record Management
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -75,6 +75,16 @@ OBJECT Codeunit 703 Find Record Management
             Result := SearchFieldRef[1].VALUE;
             EXIT(1);
           END;
+      SearchFieldRef[1].SETRANGE;
+      CLEARLASTERROR;
+
+      // Try FINDFIRST "No." by mask "Search string *"
+      RecWithoutQuote := CONVERTSTR(SearchText,'''','?');
+      IF TrySetFilterOnFieldRef(SearchFieldRef[1],RecWithoutQuote + '*') THEN
+        IF RecRef.FINDFIRST THEN BEGIN
+          Result := SearchFieldRef[1].VALUE;
+          EXIT(1);
+        END;
       SearchFieldRef[1].SETRANGE;
       CLEARLASTERROR;
 

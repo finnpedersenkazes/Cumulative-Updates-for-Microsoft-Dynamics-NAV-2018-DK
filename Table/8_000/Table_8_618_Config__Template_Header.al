@@ -2,9 +2,9 @@ OBJECT Table 8618 Config. Template Header
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -78,7 +78,7 @@ OBJECT Table 8618 Config. Template Header
                                                    CaptionML=[DAN=Aktiveret;
                                                               ENU=Enabled] }
     { 8   ;   ;Instance No. Series ;Code20        ;TableRelation="No. Series";
-                                                   CaptionML=[DAN=Instance No. Series;
+                                                   CaptionML=[DAN=Forekomstnummerserie;
                                                               ENU=Instance No. Series] }
   }
   KEYS

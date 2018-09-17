@@ -2,9 +2,9 @@ OBJECT MenuSuite 1010 Dept - MBS
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -19264,7 +19264,7 @@ OBJECT MenuSuite 1010 Dept - MBS
                                                                 DepartmentCategory=Administration }
     { MenuItem       ;[{4AE6D747-D9BE-4B35-BB4A-732137D05BF4}] ;Name=Records Skipped For Synchronization;
                                                                 AccessByPermission=TableData 5331=R;
-                                                                CaptionML=[DAN=Records Skipped During Synchronization;
+                                                                CaptionML=[DAN=Records, der er sprunget over under synkroniseringen;
                                                                            ENU=Records Skipped During Synchronization];
                                                                 ApplicationArea=#Suite;
                                                                 MemberOfMenu=[{2DC8C4FE-7346-4124-8C20-383346384C03}];

@@ -2,14 +2,14 @@ OBJECT Page 5333 CRM Skipped Records
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
     Editable=No;
-    CaptionML=[DAN=Records Skipped During Synchronization;
+    CaptionML=[DAN=Records, der er sprunget over under synkroniseringen;
                ENU=Records Skipped During Synchronization];
     SourceTable=Table5331;
     SourceTableView=SORTING(Skipped,Table ID)
@@ -71,9 +71,9 @@ OBJECT Page 5333 CRM Skipped Records
                                 }
       { 9       ;1   ;Action    ;
                       Name=CRMSynchronizeNow;
-                      CaptionML=[DAN=Synchronize;
+                      CaptionML=[DAN=Synkroniser;
                                  ENU=Synchronize];
-                      ToolTipML=[DAN=Send or get updated data to or from Dynamics 365 for Sales.;
+                      ToolTipML=[DAN=Send eller hent opdaterede data til eller fra Dynamics 365 for Sales.;
                                  ENU=Send or get updated data to or from Dynamics 365 for Sales.];
                       ApplicationArea=#Suite;
                       Promoted=Yes;
@@ -93,9 +93,9 @@ OBJECT Page 5333 CRM Skipped Records
                                 }
       { 11      ;1   ;Action    ;
                       Name=ManageCRMCoupling;
-                      CaptionML=[DAN=Set Up Coupling;
+                      CaptionML=[DAN=Konfigurer sammenk‘dning;
                                  ENU=Set Up Coupling];
-                      ToolTipML=[DAN=Create or modify the coupling to a Dynamics 365 for Sales entity.;
+                      ToolTipML=[DAN=Opret eller rediger sammenk‘dningen med en Dynamics 365 for Sales-enhed.;
                                  ENU=Create or modify the coupling to a Dynamics 365 for Sales entity.];
                       ApplicationArea=#Suite;
                       Promoted=Yes;
@@ -115,9 +115,9 @@ OBJECT Page 5333 CRM Skipped Records
       { 10      ;1   ;Action    ;
                       Name=DeleteCRMCoupling;
                       AccessByPermission=TableData 5331=D;
-                      CaptionML=[DAN=Delete Coupling;
+                      CaptionML=[DAN=Slet sammenk‘dning;
                                  ENU=Delete Coupling];
-                      ToolTipML=[DAN=Delete the coupling to a Dynamics 365 for Sales entity.;
+                      ToolTipML=[DAN=Slet sammenk‘dningen med en Dynamics 365 for Sales-enhed.;
                                  ENU=Delete the coupling to a Dynamics 365 for Sales entity.];
                       ApplicationArea=#Suite;
                       Promoted=Yes;

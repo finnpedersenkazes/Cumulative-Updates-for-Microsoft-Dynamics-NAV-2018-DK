@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -2922,7 +2922,7 @@ OBJECT Table 81 Gen. Journal Line
         "Bal. Tax Group Code" := '';
         VALIDATE("Bal. VAT Prod. Posting Group");
       END;
-      IF "Copy VAT Setup to Jnl. Lines" THEN
+      IF CopyVATSetupToJnlLines THEN
         IF (("FA Posting Type" = "FA Posting Type"::"Acquisition Cost") OR
             ("FA Posting Type" = "FA Posting Type"::Disposal) OR
             ("FA Posting Type" = "FA Posting Type"::Maintenance)) AND
@@ -4643,6 +4643,14 @@ OBJECT Table 81 Gen. Journal Line
       Correction := TRUE;
     END;
 
+    LOCAL PROCEDURE CopyVATSetupToJnlLines@256() : Boolean;
+    BEGIN
+      IF ("Journal Template Name" <> '') AND ("Journal Batch Name" <> '') THEN
+        IF GenJnlBatch.GET("Journal Template Name","Journal Batch Name") THEN
+          EXIT(GenJnlBatch."Copy VAT Setup to Jnl. Lines");
+      EXIT("Copy VAT Setup to Jnl. Lines");
+    END;
+
     LOCAL PROCEDURE SetAmountWithCustLedgEntry@102();
     BEGIN
       IF "Currency Code" <> CustLedgEntry."Currency Code" THEN
@@ -4874,7 +4882,7 @@ OBJECT Table 81 Gen. Journal Line
       END;
       IF "Bal. Account No." = '' THEN
         "Currency Code" := '';
-      IF "Copy VAT Setup to Jnl. Lines" THEN BEGIN
+      IF CopyVATSetupToJnlLines THEN BEGIN
         "Gen. Posting Type" := GLAcc."Gen. Posting Type";
         "Gen. Bus. Posting Group" := GLAcc."Gen. Bus. Posting Group";
         "Gen. Prod. Posting Group" := GLAcc."Gen. Prod. Posting Group";
@@ -4910,7 +4918,7 @@ OBJECT Table 81 Gen. Journal Line
         "Salespers./Purch. Code" := '';
         "Payment Terms Code" := '';
       END;
-      IF "Copy VAT Setup to Jnl. Lines" THEN BEGIN
+      IF CopyVATSetupToJnlLines THEN BEGIN
         "Bal. Gen. Posting Type" := GLAcc."Gen. Posting Type";
         "Bal. Gen. Bus. Posting Group" := GLAcc."Gen. Bus. Posting Group";
         "Bal. Gen. Prod. Posting Group" := GLAcc."Gen. Prod. Posting Group";

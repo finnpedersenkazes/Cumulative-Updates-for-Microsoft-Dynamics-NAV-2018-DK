@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
   }
   PROPERTIES
   {
@@ -2259,7 +2259,7 @@ OBJECT Table 36 Sales Header
       Text070@1096 : TextConst 'DAN=Du kan ikke ‘ndre %1 til %2, fordi der findes en †ben lagerleverance for %3.;ENU=You cannot change %1  to %2 because an open warehouse shipment exists for the %3.';
       BilltoCustomerNoChanged@1121 : Boolean;
       SelectNoSeriesAllowed@1067 : Boolean;
-      PrepaymentInvoicesNotPaidErr@1011 : TextConst '@@@=You cannot post the document of type Order with the number 1001 before all related prepayment invoices are posted.;DAN=You cannot post the document of type %1 with the number %2 before all related prepayment invoices are posted.;ENU=You cannot post the document of type %1 with the number %2 before all related prepayment invoices are posted.';
+      PrepaymentInvoicesNotPaidErr@1011 : TextConst '@@@=You cannot post the document of type Order with the number 1001 before all related prepayment invoices are posted.;DAN=Du kan ikke bogf›re bilaget af typen %1 med nummeret %2, f›r alle relaterede forudbetalingsfakturaer er bogf›rt.;ENU=You cannot post the document of type %1 with the number %2 before all related prepayment invoices are posted.';
       Text072@1013 : TextConst 'DAN=Der er ubetalte forudbetalingsfakturaer, der er knyttet til dokumentet af typen %1 med nummer %2.;ENU=There are unpaid prepayment invoices related to the document of type %1 with the number %2.';
       OIOXMLDocumentEncode@1101100000 : Codeunit 13600;
       Text13606@1101100002 : TextConst 'DAN=indeholder ikke et gyldigt 13-cifret EAN-nr.;ENU=does not contain a valid, 13-digit EAN No.';
@@ -2476,14 +2476,14 @@ OBJECT Table 36 Sales Header
       EXIT(NoSeriesMgt.GetNoSeriesWithCheck(NoSeriesCode,SelectNoSeriesAllowed,"No. Series"));
     END;
 
-    LOCAL PROCEDURE GetPostingNoSeriesCode@8() : Code[10];
+    LOCAL PROCEDURE GetPostingNoSeriesCode@8() : Code[20];
     BEGIN
       IF IsCreditDocType THEN
         EXIT(SalesSetup."Posted Credit Memo Nos.");
       EXIT(SalesSetup."Posted Invoice Nos.");
     END;
 
-    LOCAL PROCEDURE GetPostingPrepaymentNoSeriesCode@59() : Code[10];
+    LOCAL PROCEDURE GetPostingPrepaymentNoSeriesCode@59() : Code[20];
     BEGIN
       IF IsCreditDocType THEN
         EXIT(SalesSetup."Posted Prepmt. Cr. Memo Nos.");

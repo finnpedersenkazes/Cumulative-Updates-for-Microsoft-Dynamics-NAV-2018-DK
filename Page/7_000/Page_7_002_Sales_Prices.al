@@ -2,9 +2,9 @@ OBJECT Page 7002 Sales Prices
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -26,7 +26,6 @@ OBJECT Page 7002 Sales Prices
                  IsOnMobile := ClientTypeManagement.GetCurrentClientType = CLIENTTYPE::Phone;
                  GetRecFilters;
                  SetRecFilters;
-                 SetEditableFields;
                END;
 
     OnAfterGetCurrRecord=BEGIN
@@ -453,6 +452,7 @@ OBJECT Page 7002 Sales Prices
       CheckFilters(DATABASE::Item,ItemNoFilter);
       CheckFilters(DATABASE::Currency,CurrencyCodeFilter);
 
+      SetEditableFields;
       CurrPage.UPDATE(FALSE);
     END;
 

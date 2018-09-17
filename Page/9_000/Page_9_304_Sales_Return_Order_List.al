@@ -2,9 +2,9 @@ OBJECT Page 9304 Sales Return Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -618,48 +618,48 @@ OBJECT Page 9304 Sales Return Order List
                 Visible=FALSE }
 
     { 18  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies if the document is open, waiting to be approved, has been invoiced for prepayment, or has been released to the next stage of processing.;
+                ToolTipML=[DAN=Angiver om bilaget er †bent, venter p† godkendelse, er faktureret til forudbetaling eller er frigivet til n‘ste fase i behandlingen.;
                            ENU=Specifies if the document is open, waiting to be approved, has been invoiced for prepayment, or has been released to the next stage of processing.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr=Status }
 
     { 22  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies a formula that calculates the payment due date, payment discount date, and payment discount amount.;
+                ToolTipML=[DAN=Angiver en formel, der beregner betalingens forfaldsdatoen, kontantrabatdato og kontantrabatbel›b.;
                            ENU=Specifies a formula that calculates the payment due date, payment discount date, and payment discount amount.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Payment Terms Code";
                 Visible=FALSE }
 
     { 28  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies when the sales return order must be paid.;
+                ToolTipML=[DAN=Angiver, hvorn†r salgsreturvareordren skal betales.;
                            ENU=Specifies when the sales return order must be paid.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Due Date";
                 Visible=FALSE }
 
     { 30  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the payment discount percentage that is granted if the customer pays on or before the date entered in the Pmt. Discount Date field. The discount percentage is specified in the Payment Terms Code field.;
+                ToolTipML=[DAN=Angiver den betalingsrabatprocent, der tildeles, hvis debitoren betaler p† eller f›r den dato, der er angivet i feltet Kont.rabatdato. Rabatprocenten er angivet i feltet Betalingsbetingelseskode.;
                            ENU=Specifies the payment discount percentage that is granted if the customer pays on or before the date entered in the Pmt. Discount Date field. The discount percentage is specified in the Payment Terms Code field.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Payment Discount %";
                 Visible=FALSE }
 
     { 24  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the code for the shipping agent who is transporting the items.;
+                ToolTipML=[DAN=Angiver koden for den spedit›r, som transporterer varerne.;
                            ENU=Specifies the code for the shipping agent who is transporting the items.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Shipping Agent Code";
                 Visible=FALSE }
 
     { 25  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the code for the service, such as a one-day delivery, that is offered by the shipping agent.;
+                ToolTipML=[DAN=Angiver koden for servicen, f.eks. levering samme dag, som tilbydes af spedit›ren.;
                            ENU=Specifies the code for the service, such as a one-day delivery, that is offered by the shipping agent.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Shipping Agent Service Code";
                 Visible=FALSE }
 
     { 26  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the shipping agent's package number.;
+                ToolTipML=[DAN=Angiver spedit›rens pakkenummer.;
                            ENU=Specifies the shipping agent's package number.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Package Tracking No.";
@@ -673,14 +673,14 @@ OBJECT Page 9304 Sales Return Order List
                 Visible=FALSE }
 
     { 31  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies if the customer accepts partial shipment of orders.;
+                ToolTipML=[DAN=Angiver, om debitoren accepterer delvis levering af ordrer.;
                            ENU=Specifies if the customer accepts partial shipment of orders.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Shipping Advice";
                 Visible=FALSE }
 
     { 32  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies if all the items on the order have been shipped or, in the case of inbound items, completely received.;
+                ToolTipML=[DAN=Angiver, om alle varer i ordren er leveret, eller - hvis der er tale om indg†ende varer - modtaget helt.;
                            ENU=Specifies if all the items on the order have been shipped or, in the case of inbound items, completely received.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Completely Shipped";
@@ -694,7 +694,7 @@ OBJECT Page 9304 Sales Return Order List
                 Visible=JobQueueActive }
 
     { 1102601003;2;Field  ;
-                ToolTipML=[DAN=Specifies the campaign number that the document is linked to.;
+                ToolTipML=[DAN=Angiver nummeret p† den kampagne, som bilaget er knyttet til.;
                            ENU=Specifies the campaign number that the document is linked to.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Campaign No.";
@@ -708,13 +708,13 @@ OBJECT Page 9304 Sales Return Order List
                 Visible=FALSE }
 
     { 19  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the sum of amounts in the Line Amount field on the document lines.;
+                ToolTipML=[DAN=Angiver summen af bel›b i feltet Linjebel›b p† bilagslinjerne.;
                            ENU=Specifies the sum of amounts in the Line Amount field on the document lines.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr=Amount }
 
     { 20  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the total of the amounts, including VAT, on all the lines in the document.;
+                ToolTipML=[DAN=Angiver den samlede sum af bel›bene, herunder moms, p† alle linjerne i bilaget.;
                            ENU=Specifies the total of the amounts, including VAT, on all the lines in the document.];
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr="Amount Including VAT" }

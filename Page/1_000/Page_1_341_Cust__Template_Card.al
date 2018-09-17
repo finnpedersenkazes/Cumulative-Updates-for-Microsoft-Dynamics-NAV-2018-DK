@@ -2,9 +2,9 @@ OBJECT Page 1341 Cust. Template Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
   }
   PROPERTIES
   {
@@ -106,9 +106,9 @@ OBJECT Page 1341 Cust. Template Card
 
     { 37  ;2   ;Field     ;
                 Name=NoSeries;
-                CaptionML=[DAN=No. Series;
+                CaptionML=[DAN=Nummerserie;
                            ENU=No. Series];
-                ToolTipML=[DAN=Specifies the code for the number series that will be used to assign numbers to customers.;
+                ToolTipML=[DAN=Angiver koden for den nummerserie, der skal bruges til at tildele numre til debitorer.;
                            ENU=Specifies the code for the number series that will be used to assign numbers to customers.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=NoSeries;

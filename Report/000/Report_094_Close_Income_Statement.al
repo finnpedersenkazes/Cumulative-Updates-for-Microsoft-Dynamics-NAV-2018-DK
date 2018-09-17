@@ -2,9 +2,9 @@ OBJECT Report 94 Close Income Statement
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -150,7 +150,7 @@ OBJECT Report 94 Close Income Statement
                                EntryNoAmountBuf.DELETEALL;
                                EntryCount := 0;
 
-                               LastWindowUpdate := TIME;
+                               LastWindowUpdateDateTime := CURRENTDATETIME;
                              END;
 
                OnAfterGetRecord=VAR
@@ -160,8 +160,8 @@ OBJECT Report 94 Close Income Statement
                                   RowOffset@1003 : Integer;
                                 BEGIN
                                   EntryCount := EntryCount + 1;
-                                  IF TIME - LastWindowUpdate > 1000 THEN BEGIN
-                                    LastWindowUpdate := TIME;
+                                  IF CURRENTDATETIME - LastWindowUpdateDateTime > 1000 THEN BEGIN
+                                    LastWindowUpdateDateTime := CURRENTDATETIME;
                                     Window.UPDATE(3,ROUND(EntryCount / MaxEntry * 10000,1));
                                   END;
 
@@ -228,8 +228,8 @@ OBJECT Report 94 Close Income Statement
                                 IF EntryNoAmountBuf.FIND('-') THEN
                                   REPEAT
                                     EntryCount := EntryCount + 1;
-                                    IF TIME - LastWindowUpdate > 1000 THEN BEGIN
-                                      LastWindowUpdate := TIME;
+                                    IF CURRENTDATETIME - LastWindowUpdateDateTime > 1000 THEN BEGIN
+                                      LastWindowUpdateDateTime := CURRENTDATETIME;
                                       Window.UPDATE(3,ROUND(EntryCount / MaxEntry * 10000,1));
                                     END;
 
@@ -510,7 +510,7 @@ OBJECT Report 94 Close Income Statement
       Text021@1000 : TextConst 'DAN=\\Hvis du vil bogf›re til disse konti, skal du ogs† v‘lge disse dimensioner:;ENU=\\In order to post to these accounts you must also select these dimensions:';
       MaxEntry@1002 : Integer;
       EntryCount@1057 : Integer;
-      LastWindowUpdate@1044 : Time;
+      LastWindowUpdateDateTime@1044 : DateTime;
       NoFiscalYearsErr@1009 : TextConst 'DAN=Der findes intet lukket regnskabs†r.;ENU=No closed fiscal year exists.';
 
     LOCAL PROCEDURE ValidateEndDate@1(RealMode@1000 : Boolean) : Boolean;

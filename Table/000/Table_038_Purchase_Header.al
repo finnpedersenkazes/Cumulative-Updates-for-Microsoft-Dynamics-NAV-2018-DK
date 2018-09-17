@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -114,7 +114,7 @@ OBJECT Table 38 Purchase Header
                                                                 Vend.TESTFIELD("Gen. Bus. Posting Group");
                                                                 "Buy-from Vendor Name" := Vend.Name;
                                                                 "Buy-from Vendor Name 2" := Vend."Name 2";
-                                                                CopyBuyFromVendorAddressFieldsFromVendor(Vend);
+                                                                CopyBuyFromVendorAddressFieldsFromVendor(Vend,FALSE);
                                                                 IF NOT SkipBuyFromContact THEN
                                                                   "Buy-from Contact" := Vend.Contact;
                                                                 "Gen. Bus. Posting Group" := Vend."Gen. Bus. Posting Group";
@@ -147,7 +147,16 @@ OBJECT Table 38 Purchase Header
                                                                 END;
                                                                 "Order Address Code" := '';
 
-                                                                VALIDATE("Order Address Code");
+                                                                CopyPayToVendorAddressFieldsFromVendor(Vend,FALSE);
+                                                                IF IsCreditDocType THEN BEGIN
+                                                                  "Ship-to Name" := Vend.Name;
+                                                                  "Ship-to Name 2" := Vend."Name 2";
+                                                                  CopyShipToVendorAddressFieldsFromVendor(Vend,TRUE);
+                                                                  "Ship-to Contact" := Vend.Contact;
+                                                                  "Shipment Method Code" := Vend."Shipment Method Code";
+                                                                  IF Vend."Location Code" <> '' THEN
+                                                                    VALIDATE("Location Code",Vend."Location Code");
+                                                                END;
 
                                                                 IF (xRec."Buy-from Vendor No." <> "Buy-from Vendor No.") OR
                                                                    (xRec."Currency Code" <> "Currency Code") OR
@@ -205,7 +214,7 @@ OBJECT Table 38 Purchase Header
 
                                                                 "Pay-to Name" := Vend.Name;
                                                                 "Pay-to Name 2" := Vend."Name 2";
-                                                                CopyPayToVendorAddressFieldsFromVendor(Vend);
+                                                                CopyPayToVendorAddressFieldsFromVendor(Vend,FALSE);
                                                                 IF NOT SkipPayToContact THEN
                                                                   "Pay-to Contact" := Vend.Contact;
                                                                 "Payment Terms Code" := Vend."Payment Terms Code";
@@ -1074,12 +1083,12 @@ OBJECT Table 38 Purchase Header
                                                                   GetVend("Buy-from Vendor No.");
                                                                   "Buy-from Vendor Name" := Vend.Name;
                                                                   "Buy-from Vendor Name 2" := Vend."Name 2";
-                                                                  CopyPayToVendorAddressFieldsFromVendor(Vend);
+                                                                  CopyBuyFromVendorAddressFieldsFromVendor(Vend,TRUE);
 
                                                                   IF IsCreditDocType THEN BEGIN
                                                                     "Ship-to Name" := Vend.Name;
                                                                     "Ship-to Name 2" := Vend."Name 2";
-                                                                    CopyShipToVendorAddressFieldsFromVendor(Vend);
+                                                                    CopyShipToVendorAddressFieldsFromVendor(Vend,TRUE);
                                                                     "Ship-to Contact" := Vend.Contact;
                                                                     "Shipment Method Code" := Vend."Shipment Method Code";
                                                                     IF Vend."Location Code" <> '' THEN
@@ -1879,7 +1888,7 @@ OBJECT Table 38 Purchase Header
       Text051@1025 : TextConst 'DAN=Du har muligvis ‘ndret en dimension.\\Vil du opdatere linjerne?;ENU=You may have changed a dimension.\\Do you want to update the lines?';
       Text052@1091 : TextConst 'DAN=Feltet %1 p† k›bsordre %2 skal v‘re det samme som p† salgsordre %3.;ENU=The %1 field on the purchase order %2 must be the same as on sales order %3.';
       UpdateDocumentDate@1120 : Boolean;
-      PrepaymentInvoicesNotPaidErr@1074 : TextConst '@@@=You cannot post the document of type Order with the number 1001 before all related prepayment invoices are posted.;DAN=You cannot post the document of type %1 with the number %2 before all related prepayment invoices are posted.;ENU=You cannot post the document of type %1 with the number %2 before all related prepayment invoices are posted.';
+      PrepaymentInvoicesNotPaidErr@1074 : TextConst '@@@=You cannot post the document of type Order with the number 1001 before all related prepayment invoices are posted.;DAN=Du kan ikke bogf›re bilaget af typen %1 med nummeret %2, f›r alle relaterede forudbetalingsfakturaer er bogf›rt.;ENU=You cannot post the document of type %1 with the number %2 before all related prepayment invoices are posted.';
       Text054@1096 : TextConst 'DAN=Der er ubetalte forudbetalingsfakturaer, der er knyttet til dokumentet af typen %1 med nummer %2.;ENU=There are unpaid prepayment invoices that are related to the document of type %1 with the number %2.';
       DeferralLineQst@1055 : TextConst '@@@="%1=The posting date on the document.";DAN=Du har ‘ndret %1 p† k›bshovedet. Vil du opdatere periodiseringsplanerne for linjerne med denne dato?;ENU=You have changed the %1 on the purchase header, do you want to update the deferral schedules for the lines with this date?';
       ChangeCurrencyQst@1073 : TextConst 'DAN=Hvis du ‘ndrer %1, slettes de eksisterende k›bslinjer, og der oprettes nye k›bslinjer p† baggrund af de nye oplysninger i hovedet. Du skal m†ske opdatere prisoplysningerne manuelt.\\Vil du ‘ndre %1?;ENU=If you change %1, the existing purchase lines will be deleted and new purchase lines based on the new information in the header will be created. You may need to update the price information manually.\\Do you want to change %1?';
@@ -2103,14 +2112,14 @@ OBJECT Table 38 Purchase Header
       EXIT(NoSeriesMgt.GetNoSeriesWithCheck(NoSeriesCode,SelectNoSeriesAllowed,"No. Series"));
     END;
 
-    LOCAL PROCEDURE GetPostingNoSeriesCode@8() : Code[10];
+    LOCAL PROCEDURE GetPostingNoSeriesCode@8() : Code[20];
     BEGIN
       IF IsCreditDocType THEN
         EXIT(PurchSetup."Posted Credit Memo Nos.");
       EXIT(PurchSetup."Posted Invoice Nos.");
     END;
 
-    LOCAL PROCEDURE GetPostingPrepaymentNoSeriesCode@37() : Code[10];
+    LOCAL PROCEDURE GetPostingPrepaymentNoSeriesCode@37() : Code[20];
     BEGIN
       IF IsCreditDocType THEN
         EXIT(PurchSetup."Posted Prepmt. Cr. Memo Nos.");
@@ -3449,9 +3458,9 @@ OBJECT Table 38 Purchase Header
       EXIT(FALSE);
     END;
 
-    LOCAL PROCEDURE CopyBuyFromVendorAddressFieldsFromVendor@62(VAR BuyFromVendor@1000 : Record 23);
+    LOCAL PROCEDURE CopyBuyFromVendorAddressFieldsFromVendor@62(VAR BuyFromVendor@1000 : Record 23;ForceCopy@1001 : Boolean);
     BEGIN
-      IF BuyFromVendorIsReplaced OR ShouldCopyAddressFromBuyFromVendor(BuyFromVendor) THEN BEGIN
+      IF BuyFromVendorIsReplaced OR ShouldCopyAddressFromBuyFromVendor(BuyFromVendor) OR ForceCopy THEN BEGIN
         "Buy-from Address" := BuyFromVendor.Address;
         "Buy-from Address 2" := BuyFromVendor."Address 2";
         "Buy-from City" := BuyFromVendor.City;
@@ -3461,9 +3470,9 @@ OBJECT Table 38 Purchase Header
       END;
     END;
 
-    LOCAL PROCEDURE CopyShipToVendorAddressFieldsFromVendor@98(VAR BuyFromVendor@1000 : Record 23);
+    LOCAL PROCEDURE CopyShipToVendorAddressFieldsFromVendor@98(VAR BuyFromVendor@1000 : Record 23;ForceCopy@1001 : Boolean);
     BEGIN
-      IF BuyFromVendorIsReplaced OR (NOT HasShipToAddress) THEN BEGIN
+      IF BuyFromVendorIsReplaced OR (NOT HasShipToAddress) OR ForceCopy THEN BEGIN
         "Ship-to Address" := BuyFromVendor.Address;
         "Ship-to Address 2" := BuyFromVendor."Address 2";
         "Ship-to City" := BuyFromVendor.City;
@@ -3473,9 +3482,9 @@ OBJECT Table 38 Purchase Header
       END;
     END;
 
-    LOCAL PROCEDURE CopyPayToVendorAddressFieldsFromVendor@63(VAR PayToVendor@1000 : Record 23);
+    LOCAL PROCEDURE CopyPayToVendorAddressFieldsFromVendor@63(VAR PayToVendor@1000 : Record 23;ForceCopy@1001 : Boolean);
     BEGIN
-      IF PayToVendorIsReplaced OR ShouldCopyAddressFromPayToVendor(PayToVendor) THEN BEGIN
+      IF PayToVendorIsReplaced OR ShouldCopyAddressFromPayToVendor(PayToVendor) OR ForceCopy THEN BEGIN
         "Pay-to Address" := PayToVendor.Address;
         "Pay-to Address 2" := PayToVendor."Address 2";
         "Pay-to City" := PayToVendor.City;

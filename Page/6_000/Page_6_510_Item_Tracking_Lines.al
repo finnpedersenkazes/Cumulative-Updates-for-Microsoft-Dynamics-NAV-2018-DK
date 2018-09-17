@@ -2,9 +2,9 @@ OBJECT Page 6510 Item Tracking Lines
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -89,7 +89,7 @@ OBJECT Page 6510 Item Tracking Lines
                        EXIT(FALSE);
                      "Entry No." := NextEntryNo;
                      IF (NOT InsertIsBlocked) AND (NOT ZeroLineExists) THEN
-                       IF NOT TestTempSpecificationExists THEN BEGIN
+                       IF VerifyNewTrackingSpecification THEN BEGIN
                          TempItemTrackLineInsert.TRANSFERFIELDS(Rec);
                          TempItemTrackLineInsert.INSERT;
                          INSERT;
@@ -111,7 +111,7 @@ OBJECT Page 6510 Item Tracking Lines
                        THEN
                          EXIT(FALSE);
 
-                     IF NOT TestTempSpecificationExists THEN BEGIN
+                     IF VerifyNewTrackingSpecification THEN BEGIN
                        MODIFY;
 
                        IF (xRec."Lot No." <> "Lot No.") OR (xRec."Serial No." <> "Serial No.") THEN BEGIN
@@ -730,7 +730,11 @@ OBJECT Page 6510 Item Tracking Lines
                 ApplicationArea=#ItemTracking;
                 SourceExpr="Expiration Date";
                 Visible=FALSE;
-                Editable=ExpirationDateEditable }
+                Editable=ExpirationDateEditable;
+                OnValidate=BEGIN
+                             CurrPage.UPDATE;
+                           END;
+                            }
 
     { 75  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver en ny udl›bsdato.;
@@ -936,6 +940,7 @@ OBJECT Page 6510 Item Tracking Lines
       WarrantyDateEditable@19022604 : Boolean INDATASET;
       ExcludePostedEntries@1007 : Boolean;
       ProdOrderLineHandling@1052 : Boolean;
+      DifferentExpDateMsg@1042 : TextConst '@@@="%1 = Lot no., %2 = Item expiration date (Example: A tracking specification exists for lot number ''L001'' and expiration date 25.01.2019.)";DAN=A tracking specification exists for lot number %1 and expiration date %2. All items with this lot number must have the same expiration date.;ENU=A tracking specification exists for lot number %1 and expiration date %2. All items with this lot number must have the same expiration date.';
 
     [External]
     PROCEDURE SetFormRunMode@19(Mode@1000 : ',Reclass,Combined Ship/Rcpt,Drop Shipment');
@@ -2164,6 +2169,36 @@ OBJECT Page 6510 Item Tracking Lines
           MESSAGE(Text011,"Serial No.","Lot No.")
         ELSE
           MESSAGE(Text012,"Serial No.");
+    END;
+
+    LOCAL PROCEDURE TestExpirationDateMismatchOnTempSpec@34() Mismatch : Boolean;
+    VAR
+      TrackingSpecification@1000 : Record 336;
+    BEGIN
+      IF ("Expiration Date" = 0D) OR ("Lot No." = '') THEN
+        EXIT(FALSE);
+
+      TrackingSpecification.COPY(Rec);
+      SETFILTER("Entry No.",'<>%1',"Entry No.");
+      IF ISEMPTY THEN
+        Mismatch := FALSE
+      ELSE BEGIN
+        SETRANGE("Lot No.","Lot No.");
+        SETFILTER("Expiration Date",'<>%1',"Expiration Date");
+        SETRANGE("Buffer Status",0);
+        Mismatch := NOT ISEMPTY;
+      END;
+      COPY(TrackingSpecification);
+      IF Mismatch AND CurrentFormIsOpen THEN
+        MESSAGE(DifferentExpDateMsg,"Lot No.","Expiration Date");
+    END;
+
+    LOCAL PROCEDURE VerifyNewTrackingSpecification@61() : Boolean;
+    BEGIN
+      IF TestTempSpecificationExists THEN
+        EXIT(FALSE);
+
+      EXIT(NOT TestExpirationDateMismatchOnTempSpec);
     END;
 
     LOCAL PROCEDURE QtySignFactor@24() : Integer;

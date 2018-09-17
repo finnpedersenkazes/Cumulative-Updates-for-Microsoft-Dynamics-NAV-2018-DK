@@ -2,9 +2,9 @@ OBJECT Page 9094 Vendor Statistics FactBox
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -24,7 +24,6 @@ OBJECT Page 9094 Vendor Statistics FactBox
 
     OnAfterGetRecord=BEGIN
                        FILTERGROUP(4);
-                       DateFilterSet := GETFILTER("Date Filter") <> '';
                        SETAUTOCALCFIELDS("Balance (LCY)","Outstanding Orders (LCY)","Amt. Rcd. Not Invoiced (LCY)","Outstanding Invoices (LCY)");
                        TotalAmountLCY := "Balance (LCY)" + "Outstanding Orders (LCY)" + "Amt. Rcd. Not Invoiced (LCY)" + "Outstanding Invoices (LCY)";
                      END;
@@ -69,8 +68,7 @@ OBJECT Page 9094 Vendor Statistics FactBox
                 ToolTipML=[DAN=Angiver summen af udest†ende ordrer (i RV) for denne kreditor.;
                            ENU=Specifies the sum of outstanding orders (in LCY) to this vendor.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Outstanding Orders (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Outstanding Orders (LCY)" }
 
     { 6   ;1   ;Field     ;
                 CaptionML=[DAN=Modt. bel›b ufakt. (RV);
@@ -78,15 +76,13 @@ OBJECT Page 9094 Vendor Statistics FactBox
                 ToolTipML=[DAN=Angiver det samlede fakturabel›b (i RV) for varer, du har modtaget, men endnu ikke er faktureret for.;
                            ENU=Specifies the total invoice amount (in LCY) for the items you have received but not yet been invoiced for.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Amt. Rcd. Not Invoiced (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Amt. Rcd. Not Invoiced (LCY)" }
 
     { 7   ;1   ;Field     ;
                 ToolTipML=[DAN=Angiver summen af kreditors udest†ende k›bsfakturaer i RV.;
                            ENU=Specifies the sum of the vendor's outstanding purchase invoices in LCY.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Outstanding Invoices (LCY)";
-                HideValue=DateFilterSet }
+                SourceExpr="Outstanding Invoices (LCY)" }
 
     { 9   ;1   ;Field     ;
                 CaptionML=[DAN=I alt (RV);
@@ -95,8 +91,7 @@ OBJECT Page 9094 Vendor Statistics FactBox
                            ENU=Specifies the payment amount that you owe the vendor for completed purchases plus purchases that are still ongoing.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=TotalAmountLCY;
-                AutoFormatType=1;
-                HideValue=DateFilterSet }
+                AutoFormatType=1 }
 
     { 12  ;1   ;Field     ;
                 Name=Balance Due (LCY);
@@ -123,8 +118,7 @@ OBJECT Page 9094 Vendor Statistics FactBox
                 ToolTipML=[DAN=Angiver dine betalinger til kreditoren baseret p† fakturerede forudbetalinger.;
                            ENU=Specifies your payments to the vendor, based on invoiced prepayments.];
                 ApplicationArea=#Prepayments;
-                SourceExpr=GetInvoicedPrepmtAmountLCY;
-                HideValue=DateFilterSet }
+                SourceExpr=GetInvoicedPrepmtAmountLCY }
 
   }
   CODE
@@ -133,7 +127,6 @@ OBJECT Page 9094 Vendor Statistics FactBox
       TotalAmountLCY@1014 : Decimal;
       Text000@1018 : TextConst 'DAN=Forfaldne bel›b (RV) pr. %1;ENU=Overdue Amounts (LCY) as of %1';
       ShowVendorNo@1000 : Boolean;
-      DateFilterSet@1001 : Boolean;
 
     LOCAL PROCEDURE ShowDetails@1102601000();
     BEGIN

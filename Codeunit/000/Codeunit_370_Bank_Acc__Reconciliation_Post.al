@@ -2,9 +2,9 @@ OBJECT Codeunit 370 Bank Acc. Reconciliation Post
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -382,6 +382,7 @@ OBJECT Codeunit 370 Bank Acc. Reconciliation Post
           GLSetup.GET;
           ERROR(ExcessiveAmtErr,PaymentLineAmount,GLSetup.GetCurrencyCode(BankAcc."Currency Code"));
         END;
+        GenJnlLine.ValidateApplyRequirements(GenJnlLine);
         GenJnlPostLine.RunWithCheck(GenJnlLine);
         IF NOT PostPaymentsOnly THEN BEGIN
           BankAccountLedgerEntry.SETRANGE(Open,TRUE);

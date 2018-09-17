@@ -2,9 +2,9 @@ OBJECT Page 7504 Item Attribute Value List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=26-01-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20348;
   }
   PROPERTIES
   {
@@ -76,7 +76,6 @@ OBJECT Page 7504 Item Attribute Value List
                 OnValidate=VAR
                              ItemAttributeValue@1003 : Record 7501;
                              ItemAttributeValueMapping@1002 : Record 7505;
-                             ItemAttribute@1001 : Record 7500;
                            BEGIN
                              IF NOT FindAttributeValue(ItemAttributeValue) THEN
                                InsertItemAttributeValue(ItemAttributeValue,Rec);
@@ -88,10 +87,11 @@ OBJECT Page 7504 Item Attribute Value List
                              IF ItemAttributeValueMapping.FINDFIRST THEN BEGIN
                                ItemAttributeValueMapping."Item Attribute Value ID" := ItemAttributeValue.ID;
                                ItemAttributeValueMapping.MODIFY;
-
-                               ItemAttribute.GET("Attribute ID");
-                               ItemAttribute.RemoveUnusedArbitraryValues;
                              END;
+
+                             IF FindAttributeValueFromRecord(ItemAttributeValue,xRec) THEN
+                               IF NOT ItemAttributeValue.HasBeenUsed THEN
+                                 ItemAttributeValue.DELETE;
                            END;
                             }
 
