@@ -2,9 +2,9 @@ OBJECT Codeunit 7500 Item Attribute Management
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -113,6 +113,8 @@ OBJECT Codeunit 7500 Item Attribute Management
     END;
 
     LOCAL PROCEDURE GetFilteredItems@51(VAR ItemAttributeValueMapping@1001 : Record 7505;VAR TempFilteredItem@1000 : TEMPORARY Record 27;AttributeValueIDFilter@1002 : Text);
+    VAR
+      Item@1003 : Record 27;
     BEGIN
       ItemAttributeValueMapping.SETFILTER("Item Attribute Value ID",AttributeValueIDFilter);
 
@@ -125,7 +127,8 @@ OBJECT Codeunit 7500 Item Attribute Management
       IF NOT TempFilteredItem.FINDSET THEN BEGIN
         IF ItemAttributeValueMapping.FINDSET THEN
           REPEAT
-            TempFilteredItem."No." := ItemAttributeValueMapping."No.";
+            Item.GET(ItemAttributeValueMapping."No.");
+            TempFilteredItem.TRANSFERFIELDS(Item);
             TempFilteredItem.INSERT;
           UNTIL ItemAttributeValueMapping.NEXT = 0;
         EXIT;
@@ -163,7 +166,7 @@ OBJECT Codeunit 7500 Item Attribute Management
             IF NOT FilterRangeStarted THEN
               FilterText += '..';
             FilterRangeStarted := TRUE;
-          END ELSE
+          END ELSE BEGIN
             IF NOT FilterRangeStarted THEN BEGIN
               FilterText += STRSUBSTNO('|%1',TempFilteredItem."No.");
               ParameterCount += 1;
@@ -172,6 +175,8 @@ OBJECT Codeunit 7500 Item Attribute Management
               FilterRangeStarted := FALSE;
               ParameterCount += 2;
             END;
+            NextItem := TempFilteredItem;
+          END;
         END;
         PreviousNo := TempFilteredItem."No.";
       UNTIL TempFilteredItem.NEXT = 0;

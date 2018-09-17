@@ -2,9 +2,9 @@ OBJECT Page 49 Purchase Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 49 Purchase Quote
     SourceTableView=WHERE(Document Type=FILTER(Quote));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=New,Process,Report,Approve,Request Approval;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Anmod om godkendelse;
                                 ENU=New,Process,Report,Approve,Request Approval];
     OnInit=BEGIN
              ShowShippingOptionsWithLocation := DummyApplicationAreaSetup.IsLocationEnabled OR DummyApplicationAreaSetup.IsAllDisabled;

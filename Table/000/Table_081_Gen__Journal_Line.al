@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1698,8 +1698,7 @@ OBJECT Table 81 Gen. Journal Line
                                                    CaptionML=[DAN=L›benr. for indg†ende bilag;
                                                               ENU=Incoming Document Entry No.] }
     { 170 ;   ;Creditor No.        ;Code20        ;CaptionML=[DAN=Fordringshavernr.;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 171 ;   ;Payment Reference   ;Code50        ;CaptionML=[DAN=Betalingsreference;
                                                               ENU=Payment Reference];
                                                    Numeric=Yes }
@@ -3598,7 +3597,7 @@ OBJECT Table 81 Gen. Journal Line
       IF ("Applies-to Doc. Type" = "Applies-to Doc. Type"::Invoice) AND
          ("Document Type" = "Document Type"::Payment)
       THEN
-        "External Document No." := ExtDocNo;
+        "Applies-to Ext. Doc. No." := ExtDocNo;
     END;
 
     LOCAL PROCEDURE CustVendAccountNosModified@32() : Boolean;

@@ -2,9 +2,9 @@ OBJECT Codeunit 448 Job Queue Dispatcher
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -36,14 +36,14 @@ OBJECT Codeunit 448 Job Queue Dispatcher
     VAR
       JobQueueLogEntry@1003 : Record 474;
       WasSuccess@1002 : Boolean;
-      WasInactive@1001 : Boolean;
+      PrevStatus@1001 : Option;
     BEGIN
       JobQueueEntry.RefreshLocked;
       IF NOT JobQueueEntry.IsReadyToStart THEN
         EXIT;
 
       WITH JobQueueEntry DO BEGIN
-        IF Status = Status::Ready THEN BEGIN
+        IF Status IN [Status::Ready,Status::"On Hold with Inactivity Timeout"] THEN BEGIN
           Status := Status::"In Process";
           "User Session Started" := CURRENTDATETIME;
           MODIFY;
@@ -54,11 +54,11 @@ OBJECT Codeunit 448 Job Queue Dispatcher
         // To avoid NavCSideException we have either to add the COMMIT before the call or do not use a returned value.
         COMMIT;
         WasSuccess := CODEUNIT.RUN(CODEUNIT::"Job Queue Start Codeunit",JobQueueEntry);
-        WasInactive := "On Hold Due to Inactivity";
+        PrevStatus := Status;
 
         // user may have deleted it in the meantime
         IF DoesExistLocked THEN
-          SetResult(WasSuccess,WasInactive)
+          SetResult(WasSuccess,PrevStatus)
         ELSE
           SetResultDeletedEntry;
         COMMIT;
@@ -114,6 +114,15 @@ OBJECT Codeunit 448 Job Queue Dispatcher
         NewRunDateTime := CREATEDATETIME(DT2DATE(StartingDateTime) + 1,0T);
       END;
 
+      EXIT(CalcRunTimeForRecurringJob(JobQueueEntry,NewRunDateTime));
+    END;
+
+    [External]
+    PROCEDURE CalcNextRunTimeHoldDuetoInactivityJob@3(VAR JobQueueEntry@1000 : Record 472;StartingDateTime@1008 : DateTime) : DateTime;
+    VAR
+      NewRunDateTime@1002 : DateTime;
+    BEGIN
+      NewRunDateTime := TypeHelper.AddMinutesToDateTime(StartingDateTime,JobQueueEntry."Inactivity Timeout Period");
       EXIT(CalcRunTimeForRecurringJob(JobQueueEntry,NewRunDateTime));
     END;
 

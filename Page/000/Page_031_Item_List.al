@@ -2,9 +2,9 @@ OBJECT Page 31 Item List
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -36,7 +36,7 @@ OBJECT Page 31 Item List
                    Found@1000 : Boolean;
                  BEGIN
                    IF RunOnTempRec THEN BEGIN
-                     TempFilteredItem := Rec;
+                     TempFilteredItem.COPY(Rec);
                      Found := TempFilteredItem.FIND(Which);
                      IF Found THEN
                        Rec := TempFilteredItem;
@@ -49,7 +49,7 @@ OBJECT Page 31 Item List
                    ResultSteps@1000 : Integer;
                  BEGIN
                    IF RunOnTempRec THEN BEGIN
-                     TempFilteredItem := Rec;
+                     TempFilteredItem.COPY(Rec);
                      ResultSteps := TempFilteredItem.NEXT(Steps);
                      IF ResultSteps <> 0 THEN
                        Rec := TempFilteredItem;

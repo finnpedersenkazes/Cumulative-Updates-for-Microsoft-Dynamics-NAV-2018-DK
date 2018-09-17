@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -653,13 +653,8 @@ OBJECT Codeunit 80 Sales-Post
               QtyToInvoice,QtyToInvoiceBase,
               0,'',DummyTrackingSpecification,FALSE);
 
-        SalesLineToShip := SalesLine;
-
         // Invoice discount amount is also included in expected sales amount posted for shipment or return receipt.
-        IF QtyToInvoice <> 0 THEN
-          SalesLineToShip."Inv. Discount Amount" :=
-            ROUND(SalesLineToShip.Quantity * SalesLineToShip."Inv. Discount Amount" / QtyToInvoice,
-              Currency."Amount Rounding Precision");
+        MakeSalesLineToShip(SalesLineToShip,SalesLine);
 
         IF SalesLineToShip.IsCreditDocType THEN BEGIN
           IF ABS(SalesLineToShip."Return Qty. to Receive") > ABS(QtyToInvoice) THEN
@@ -1171,19 +1166,19 @@ OBJECT Codeunit 80 Sales-Post
     BEGIN
       IF TempItemLedgEntry.FINDSET THEN
         REPEAT
-          Factor := ABS(TempItemLedgEntry.Quantity) / NonDistrQuantity;
+          Factor := ABS(TempItemLedgEntry.Quantity / NonDistrQuantity);
           QtyToAssign := NonDistrQtyToAssign * Factor;
           AmountToAssign := ROUND(NonDistrAmountToAssign * Factor,GLSetup."Amount Rounding Precision");
           IF Factor < 1 THEN BEGIN
             PostItemCharge(SalesHeader,SalesLine,
-              TempItemLedgEntry."Entry No.",ABS(TempItemLedgEntry.Quantity),
+              TempItemLedgEntry."Entry No.",-TempItemLedgEntry.Quantity,
               AmountToAssign,QtyToAssign);
-            NonDistrQuantity := NonDistrQuantity - ABS(TempItemLedgEntry.Quantity);
+            NonDistrQuantity := NonDistrQuantity + TempItemLedgEntry.Quantity;
             NonDistrQtyToAssign := NonDistrQtyToAssign - QtyToAssign;
             NonDistrAmountToAssign := NonDistrAmountToAssign - AmountToAssign;
           END ELSE // the last time
             PostItemCharge(SalesHeader,SalesLine,
-              TempItemLedgEntry."Entry No.",ABS(TempItemLedgEntry.Quantity),
+              TempItemLedgEntry."Entry No.",-TempItemLedgEntry.Quantity,
               NonDistrAmountToAssign,NonDistrQtyToAssign);
         UNTIL TempItemLedgEntry.NEXT = 0
       ELSE
@@ -1288,6 +1283,8 @@ OBJECT Codeunit 80 Sales-Post
       DeprBook@1004 : Record 5611;
       DummyTrackingSpecification@1002 : Record 336;
     BEGIN
+      OnBeforeTestSalesLine(SalesHeader,SalesLine);
+
       WITH SalesHeader DO BEGIN
         IF SalesLine.Type = SalesLine.Type::Item THEN
           DummyTrackingSpecification.CheckItemTrackingQuantity(
@@ -1846,6 +1843,7 @@ OBJECT Codeunit 80 Sales-Post
         IF (SalesLineQty = 0) OR ("Unit Price" = 0) THEN BEGIN
           "Line Amount" := 0;
           "Line Discount Amount" := 0;
+          "Inv. Discount Amount" := 0;
           "VAT Base Amount" := 0;
           Amount := 0;
           "Amount Including VAT" := 0;
@@ -3181,10 +3179,10 @@ OBJECT Codeunit 80 Sales-Post
 
         IF SalesLineToPost."Currency Code" <> '' THEN
           SalesLineToPost."Unit Cost" := ROUND(
-              -SalesLineToPost.Amount / QuantityBase,Currency."Unit-Amount Rounding Precision")
+              SalesLineToPost.Amount / QuantityBase,Currency."Unit-Amount Rounding Precision")
         ELSE
           SalesLineToPost."Unit Cost" := ROUND(
-              -SalesLineToPost.Amount / QuantityBase,GLSetup."Unit-Amount Rounding Precision");
+              SalesLineToPost.Amount / QuantityBase,GLSetup."Unit-Amount Rounding Precision");
         TotalChargeAmt := TotalChargeAmt + SalesLineToPost.Amount;
 
         IF SalesHeader."Currency Code" <> '' THEN
@@ -3691,7 +3689,6 @@ OBJECT Codeunit 80 Sales-Post
 
     LOCAL PROCEDURE UpdatePrepmtSalesLineWithRounding@89(VAR PrepmtSalesLine@1002 : Record 37;TotalRoundingAmount@1001 : ARRAY [2] OF Decimal;TotalPrepmtAmount@1000 : ARRAY [2] OF Decimal;FinalInvoice@1005 : Boolean;PricesInclVATRoundingAmount@1006 : ARRAY [2] OF Decimal);
     VAR
-      AdjustAmount@1008 : Boolean;
       NewAmountIncludingVAT@1003 : Decimal;
       Prepmt100PctVATRoundingAmt@1004 : Decimal;
       AmountRoundingPrecision@1007 : Decimal;
@@ -3746,13 +3743,9 @@ OBJECT Codeunit 80 Sales-Post
           TotalSalesLine."Amount Including VAT" := TotalSalesLineLCY."Amount Including VAT";
         "Amount Including VAT" := NewAmountIncludingVAT;
 
-        IF FinalInvoice THEN
-          AdjustAmount :=
-            (TotalSalesLine.Amount = 0) AND (TotalSalesLine."Amount Including VAT" <> 0) AND
-            (ABS(TotalSalesLine."Amount Including VAT") <= Currency."Amount Rounding Precision")
-        ELSE
-          AdjustAmount := (TotalSalesLine.Amount < 0) AND (TotalSalesLine."Amount Including VAT" < 0);
-        IF AdjustAmount THEN BEGIN
+        IF FinalInvoice AND (TotalSalesLine.Amount = 0) AND (TotalSalesLine."Amount Including VAT" <> 0) AND
+           (ABS(TotalSalesLine."Amount Including VAT") <= Currency."Amount Rounding Precision")
+        THEN BEGIN
           "Amount Including VAT" += TotalSalesLineLCY."Amount Including VAT";
           TotalSalesLine."Amount Including VAT" := 0;
           TotalSalesLineLCY."Amount Including VAT" := 0;
@@ -3903,6 +3896,9 @@ OBJECT Codeunit 80 Sales-Post
         "Source Line No." := SalesLine."Line No.";
         VALIDATE("Bal. Account Type","Bal. Account Type"::"G/L Account");
         VALIDATE("Bal. Account No.",SalesLine."No.");
+        "Shortcut Dimension 1 Code" := SalesLine."Shortcut Dimension 1 Code";
+        "Shortcut Dimension 2 Code" := SalesLine."Shortcut Dimension 2 Code";
+        "Dimension Set ID" := SalesLine."Dimension Set ID";
 
         Vend.SETRANGE("IC Partner Code",SalesLine."IC Partner Code");
         IF Vend.FINDFIRST THEN BEGIN
@@ -4233,6 +4229,18 @@ OBJECT Codeunit 80 Sales-Post
             SalesCrMemoHeader.MODIFY;
           END;
       END;
+    END;
+
+    LOCAL PROCEDURE MakeSalesLineToShip@273(VAR SalesLineToShip@1000 : Record 37;SalesLineInvoiced@1001 : Record 37);
+    VAR
+      TempSalesLine@1002 : TEMPORARY Record 37;
+    BEGIN
+      ResetTempLines(TempSalesLine);
+      TempSalesLine := SalesLineInvoiced;
+      TempSalesLine.FIND;
+
+      SalesLineToShip := SalesLineInvoiced;
+      SalesLineToShip."Inv. Discount Amount" := TempSalesLine."Inv. Discount Amount";
     END;
 
     LOCAL PROCEDURE MAX@55(number1@1000 : Integer;number2@1001 : Integer) : Integer;
@@ -4987,6 +4995,7 @@ OBJECT Codeunit 80 Sales-Post
     BEGIN
       WITH SalesHeader DO BEGIN
         SalesShptHeader.INIT;
+        CALCFIELDS("Work Description");
         SalesShptHeader.TRANSFERFIELDS(SalesHeader);
 
         SalesShptHeader."No." := "Shipping No.";
@@ -5115,6 +5124,7 @@ OBJECT Codeunit 80 Sales-Post
     BEGIN
       WITH SalesHeader DO BEGIN
         SalesCrMemoHeader.INIT;
+        CALCFIELDS("Work Description");
         SalesCrMemoHeader.TRANSFERFIELDS(SalesHeader);
         IF "Document Type" = "Document Type"::"Return Order" THEN BEGIN
           SalesCrMemoHeader."No." := "Posting No.";
@@ -6314,6 +6324,11 @@ OBJECT Codeunit 80 Sales-Post
 
     [Integration]
     LOCAL PROCEDURE OnBeforePostGLAndCustomer@202(SalesHeader@1000 : Record 36;VAR TempInvoicePostBuffer@1001 : TEMPORARY Record 49;VAR CustLedgerEntry@1002 : Record 21);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeTestSalesLine@130(VAR SalesHeader@1000 : Record 36;VAR SalesLine@1001 : Record 37);
     BEGIN
     END;
 

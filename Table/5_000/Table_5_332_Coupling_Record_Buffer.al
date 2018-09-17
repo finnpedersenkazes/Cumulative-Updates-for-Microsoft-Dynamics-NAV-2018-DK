@@ -2,9 +2,9 @@ OBJECT Table 5332 Coupling Record Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -27,14 +27,8 @@ OBJECT Table 5332 Coupling Record Buffer
                                                                   ERROR(NoSuchCRMRecordErr,"CRM Name",CRMProductName.SHORT);
                                                               END;
 
-                                                   OnLookup=VAR
-                                                              CRMIntegrationRecord@1001 : Record 5331;
-                                                            BEGIN
-                                                              IF LookupCRMTables.Lookup("CRM Table ID","NAV Table ID","Saved CRM ID","CRM ID") THEN BEGIN
-                                                                IF "Saved CRM ID" <> "CRM ID" THEN
-                                                                  CRMIntegrationRecord.AssertRecordIDCanBeCoupled("NAV Record ID","CRM ID");
-                                                                "CRM Name" := CalcCRMName;
-                                                              END;
+                                                   OnLookup=BEGIN
+                                                              LookUpCRMName;
                                                             END;
 
                                                    DataClassification=SystemMetadata;
@@ -177,6 +171,17 @@ OBJECT Table 5332 Coupling Record Buffer
       END;
       RecordRef.CLOSE;
       EXIT(Found);
+    END;
+
+    PROCEDURE LookUpCRMName@4();
+    VAR
+      CRMIntegrationRecord@1003 : Record 5331;
+    BEGIN
+      IF LookupCRMTables.Lookup("CRM Table ID","NAV Table ID","Saved CRM ID","CRM ID") THEN BEGIN
+        IF "Saved CRM ID" <> "CRM ID" THEN
+          CRMIntegrationRecord.AssertRecordIDCanBeCoupled("NAV Record ID","CRM ID");
+        "CRM Name" := CalcCRMName;
+      END;
     END;
 
     LOCAL PROCEDURE CalcCRMName@9() : Text[250];

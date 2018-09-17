@@ -2,9 +2,9 @@ OBJECT Table 740 VAT Report Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -126,7 +126,7 @@ OBJECT Table 740 VAT Report Header
                                                                       TESTFIELD("Original Report No.");
                                                                       IF "Original Report No." = "No." THEN
                                                                         ERROR(Text005);
-                                                                      VATReportHeader.GET("Original Report No.");
+                                                                      VATReportHeader.GET("VAT Report Config. Code","Original Report No.");
                                                                       "Start Date" := VATReportHeader."Start Date";
                                                                       "End Date" := VATReportHeader."End Date";
                                                                     END;

@@ -2,9 +2,9 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -2681,7 +2681,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
                 FromSalesHeader."Prices Including VAT",ToSalesHeader."Prices Including VAT");
 
             FromSalesLineBuf.INSERT;
-            AddSalesDocLine(TempDocSalesLine,FromSalesLineBuf."Line No.","Document No.",FromSalesLine."Line No.");
+            AddSalesDocLine(TempDocSalesLine,FromSalesLineBuf."Line No.","Document No.",FromSalesLineBuf."Line No.");
           END;
         UNTIL (NEXT = 0) OR (FromSalesLine."Quantity (Base)" = 0);
 
@@ -3454,7 +3454,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
                 FromPurchHeader."Prices Including VAT",ToPurchHeader."Prices Including VAT");
             IF FromPurchLineBuf.Quantity <> 0 THEN BEGIN
               FromPurchLineBuf.INSERT;
-              AddPurchDocLine(TempDocPurchaseLine,FromPurchLineBuf."Line No.","Document No.",FromPurchLine."Line No.");
+              AddPurchDocLine(TempDocPurchaseLine,FromPurchLineBuf."Line No.","Document No.",FromPurchLineBuf."Line No.");
             END ELSE
               SkippedLine := TRUE;
           END ELSE

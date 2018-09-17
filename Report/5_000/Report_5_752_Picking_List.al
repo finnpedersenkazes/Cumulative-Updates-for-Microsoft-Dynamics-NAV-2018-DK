@@ -2,9 +2,9 @@ OBJECT Report 5752 Picking List
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -25,7 +25,7 @@ OBJECT Report 5752 Picking List
                                   GetLocation("Location Code");
                                   InvtPick := Type = Type::"Invt. Pick";
 
-                                  IF NOT CurrReport.PREVIEW THEN
+                                  IF NOT IsReportInPreviewMode THEN
                                     CODEUNIT.RUN(CODEUNIT::"Whse.-Printed","Warehouse Activity Header");
                                 END;
 
@@ -421,6 +421,13 @@ OBJECT Report 5752 Picking List
       ELSE
         IF Location.Code <> LocationCode THEN
           Location.GET(LocationCode);
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@8() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     PROCEDURE SetBreakbulkFilter@1(BreakbulkFilter2@1000 : Boolean);

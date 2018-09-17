@@ -2,9 +2,9 @@ OBJECT Page 179 Reverse Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -386,6 +386,7 @@ OBJECT Page 179 Reverse Entries
       GLEntry@1008 : Record 17;
       CustLedgEntry@1007 : Record 21;
       VendLedgEntry@1006 : Record 25;
+      EmployeeLedgerEntry@1000 : Record 5222;
       BankAccLedgEntry@1005 : Record 271;
       FALedgEntry@1004 : Record 5601;
       MaintenanceLedgEntry@1003 : Record 5625;
@@ -398,6 +399,8 @@ OBJECT Page 179 Reverse Entries
           EXIT(CustLedgEntry.TABLECAPTION);
         "Entry Type"::Vendor:
           EXIT(VendLedgEntry.TABLECAPTION);
+        "Entry Type"::Employee:
+          EXIT(EmployeeLedgerEntry.TABLECAPTION);
         "Entry Type"::"Bank Account":
           EXIT(BankAccLedgEntry.TABLECAPTION);
         "Entry Type"::"Fixed Asset":

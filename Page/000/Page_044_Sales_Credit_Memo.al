@@ -2,9 +2,9 @@ OBJECT Page 44 Sales Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -42,6 +42,7 @@ OBJECT Page 44 Sales Credit Memo
 
     OnAfterGetRecord=BEGIN
                        SetControlAppearance;
+                       WorkDescription := GetWorkDescription;
                      END;
 
     OnNewRecord=BEGIN
@@ -905,6 +906,24 @@ OBJECT Page 44 Sales Credit Memo
                 SourceExpr="Applies-to ID";
                 Importance=Additional }
 
+    { 62  ;2   ;Group     ;
+                CaptionML=[DAN=Arbejdsbeskrivelse;
+                           ENU=Work Description];
+                GroupType=Group }
+
+    { 60  ;3   ;Field     ;
+                ToolTipML=[DAN=Angiver de produkter eller tjenester, der tilbydes.;
+                           ENU=Specifies the products or services being offered.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=WorkDescription;
+                Importance=Additional;
+                MultiLine=Yes;
+                OnValidate=BEGIN
+                             SetWorkDescription(WorkDescription);
+                           END;
+
+                ShowCaption=No }
+
     { 48  ;1   ;Part      ;
                 Name=SalesLines;
                 ApplicationArea=#Basic,#Suite;
@@ -1279,6 +1298,7 @@ OBJECT Page 44 Sales Credit Memo
       SalesCalcDiscByType@1006 : Codeunit 56;
       LinesInstructionMgt@1017 : Codeunit 1320;
       ChangeExchangeRate@1002 : Page 511;
+      WorkDescription@1022 : Text;
       JobQueueVisible@1000 : Boolean INDATASET;
       JobQueueUsed@1014 : Boolean INDATASET;
       HasIncomingDocument@1012 : Boolean;

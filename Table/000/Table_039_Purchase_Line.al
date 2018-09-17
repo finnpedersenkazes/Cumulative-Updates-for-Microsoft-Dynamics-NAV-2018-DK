@@ -2,9 +2,9 @@ OBJECT Table 39 Purchase Line
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -4687,9 +4687,12 @@ OBJECT Table 39 Purchase Line
         LineAmount := ROUND(Quantity * "Direct Unit Cost",Currency."Amount Rounding Precision");
         LineAmount := ROUND(QtyToHandle * LineAmount / Quantity,Currency."Amount Rounding Precision");
       END;
-      LineDiscAmount :=
-        ROUND(
-          LineAmount * "Line Discount %" / 100,Currency."Amount Rounding Precision");
+
+      IF QtyToHandle <> Quantity THEN
+        LineDiscAmount := ROUND(LineAmount * "Line Discount %" / 100,Currency."Amount Rounding Precision")
+      ELSE
+        LineDiscAmount := "Line Discount Amount";
+
       EXIT(LineAmount - LineDiscAmount);
     END;
 

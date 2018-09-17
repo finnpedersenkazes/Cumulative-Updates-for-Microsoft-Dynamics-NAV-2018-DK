@@ -2,9 +2,9 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -207,7 +207,7 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
       UpdateHeader := FALSE;
       CalculateInvoiceDiscount(PurchHeaderTemp,PurchLine);
 
-      IF PurchLineToUpdate.GET(PurchLine."Document Type",PurchLine."Document No.",PurchLine."Line No.") THEN;
+      IF PurchLineToUpdate.GET(PurchLineToUpdate."Document Type",PurchLineToUpdate."Document No.",PurchLineToUpdate."Line No.") THEN;
     END;
 
     LOCAL PROCEDURE UpdatePrepmtLineAmount@7(PurchaseHeader@1000 : Record 38);

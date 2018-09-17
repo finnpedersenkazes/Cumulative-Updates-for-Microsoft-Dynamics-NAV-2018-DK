@@ -2,9 +2,9 @@ OBJECT Page 283 Recurring General Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -25,6 +25,8 @@ OBJECT Page 283 Recurring General Journal
     OnOpenPage=VAR
                  JnlSelected@1000 : Boolean;
                BEGIN
+                 SetConrolVisibility;
+
                  IF IsOpenedFromBatch THEN BEGIN
                    CurrentJnlBatchName := "Journal Batch Name";
                    GenJnlManagement.OpenJnl(CurrentJnlBatchName,Rec);
@@ -34,8 +36,6 @@ OBJECT Page 283 Recurring General Journal
                  IF NOT JnlSelected THEN
                    ERROR('');
                  GenJnlManagement.OpenJnl(CurrentJnlBatchName,Rec);
-
-                 ShowAmounts;
                END;
 
     OnAfterGetRecord=BEGIN
@@ -683,7 +683,7 @@ OBJECT Page 283 Recurring General Journal
       CurrPage.UPDATE(FALSE);
     END;
 
-    LOCAL PROCEDURE ShowAmounts@8();
+    LOCAL PROCEDURE SetConrolVisibility@8();
     VAR
       GLSetup@1000 : Record 98;
     BEGIN

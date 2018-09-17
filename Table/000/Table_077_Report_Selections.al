@@ -2,9 +2,9 @@ OBJECT Table 77 Report Selections
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -496,6 +496,8 @@ OBJECT Table 77 Report Selections
     BEGIN
       ServerEmailBodyFilePath := '';
 
+      OnBeforeGetEmailBodyCustomer;
+
       IF CustEmailAddress = '' THEN
         CustEmailAddress := GetEmailAddressIgnoringLayout(ReportUsage,RecordVariant,CustNo);
 
@@ -512,6 +514,8 @@ OBJECT Table 77 Report Selections
       END;
 
       CustEmailAddress := GetEmailAddress(ReportUsage,RecordVariant,CustNo,TempBodyReportSelections);
+
+      OnAfterGetEmailBodyCustomer(CustEmailAddress,ServerEmailBodyFilePath);
 
       EXIT(TRUE);
     END;
@@ -561,6 +565,8 @@ OBJECT Table 77 Report Selections
     BEGIN
       ServerEmailBodyFilePath := '';
 
+      OnBeforeGetEmailBodyVendor;
+
       VendorEmailAddress := GetVendorEmailAddress(VendorNo,RecordVariant,ReportUsage);
 
       IF NOT FindEmailBodyUsageVendor(ReportUsage,VendorNo,TempBodyReportSelections) THEN
@@ -573,6 +579,8 @@ OBJECT Table 77 Report Selections
         FindEmailAddressForEmailLayout(TempBodyReportSelections."Email Body Layout Code",VendorNo,ReportUsage,DATABASE::Vendor);
       IF FoundVendorEmailAddress <> '' THEN
         VendorEmailAddress := FoundVendorEmailAddress;
+
+      OnAfterGetEmailBodyVendor(VendorEmailAddress,ServerEmailBodyFilePath);
 
       EXIT(TRUE);
     END;
@@ -692,18 +700,16 @@ OBJECT Table 77 Report Selections
     VAR
       TempAttachReportSelections@1008 : TEMPORARY Record 77;
       CustomReportSelection@1014 : Record 9657;
-      ReportDistributionManagement@1002 : Codeunit 452;
+      MailManagement@1003 : Codeunit 9520;
       FoundBody@1005 : Boolean;
       FoundAttachment@1011 : Boolean;
       ServerEmailBodyFilePath@1009 : Text[250];
       EmailAddress@1012 : Text[250];
     BEGIN
       OnBeforeSetReportLayout(RecordVariant);
-      InteractionMgt.SetEmailDraftLogging(TRUE);
-      BINDSUBSCRIPTION(ReportDistributionManagement);
+      BINDSUBSCRIPTION(MailManagement);
       FoundBody := GetEmailBody(ServerEmailBodyFilePath,ReportUsage,RecordVariant,CustNo,EmailAddress);
-      UNBINDSUBSCRIPTION(ReportDistributionManagement);
-      InteractionMgt.SetEmailDraftLogging(FALSE);
+      UNBINDSUBSCRIPTION(MailManagement);
       FoundAttachment := FindEmailAttachmentUsage(ReportUsage,CustNo,TempAttachReportSelections);
 
       CustomReportSelection.SETRANGE("Source Type",DATABASE::Customer);
@@ -717,15 +723,16 @@ OBJECT Table 77 Report Selections
     VAR
       TempAttachReportSelections@1014 : TEMPORARY Record 77;
       CustomReportSelection@1013 : Record 9657;
+      MailManagement@1008 : Codeunit 9520;
       FoundBody@1010 : Boolean;
       FoundAttachment@1009 : Boolean;
       ServerEmailBodyFilePath@1007 : Text[250];
       EmailAddress@1006 : Text[250];
     BEGIN
       OnBeforeSetReportLayout(RecordVariant);
-      InteractionMgt.SetEmailDraftLogging(TRUE);
+      BINDSUBSCRIPTION(MailManagement);
       FoundBody := GetEmailBodyVendor(ServerEmailBodyFilePath,ReportUsage,RecordVariant,VendorNo,EmailAddress);
-      InteractionMgt.SetEmailDraftLogging(FALSE);
+      UNBINDSUBSCRIPTION(MailManagement);
       FoundAttachment := FindEmailAttachmentUsageVendor(ReportUsage,VendorNo,TempAttachReportSelections);
 
       CustomReportSelection.SETRANGE("Source Type",DATABASE::Vendor);
@@ -1244,6 +1251,26 @@ OBJECT Table 77 Report Selections
 
     [Integration(TRUE)]
     LOCAL PROCEDURE OnFindReportSelections@63(VAR FilterReportSelections@1001 : Record 77;VAR IsHandled@1002 : Boolean;VAR ReturnReportSelections@1000 : Record 77);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeGetEmailBodyCustomer@36();
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterGetEmailBodyCustomer@39(CustomerEmailAddress@1000 : Text[250];ServerEmailBodyFilePath@1001 : Text[250]);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeGetEmailBodyVendor@68();
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterGetEmailBodyVendor@67(VendorEmailAddress@1001 : Text[250];ServerEmailBodyFilePath@1000 : Text[250]);
     BEGIN
     END;
 

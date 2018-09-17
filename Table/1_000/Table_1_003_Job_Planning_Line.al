@@ -2,9 +2,9 @@ OBJECT Table 1003 Job Planning Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -912,9 +912,9 @@ OBJECT Table 1003 Job Planning Line
   {
     {    ;Job No.,Job Task No.,Line No.           ;Clustered=Yes }
     {    ;Job No.,Job Task No.,Schedule Line,Planning Date;
-                                                   SumIndexFields=Total Price (LCY),Total Cost (LCY),Line Amount (LCY),Remaining Total Cost (LCY),Remaining Line Amount (LCY) }
+                                                   SumIndexFields=Total Price (LCY),Total Cost (LCY),Line Amount (LCY),Remaining Total Cost (LCY),Remaining Line Amount (LCY),Total Cost,Line Amount }
     {    ;Job No.,Job Task No.,Contract Line,Planning Date;
-                                                   SumIndexFields=Line Amount (LCY),Total Price (LCY),Total Cost (LCY) }
+                                                   SumIndexFields=Total Price (LCY),Total Cost (LCY),Line Amount (LCY),Remaining Total Cost (LCY),Remaining Line Amount (LCY),Total Cost,Line Amount }
     {    ;Job No.,Job Task No.,Schedule Line,Currency Date }
     {    ;Job No.,Job Task No.,Contract Line,Currency Date }
     {    ;Job No.,Schedule Line,Type,No.,Planning Date;

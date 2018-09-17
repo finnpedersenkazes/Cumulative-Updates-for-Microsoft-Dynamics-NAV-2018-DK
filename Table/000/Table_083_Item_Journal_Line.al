@@ -2,9 +2,9 @@ OBJECT Table 83 Item Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1675,6 +1675,9 @@ OBJECT Table 83 Item Journal Line
                                                               ENU=Return Reason Code] }
     { 7315;   ;Warehouse Adjustment;Boolean       ;CaptionML=[DAN=Lagerregulering;
                                                               ENU=Warehouse Adjustment] }
+    { 7316;   ;Direct Transfer     ;Boolean       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Direkte overf›rsel;
+                                                              ENU=Direct Transfer] }
     { 7380;   ;Phys Invt Counting Period Code;Code10;
                                                    TableRelation="Phys. Invt. Counting Period";
                                                    CaptionML=[DAN=Lageropg.-opt‘llingsperiodekode;

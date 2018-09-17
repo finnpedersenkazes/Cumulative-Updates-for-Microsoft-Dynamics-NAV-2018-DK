@@ -2,9 +2,9 @@ OBJECT Table 370 Excel Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -131,6 +131,9 @@ OBJECT Table 370 Excel Buffer
       XlWrkBkReader@1023 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.WorkbookReader";
       XlWrkShtWriter@1024 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.WorksheetWriter";
       XlWrkShtReader@1043 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.WorksheetReader";
+      StringBld@1011 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.StringBuilder";
+      Worksheet@1026 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Worksheet";
+      WrkShtHelper@1027 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.WorksheetHelper";
       XlApp@1044 : DotNet "'Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c'.Microsoft.Office.Interop.Excel.ApplicationClass" RUNONCLIENT;
       XlWrkBk@1051 : DotNet "'Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c'.Microsoft.Office.Interop.Excel.Workbook" RUNONCLIENT;
       XlWrkSht@1009 : DotNet "'Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c'.Microsoft.Office.Interop.Excel.Worksheet" RUNONCLIENT;
@@ -156,6 +159,14 @@ OBJECT Table 370 Excel Buffer
       Text040@1008 : TextConst '@@@="{Locked=""Excel""}";DAN=Eksport‚r Excel-fil;ENU=Export Excel File';
       SavingDocumentMsg@1010 : TextConst 'DAN=Gemmer f›lgende dokument: %1.;ENU=Saving the following document: %1.';
       ExcelFileExtensionTok@1012 : TextConst '@@@={Locked};DAN=.xlsx;ENU=.xlsx';
+      VmlDrawingXmlTxt@1053 : TextConst '@@@={Locked};DAN="<xml xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"" xmlns:x=""urn:schemas-microsoft-com:office:excel""><o:shapelayout v:ext=""edit""><o:idmap v:ext=""edit"" data=""1""/></o:shapelayout><v:shapetype id=""_x0000_t202"" coordsize=""21600,21600"" o:spt=""202""  path=""m,l,21600r21600,l21600,xe""><v:stroke joinstyle=""miter""/><v:path gradientshapeok=""t"" o:connecttype=""rect""/></v:shapetype>";ENU="<xml xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"" xmlns:x=""urn:schemas-microsoft-com:office:excel""><o:shapelayout v:ext=""edit""><o:idmap v:ext=""edit"" data=""1""/></o:shapelayout><v:shapetype id=""_x0000_t202"" coordsize=""21600,21600"" o:spt=""202""  path=""m,l,21600r21600,l21600,xe""><v:stroke joinstyle=""miter""/><v:path gradientshapeok=""t"" o:connecttype=""rect""/></v:shapetype>"';
+      EndXmlTokenTxt@1038 : TextConst '@@@={Locked};DAN=</xml>;ENU=</xml>';
+      VmlShapeAnchorTxt@1028 : TextConst '@@@={Locked};DAN=%1,15,%2,10,%3,31,8,9;ENU=%1,15,%2,10,%3,31,8,9';
+
+      CommentVmlShapeXmlTxt@1054 : TextConst
+        '@@@={Locked}',
+        'DAN="<v:shape id=""%1"" type=""#_x0000_t202"" style=''position:absolute;  margin-left:59.25pt;margin-top:1.5pt;width:96pt;height:55.5pt;z-index:1;  visibility:hidden'' fillcolor=""#ffffe1"" o:insetmode=""auto""><v:fill color2=""#ffffe1""/><v:shadow color=""black"" obscured=""t""/><v:path o:connecttype=""none""/><v:textbox style=''mso-direction-alt:auto''><div style=''text-align:left''/></v:textbox><x:ClientData ObjectType=""Note""><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>%2</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>%3</x:Row><x:Column>%4</x:Column></x:ClientData></v:shape>"',
+        'ENU="<v:shape id=""%1"" type=""#_x0000_t202"" style=''position:absolute;  margin-left:59.25pt;margin-top:1.5pt;width:96pt;height:55.5pt;z-index:1;  visibility:hidden'' fillcolor=""#ffffe1"" o:insetmode=""auto""><v:fill color2=""#ffffe1""/><v:shadow color=""black"" obscured=""t""/><v:path o:connecttype=""none""/><v:textbox style=''mso-direction-alt:auto''><div style=''text-align:left''/></v:textbox><x:ClientData ObjectType=""Note""><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>%2</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>%3</x:Row><x:Column>%4</x:Column></x:ClientData></v:shape>"';
 
     [External]
     PROCEDURE CreateNewBook@42(SheetName@1000 : Text[250]);
@@ -185,7 +196,10 @@ OBJECT Table 370 Excel Buffer
       IF SheetName <> '' THEN BEGIN
         XlWrkShtWriter.Name := SheetName;
         ActiveSheetName := SheetName;
-      END
+      END;
+
+      WrkShtHelper := WrkShtHelper.WorksheetHelper(XlWrkBkWriter.FirstWorksheet.Worksheet);
+      Worksheet := XlWrkShtWriter.Worksheet;
     END;
 
     PROCEDURE OpenBook@2(FileName@1000 : Text;SheetName@1001 : Text[250]);
@@ -250,6 +264,9 @@ OBJECT Table 370 Excel Buffer
         // cells that are addressed by the writer. All other cells will be left unmodified.
         XlWrkShtWriter.PreserveDataOnUpdate := PreserveDataOnUpdate;
         ActiveSheetName := SheetName;
+
+        WrkShtHelper := WrkShtHelper.WorksheetHelper(XlWrkBkWriter.FirstWorksheet.Worksheet);
+        Worksheet := XlWrkShtWriter.Worksheet;
       END ELSE BEGIN
         QuitExcel;
         ERROR(Text004,SheetName);
@@ -277,7 +294,11 @@ OBJECT Table 370 Excel Buffer
     PROCEDURE WriteSheet@37(ReportHeader@1001 : Text;CompanyName2@1002 : Text;UserID2@1003 : Text);
     VAR
       ExcelBufferDialogMgt@1009 : Codeunit 5370;
+      VmlDrawingPart@1005 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Packaging.VmlDrawingPart";
       OrientationValues@1000 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.OrientationValues";
+      XmlTextWriter@1013 : DotNet "'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlTextWriter";
+      FileMode@1007 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.FileMode";
+      Encoding@1006 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.Encoding";
       CRLF@1008 : Char;
       RecNo@1010 : Integer;
       InfoRecNo@1012 : Integer;
@@ -293,6 +314,19 @@ OBJECT Table 370 Excel Buffer
       RecNo := 0;
 
       XlWrkShtWriter.AddPageSetup(OrientationValues.Landscape,9); // 9 - default value for Paper Size - A4
+      IF ReportHeader <> '' THEN
+        XlWrkShtWriter.AddHeader(
+          TRUE,
+          STRSUBSTNO('%1%2%1%3%4',GetExcelReference(1),ReportHeader,CRLF,CompanyName2));
+
+      XlWrkShtWriter.AddHeader(
+        FALSE,
+        STRSUBSTNO('%1%3%4%3%5 %2',GetExcelReference(2),GetExcelReference(3),CRLF,UserID2,PageTxt));
+
+      AddAndInitializeCommentsPart(VmlDrawingPart);
+
+      StringBld := StringBld.StringBuilder;
+      StringBld.Append(VmlDrawingXmlTxt);
 
       IF FINDSET THEN
         REPEAT
@@ -307,14 +341,12 @@ OBJECT Table 370 Excel Buffer
             WriteCellFormula(Rec)
         UNTIL NEXT = 0;
 
-      IF ReportHeader <> '' THEN
-        XlWrkShtWriter.AddHeader(
-          TRUE,
-          STRSUBSTNO('%1%2%1%3%4',GetExcelReference(1),ReportHeader,CRLF,CompanyName2));
+      StringBld.Append(EndXmlTokenTxt);
 
-      XlWrkShtWriter.AddHeader(
-        FALSE,
-        STRSUBSTNO('%1%3%4%3%5 %2',GetExcelReference(2),GetExcelReference(3),CRLF,UserID2,PageTxt));
+      XmlTextWriter := XmlTextWriter.XmlTextWriter(VmlDrawingPart.GetStream(FileMode.Create),Encoding.UTF8);
+      XmlTextWriter.WriteRaw(StringBld.ToString);
+      XmlTextWriter.Flush;
+      XmlTextWriter.Close;
 
       IF UseInfoSheet THEN
         IF TempInfoExcelBuf.FINDSET THEN BEGIN
@@ -354,6 +386,11 @@ OBJECT Table 370 Excel Buffer
           ELSE
             ERROR(Text039)
         END;
+
+        IF Comment <> '' THEN BEGIN
+          SetCellComment(XlWrkShtWriter,STRSUBSTNO('%1%2',xlColID,"Row No."),Comment);
+          CreateCommentVmlShapeXml("Column No.","Row No.");
+        END;
       END;
     END;
 
@@ -366,6 +403,155 @@ OBJECT Table 370 Excel Buffer
 
         XlWrkShtWriter.SetCellFormula("Row No.",xlColID,GetFormula,NumberFormat,Decorator);
       END;
+    END;
+
+    LOCAL PROCEDURE SetCellComment@47(WrkShtWriter@1010 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.WorksheetWriter";CellReference@1000 : Text;CommentValue@1001 : Text);
+    VAR
+      DotNetComment@1004 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Comment";
+      CommentText@1003 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.CommentText";
+      Run@1006 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Run";
+      UInt32Value@1014 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.UInt32Value";
+      StringValue@1015 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.StringValue";
+      Int32Value@1020 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Int32Value";
+      CommentList@1008 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.CommentList";
+      Comments@1005 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Comments";
+      SpreadsheetText@1009 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Text";
+      RunProperties@1007 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.RunProperties";
+      CommentsPart@1002 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Packaging.WorksheetCommentsPart";
+      Worksheet@1011 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Worksheet";
+      DotNetBold@1012 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Bold";
+      FontSize@1013 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.FontSize";
+      DoubleValue@1016 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.DoubleValue";
+      Color@1018 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Color";
+      RunFont@1017 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.RunFont";
+      RunPropCharSet@1019 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.RunPropertyCharSet";
+    BEGIN
+      CommentsPart := WrkShtWriter.Worksheet.WorksheetPart.WorksheetCommentsPart;
+      Comments := CommentsPart.Comments;
+
+      IF ISNULL(Comments) THEN BEGIN
+        Comments := Comments.Comments;
+        CommentsPart.Comments := Comments;
+      END;
+
+      CommentList := Comments.CommentList;
+
+      IF ISNULL(CommentList) THEN
+        CommentList := WrkShtWriter.CreateCommentList(Comments);
+
+      DotNetComment := DotNetComment.Comment;
+      DotNetComment.AuthorId := UInt32Value.FromUInt32(0);
+      DotNetComment.Reference := StringValue.StringValue(CellReference);
+
+      CommentText := CommentText.CommentText;
+
+      Run := Run.Run;
+
+      RunProperties := RunProperties.RunProperties;
+      DotNetBold := DotNetBold.Bold;
+
+      FontSize := FontSize.FontSize;
+      FontSize.Val := DoubleValue.FromDouble(9);
+
+      Color := Color.Color;
+      Color.Indexed := UInt32Value.FromUInt32(81);
+
+      RunFont := RunFont.RunFont;
+      RunFont.Val := StringValue.FromString('Tahoma');
+
+      RunPropCharSet := RunPropCharSet.RunPropertyCharSet;
+      RunPropCharSet.Val := Int32Value.FromInt32(1);
+
+      WrkShtHelper.AppendElementToOpenXmlElement(RunProperties,DotNetBold);
+      WrkShtHelper.AppendElementToOpenXmlElement(RunProperties,FontSize);
+      WrkShtHelper.AppendElementToOpenXmlElement(RunProperties,Color);
+      WrkShtHelper.AppendElementToOpenXmlElement(RunProperties,RunFont);
+      WrkShtHelper.AppendElementToOpenXmlElement(RunProperties,RunPropCharSet);
+
+      SpreadsheetText := WrkShtWriter.AddText(CommentValue);
+      SpreadsheetText.Text := CommentValue;
+
+      WrkShtHelper.AppendElementToOpenXmlElement(Run,RunProperties);
+      WrkShtHelper.AppendElementToOpenXmlElement(Run,SpreadsheetText);
+
+      WrkShtHelper.AppendElementToOpenXmlElement(CommentText,Run);
+      DotNetComment.CommentText := CommentText;
+
+      WrkShtWriter.AppendComment(CommentList,DotNetComment);
+
+      CommentsPart.Comments.Save;
+      WrkShtWriter.Worksheet.Save;
+      Worksheet := WrkShtWriter.Worksheet;
+    END;
+
+    LOCAL PROCEDURE AddAndInitializeCommentsPart@49(VAR VmlDrawingPart@1001 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Packaging.VmlDrawingPart");
+    VAR
+      WorkSheetCommentsPart@1000 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Packaging.WorksheetCommentsPart";
+      Comments@1002 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Comments";
+    BEGIN
+      WorkSheetCommentsPart := XlWrkShtWriter.Worksheet.WorksheetPart.WorksheetCommentsPart;
+      IF ISNULL(WorkSheetCommentsPart) THEN
+        WorkSheetCommentsPart := XlWrkShtWriter.CreateWorksheetCommentsPart;
+
+      AddVmlDrawingPart(VmlDrawingPart);
+
+      WorkSheetCommentsPart.Comments := Comments.Comments;
+
+      AddWorkSheetAuthor(WorkSheetCommentsPart.Comments,USERID);
+
+      XlWrkShtWriter.CreateCommentList(WorkSheetCommentsPart.Comments);
+    END;
+
+    LOCAL PROCEDURE AddVmlDrawingPart@59(VAR VmlDrawingPart@1002 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Packaging.VmlDrawingPart");
+    VAR
+      StringValue@1003 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.StringValue";
+      LegacyDrawing@1000 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.LegacyDrawing";
+      LocalWorksheet@1004 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Worksheet";
+      LastChild@1005 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.OpenXmlElement";
+      VmlPartId@1001 : Text;
+    BEGIN
+      VmlDrawingPart := XlWrkShtWriter.CreateVmlDrawingPart;
+      VmlPartId := Worksheet.WorksheetPart.GetIdOfPart(VmlDrawingPart);
+      LegacyDrawing := LegacyDrawing.LegacyDrawing;
+      LegacyDrawing.Id := StringValue.FromString(VmlPartId);
+      LocalWorksheet := Worksheet.WorksheetPart.Worksheet;
+      LastChild := LocalWorksheet.LastChild;
+      IF LastChild.GetType.Equals(LegacyDrawing.GetType) THEN
+        LastChild.Remove;
+
+      WrkShtHelper.AppendElementToOpenXmlElement(Worksheet.WorksheetPart.Worksheet,LegacyDrawing);
+    END;
+
+    LOCAL PROCEDURE AddWorkSheetAuthor@50(Comments@1003 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Comments";AuthorText@1002 : Text);
+    VAR
+      Author@1001 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Author";
+      Authors@1000 : DotNet "'DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.DocumentFormat.OpenXml.Spreadsheet.Authors";
+    BEGIN
+      Authors := Authors.Authors;
+      WrkShtHelper.AppendElementToOpenXmlElement(Comments,Authors);
+      Author := Author.Author;
+      Author.Text := AuthorText;
+      WrkShtHelper.AppendElementToOpenXmlElement(Authors,Author);
+    END;
+
+    LOCAL PROCEDURE CreateCommentVmlShapeXml@57(ColId@1000 : Integer;RowId@1001 : Integer);
+    VAR
+      Guid@1002 : GUID;
+      Anchor@1003 : Text;
+      CommentShape@1004 : Text;
+    BEGIN
+      Guid := CREATEGUID;
+
+      Anchor := CreateCommentVmlAnchor(ColId,RowId);
+
+      CommentShape := STRSUBSTNO(CommentVmlShapeXmlTxt,Guid,Anchor,RowId - 1,ColId - 1);
+
+      StringBld.Append(CommentShape);
+    END;
+
+    LOCAL PROCEDURE CreateCommentVmlAnchor@56(ColId@1000 : Integer;RowId@1001 : Integer) : Text;
+    BEGIN
+      EXIT(STRSUBSTNO(VmlShapeAnchorTxt,ColId,RowId - 2,ColId + 2));
     END;
 
     LOCAL PROCEDURE GetCellDecorator@33(IsBold@1000 : Boolean;IsItalic@1001 : Boolean;IsUnderlined@1002 : Boolean;IsDoubleUnderlined@1004 : Boolean;VAR Decorator@1003 : DotNet "'Microsoft.Dynamics.Nav.OpenXml, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.Microsoft.Dynamics.Nav.OpenXml.Spreadsheet.CellDecorator");

@@ -2,12 +2,13 @@ OBJECT Codeunit 9520 Mail Management
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
+    EventSubscriberInstance=Manual;
     OnRun=BEGIN
             IF NOT IsEnabled THEN
               ERROR(MailingNotSupportedErr);
@@ -401,6 +402,53 @@ OBJECT Codeunit 9520 Mail Management
 
     [Integration]
     LOCAL PROCEDURE OnBeforeDoSending@26(VAR CancelSending@1000 : Boolean);
+    BEGIN
+    END;
+
+    LOCAL PROCEDURE FilterEventSubscription@34(VAR EventSubscription@1000 : Record 2000000140;FunctionNameFilter@1001 : Text);
+    BEGIN
+      EventSubscription.SETRANGE("Subscriber Codeunit ID",CODEUNIT::"Mail Management");
+      EventSubscription.SETRANGE("Publisher Object Type",EventSubscription."Publisher Object Type"::Table);
+      EventSubscription.SETRANGE("Publisher Object ID",DATABASE::"Report Selections");
+      EventSubscription.SETFILTER("Published Function",'%1',FunctionNameFilter);
+      EventSubscription.SETFILTER("Active Manual Instances",'>%1',0);
+    END;
+
+    PROCEDURE IsHandlingGetEmailBody@39() : Boolean;
+    BEGIN
+      IF IsHandlingGetEmailBodyCustomer THEN
+        EXIT(TRUE);
+
+      EXIT(IsHandlingGetEmailBodyVendor);
+    END;
+
+    PROCEDURE IsHandlingGetEmailBodyCustomer@37() : Boolean;
+    VAR
+      EventSubscription@1000 : Record 2000000140;
+      Result@1001 : Boolean;
+    BEGIN
+      FilterEventSubscription(EventSubscription,'OnAfterGetEmailBodyCustomer');
+      Result := NOT EventSubscription.ISEMPTY;
+      EXIT(Result);
+    END;
+
+    PROCEDURE IsHandlingGetEmailBodyVendor@32() : Boolean;
+    VAR
+      EventSubscription@1000 : Record 2000000140;
+      Result@1001 : Boolean;
+    BEGIN
+      FilterEventSubscription(EventSubscription,'OnAfterGetEmailBodyVendor');
+      Result := NOT EventSubscription.ISEMPTY;
+      EXIT(Result);
+    END;
+
+    [EventSubscriber(Table,77,OnAfterGetEmailBodyCustomer)]
+    LOCAL PROCEDURE HandleOnAfterGetEmailBodyCustomer@35(CustomerEmailAddress@1000 : Text[250];ServerEmailBodyFilePath@1001 : Text[250]);
+    BEGIN
+    END;
+
+    [EventSubscriber(Table,77,OnAfterGetEmailBodyVendor)]
+    LOCAL PROCEDURE HandleOnAfterGetEmailBodyVendor@36(VendorEmailAddress@1000 : Text[250];ServerEmailBodyFilePath@1001 : Text[250]);
     BEGIN
     END;
 

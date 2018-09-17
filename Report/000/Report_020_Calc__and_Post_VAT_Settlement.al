@@ -2,9 +2,9 @@ OBJECT Report 20 Calc. and Post VAT Settlement
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -425,7 +425,7 @@ OBJECT Report 20 Calc. and Post VAT Settlement
                                       CASE VATType OF
                                         VATEntry.Type::Purchase:
                                           BEGIN
-                                            GenJnlLine."Account No." := "VAT Posting Setup".GetRevChargeAccount(FALSE);
+                                            GenJnlLine."Account No." := "VAT Posting Setup".GetPurchAccount(FALSE);
                                             CopyAmounts(GenJnlLine,VATEntry);
                                             IF PostSettlement THEN
                                               PostGenJnlLine(GenJnlLine);

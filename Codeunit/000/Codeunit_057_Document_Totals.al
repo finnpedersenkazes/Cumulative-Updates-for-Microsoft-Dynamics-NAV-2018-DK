@@ -2,9 +2,9 @@ OBJECT Codeunit 57 Document Totals
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -28,12 +28,18 @@ OBJECT Codeunit 57 Document Totals
       TotalLineAmountLbl@1011 : TextConst 'DAN=Subtotal;ENU=Subtotal';
 
     [External]
+    PROCEDURE CalculateSalesPageTotals@51(VAR TotalSalesLine@1000 : Record 37;VAR VATAmount@1001 : Decimal;VAR SalesLine@1002 : Record 37);
+    VAR
+      SalesHeader@1003 : Record 36;
+    BEGIN
+      IF SalesHeader.GET(SalesLine."Document Type",SalesLine."Document No.") THEN
+        CalculateTotalSalesLineAndVATAmount(SalesHeader,VATAmount,TotalSalesLine);
+    END;
+
+    [External]
     PROCEDURE CalculateSalesTotals@11(VAR TotalSalesLine@1000 : Record 37;VAR VATAmount@1001 : Decimal;VAR SalesLine@1002 : Record 37);
     BEGIN
-      TotalSalesLine.SETRANGE("Document Type",SalesLine."Document Type");
-      TotalSalesLine.SETRANGE("Document No.",SalesLine."Document No.");
-      TotalSalesLine.CALCSUMS("Line Amount",Amount,"Amount Including VAT","Inv. Discount Amount");
-      VATAmount := TotalSalesLine."Amount Including VAT" - TotalSalesLine.Amount;
+      CalculateSalesPageTotals(TotalSalesLine,VATAmount,SalesLine);
     END;
 
     [External]
@@ -106,6 +112,37 @@ OBJECT Codeunit 57 Document Totals
       END;
     END;
 
+    LOCAL PROCEDURE CalculateTotalSalesLineAndVATAmount@36(SalesHeader@1001 : Record 36;VAR VATAmount@1000 : Decimal;VAR TempTotalSalesLine@1007 : TEMPORARY Record 37);
+    VAR
+      TempSalesLine@1009 : TEMPORARY Record 37;
+      TempTotalSalesLineLCY@1008 : TEMPORARY Record 37;
+      SalesPost@1006 : Codeunit 80;
+      VATAmountText@1005 : Text[30];
+      ProfitLCY@1004 : Decimal;
+      ProfitPct@1003 : Decimal;
+      TotalAdjCostLCY@1002 : Decimal;
+    BEGIN
+      SalesPost.GetSalesLines(SalesHeader,TempSalesLine,0);
+      CLEAR(SalesPost);
+      SalesPost.SumSalesLinesTemp(
+        SalesHeader,TempSalesLine,0,TempTotalSalesLine,TempTotalSalesLineLCY,
+        VATAmount,VATAmountText,ProfitLCY,ProfitPct,TotalAdjCostLCY);
+    END;
+
+    LOCAL PROCEDURE CalculateTotalPurchaseLineAndVATAmount@34(PurchaseHeader@1000 : Record 38;VAR VATAmount@1003 : Decimal;VAR TempTotalPurchaseLine@1006 : TEMPORARY Record 39);
+    VAR
+      TempTotalPurchaseLineLCY@1004 : TEMPORARY Record 39;
+      TempPurchaseLine@1005 : TEMPORARY Record 39;
+      PurchPost@1002 : Codeunit 90;
+      VATAmountText@1001 : Text[30];
+    BEGIN
+      PurchPost.GetPurchLines(PurchaseHeader,TempPurchaseLine,0);
+      CLEAR(PurchPost);
+
+      PurchPost.SumPurchLinesTemp(
+        PurchaseHeader,TempPurchaseLine,0,TempTotalPurchaseLine,TempTotalPurchaseLineLCY,VATAmount,VATAmountText);
+    END;
+
     [External]
     PROCEDURE SalesUpdateTotalsControls@12(CurrentSalesLine@1007 : Record 37;VAR TotalSalesHeader@1009 : Record 36;VAR TotalsSalesLine@1003 : Record 37;VAR RefreshMessageEnabled@1000 : Boolean;VAR ControlStyle@1001 : Text;VAR RefreshMessageText@1002 : Text;VAR InvDiscAmountEditable@1005 : Boolean;CurrPageEditable@1004 : Boolean;VAR VATAmount@1008 : Decimal);
     VAR
@@ -158,22 +195,11 @@ OBJECT Codeunit 57 Document Totals
 
     LOCAL PROCEDURE SalesCalculateTotalsWithInvoiceRounding@16(VAR TempCurrentSalesLine@1000 : TEMPORARY Record 37;VAR VATAmount@1001 : Decimal;VAR TempTotalSalesLine@1002 : TEMPORARY Record 37);
     VAR
-      TempSalesLine@1004 : TEMPORARY Record 37;
-      TempTotalSalesLineLCY@1005 : TEMPORARY Record 37;
       SalesHeader@1010 : Record 36;
-      SalesPost@1003 : Codeunit 80;
-      VATAmountText@1006 : Text[30];
-      ProfitLCY@1009 : Decimal;
-      ProfitPct@1008 : Decimal;
-      TotalAdjCostLCY@1007 : Decimal;
     BEGIN
       CLEAR(TempTotalSalesLine);
       IF SalesHeader.GET(TempCurrentSalesLine."Document Type",TempCurrentSalesLine."Document No.") THEN BEGIN
-        SalesPost.GetSalesLines(SalesHeader,TempSalesLine,0);
-        CLEAR(SalesPost);
-        SalesPost.SumSalesLinesTemp(
-          SalesHeader,TempSalesLine,0,TempTotalSalesLine,TempTotalSalesLineLCY,
-          VATAmount,VATAmountText,ProfitLCY,ProfitPct,TotalAdjCostLCY);
+        CalculateTotalSalesLineAndVATAmount(SalesHeader,VATAmount,TempTotalSalesLine);
 
         IF PreviousTotalSalesHeader."No." <> TempCurrentSalesLine."Document No." THEN BEGIN
           PreviousTotalSalesHeader.GET(TempCurrentSalesLine."Document Type",TempCurrentSalesLine."Document No.");
@@ -244,20 +270,12 @@ OBJECT Codeunit 57 Document Totals
     [Internal]
     PROCEDURE PurchaseCalculateTotalsWithInvoiceRounding@23(VAR TempCurrentPurchaseLine@1000 : TEMPORARY Record 39;VAR VATAmount@1001 : Decimal;VAR TempTotalPurchaseLine@1002 : TEMPORARY Record 39);
     VAR
-      TempPurchaseLine@1004 : TEMPORARY Record 39;
-      TempTotalPurchaseLineLCY@1005 : TEMPORARY Record 39;
       PurchaseHeader@1010 : Record 38;
-      PurchPost@1003 : Codeunit 90;
-      VATAmountText@1006 : Text[30];
     BEGIN
       CLEAR(TempTotalPurchaseLine);
 
       IF PurchaseHeader.GET(TempCurrentPurchaseLine."Document Type",TempCurrentPurchaseLine."Document No.") THEN BEGIN
-        PurchPost.GetPurchLines(PurchaseHeader,TempPurchaseLine,0);
-        CLEAR(PurchPost);
-
-        PurchPost.SumPurchLinesTemp(
-          PurchaseHeader,TempPurchaseLine,0,TempTotalPurchaseLine,TempTotalPurchaseLineLCY,VATAmount,VATAmountText);
+        CalculateTotalPurchaseLineAndVATAmount(PurchaseHeader,VATAmount,TempTotalPurchaseLine);
 
         IF PreviousTotalPurchaseHeader."No." <> TempCurrentPurchaseLine."Document No." THEN
           PreviousTotalPurchaseHeader.GET(TempCurrentPurchaseLine."Document Type",TempCurrentPurchaseLine."Document No.");
@@ -286,12 +304,18 @@ OBJECT Codeunit 57 Document Totals
     END;
 
     [External]
+    PROCEDURE CalculatePurchasePageTotals@52(VAR TotalPurchaseLine@1000 : Record 39;VAR VATAmount@1001 : Decimal;VAR PurchaseLine@1002 : Record 39);
+    VAR
+      PurchaseHeader@1003 : Record 38;
+    BEGIN
+      IF PurchaseHeader.GET(PurchaseLine."Document Type",PurchaseLine."Document No.") THEN
+        CalculateTotalPurchaseLineAndVATAmount(PurchaseHeader,VATAmount,TotalPurchaseLine);
+    END;
+
+    [External]
     PROCEDURE CalculatePurchaseTotals@27(VAR TotalPurchaseLine@1000 : Record 39;VAR VATAmount@1001 : Decimal;VAR PurchaseLine@1002 : Record 39);
     BEGIN
-      TotalPurchaseLine.SETRANGE("Document Type",PurchaseLine."Document Type");
-      TotalPurchaseLine.SETRANGE("Document No.",PurchaseLine."Document No.");
-      TotalPurchaseLine.CALCSUMS("Line Amount",Amount,"Amount Including VAT","Inv. Discount Amount");
-      VATAmount := TotalPurchaseLine."Amount Including VAT" - TotalPurchaseLine.Amount;
+      CalculatePurchasePageTotals(TotalPurchaseLine,VATAmount,PurchaseLine);
     END;
 
     [External]

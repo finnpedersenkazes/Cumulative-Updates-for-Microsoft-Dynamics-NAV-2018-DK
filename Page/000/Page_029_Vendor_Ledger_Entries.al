@@ -2,9 +2,9 @@ OBJECT Page 29 Vendor Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -23,10 +23,10 @@ OBJECT Page 29 Vendor Ledger Entries
            END;
 
     OnOpenPage=BEGIN
+                 SetConrolVisibility;
+
                  IF GETFILTERS <> '' THEN
                    IF FINDFIRST THEN;
-
-                 ShowAmounts;
                END;
 
     OnAfterGetRecord=BEGIN
@@ -609,7 +609,7 @@ OBJECT Page 29 Vendor Ledger Entries
       AmountVisible@1005 : Boolean;
       DebitCreditVisible@1004 : Boolean;
 
-    LOCAL PROCEDURE ShowAmounts@8();
+    LOCAL PROCEDURE SetConrolVisibility@8();
     VAR
       GLSetup@1000 : Record 98;
     BEGIN

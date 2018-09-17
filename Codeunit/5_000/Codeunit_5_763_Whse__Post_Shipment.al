@@ -2,9 +2,9 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -177,6 +177,7 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
                  (SalesHeader."Posting Date" <> WhseShptHeader."Posting Date")
               THEN BEGIN
                 SalesRelease.Reopen(SalesHeader);
+                SalesRelease.SetSkipCheckReleaseRestrictions;
                 SalesHeader.SetHideValidationDialog(TRUE);
                 SalesHeader.VALIDATE("Posting Date",WhseShptHeader."Posting Date");
                 SalesRelease.RUN(SalesHeader);
@@ -224,6 +225,7 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
                  (PurchHeader."Posting Date" <> WhseShptHeader."Posting Date")
               THEN BEGIN
                 PurchRelease.Reopen(PurchHeader);
+                PurchRelease.SetSkipCheckReleaseRestrictions;
                 PurchHeader.SetHideValidationDialog(TRUE);
                 PurchHeader.VALIDATE("Posting Date",WhseShptHeader."Posting Date");
                 PurchRelease.RUN(PurchHeader);

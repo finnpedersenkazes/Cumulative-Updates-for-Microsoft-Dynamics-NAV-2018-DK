@@ -2,9 +2,9 @@ OBJECT Table 901 Assembly Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -670,7 +670,8 @@ OBJECT Table 901 Assembly Line
       EXIT(RoundUnitAmount(UnitCost));
     END;
 
-    LOCAL PROCEDURE CalcCostAmount@41(Qty@1000 : Decimal;UnitCost@1001 : Decimal) : Decimal;
+    [External]
+    PROCEDURE CalcCostAmount@41(Qty@1000 : Decimal;UnitCost@1001 : Decimal) : Decimal;
     BEGIN
       EXIT(ROUND(Qty * UnitCost));
     END;

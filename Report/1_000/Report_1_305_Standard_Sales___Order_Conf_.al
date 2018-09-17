@@ -2,9 +2,9 @@ OBJECT Report 1305 Standard Sales - Order Conf.
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -53,7 +53,7 @@ OBJECT Report 1305 Standard Sales - Order Conf.
                                   Line.CalcVATAmountLines(0,Header,Line,VATAmountLine);
                                   Line.UpdateVATOnLines(0,Header,Line,VATAmountLine);
 
-                                  IF NOT CurrReport.PREVIEW THEN
+                                  IF NOT IsReportInPreviewMode THEN
                                     CODEUNIT.RUN(CODEUNIT::"Sales-Printed",Header);
 
                                   CurrReport.LANGUAGE := Language.GetLanguageID("Language Code");
@@ -77,13 +77,13 @@ OBJECT Report 1305 Standard Sales - Order Conf.
 
                                   FormatDocumentFields(Header);
 
-                                  IF NOT CurrReport.PREVIEW AND
+                                  IF NOT IsReportInPreviewMode AND
                                      (CurrReport.USEREQUESTPAGE AND ArchiveDocument OR
                                       NOT CurrReport.USEREQUESTPAGE AND SalesSetup."Archive Quotes and Orders")
                                   THEN
                                     ArchiveManagement.StoreSalesDocument(Header,LogInteraction);
 
-                                  IF LogInteraction AND NOT CurrReport.PREVIEW THEN BEGIN
+                                  IF LogInteraction AND NOT IsReportInPreviewMode THEN BEGIN
                                     CALCFIELDS("No. of Archived Versions");
                                     IF "Bill-to Contact No." <> '' THEN
                                       SegManagement.LogDocument(
@@ -1066,13 +1066,20 @@ OBJECT Report 1305 Standard Sales - Order Conf.
       DisplayAssemblyInformation := DisplayAsmInfo;
     END;
 
+    LOCAL PROCEDURE IsReportInPreviewMode@3() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
+    END;
+
     LOCAL PROCEDURE FormatDocumentFields@2(SalesHeader@1000 : Record 36);
     BEGIN
       WITH SalesHeader DO BEGIN
         FormatDocument.SetTotalLabels("Currency Code",TotalText,TotalInclVATText,TotalExclVATText);
         FormatDocument.SetSalesPerson(SalespersonPurchaser,"Salesperson Code",SalesPersonText);
         FormatDocument.SetPaymentTerms(PaymentTerms,"Payment Terms Code","Language Code");
-        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code");
+        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code","Language Code");
         FormatDocument.SetShipmentMethod(ShipmentMethod,"Shipment Method Code","Language Code");
       END;
     END;

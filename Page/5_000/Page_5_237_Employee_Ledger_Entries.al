@@ -2,9 +2,9 @@ OBJECT Page 5237 Employee Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -132,6 +132,28 @@ OBJECT Page 5237 Employee Ledger Entries
                                  EmplEntryApplyPostedEntries@1000 : Codeunit 224;
                                BEGIN
                                  EmplEntryApplyPostedEntries.UnApplyEmplLedgEntry("Entry No.");
+                               END;
+                                }
+      { 37      ;2   ;Action    ;
+                      Name=ReverseTransaction;
+                      Ellipsis=Yes;
+                      CaptionML=[DAN=Tilbagef›r transaktion;
+                                 ENU=Reverse Transaction];
+                      ToolTipML=[DAN=Tilbagef›r en fejlbeh‘ftet medarbejderpost.;
+                                 ENU=Reverse an erroneous employee ledger entry.];
+                      ApplicationArea=#Basic,#Suite;
+                      Image=ReverseRegister;
+                      Scope=Repeater;
+                      OnAction=VAR
+                                 ReversalEntry@1000 : Record 179;
+                               BEGIN
+                                 CLEAR(ReversalEntry);
+                                 IF Reversed THEN
+                                   ReversalEntry.AlreadyReversedEntry(TABLECAPTION,"Entry No.");
+                                 IF "Journal Batch Name" = '' THEN
+                                   ReversalEntry.TestFieldError;
+                                 TESTFIELD("Transaction No.");
+                                 ReversalEntry.ReverseTransaction("Transaction No.");
                                END;
                                 }
     }

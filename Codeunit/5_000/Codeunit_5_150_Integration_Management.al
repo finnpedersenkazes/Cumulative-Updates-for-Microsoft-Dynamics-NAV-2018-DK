@@ -2,9 +2,9 @@ OBJECT Codeunit 5150 Integration Management
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -323,7 +323,7 @@ OBJECT Codeunit 5150 Integration Management
     [External]
     PROCEDURE IsIntegrationActivated@21() : Boolean;
     BEGIN
-      EXIT(IntegrationIsActivated);
+      EXIT(GetIntegrationActivated);
     END;
 
     [Internal]
@@ -407,8 +407,7 @@ OBJECT Codeunit 5150 Integration Management
     END;
 
     [Integration]
-    [External]
-    PROCEDURE OnIsIntegrationRecord@29(TableID@1000 : Integer;VAR isIntegrationRecord@1001 : Boolean);
+    LOCAL PROCEDURE OnIsIntegrationRecord@29(TableID@1000 : Integer;VAR isIntegrationRecord@1001 : Boolean);
     BEGIN
     END;
 
@@ -434,17 +433,24 @@ OBJECT Codeunit 5150 Integration Management
     END;
 
     [Integration]
-    [External]
-    PROCEDURE OnIsIntegrationRecordChild@30(TableID@1000 : Integer;VAR isIntegrationRecordChild@1001 : Boolean);
+    LOCAL PROCEDURE OnIsIntegrationRecordChild@30(TableID@1000 : Integer;VAR isIntegrationRecordChild@1001 : Boolean);
     BEGIN
+    END;
+
+    [External]
+    PROCEDURE ResetIntegrationActivated@34();
+    BEGIN
+      IntegrationIsActivated := FALSE;
     END;
 
     LOCAL PROCEDURE GetIntegrationActivated@20() : Boolean;
     VAR
       GraphSyncRunner@1000 : Codeunit 5452;
       IsSyncEnabled@1001 : Boolean;
+      IsSyncDisabled@1002 : Boolean;
     BEGIN
-      IF IsIntegrationDisabled THEN
+      OnGetIntegrationDisabled(IsSyncDisabled);
+      IF IsSyncDisabled THEN
         EXIT(FALSE);
       IF NOT IntegrationIsActivated THEN BEGIN
         OnGetIntegrationActivated(IsSyncEnabled);
@@ -458,25 +464,12 @@ OBJECT Codeunit 5150 Integration Management
     END;
 
     [Integration]
-    [External]
-    PROCEDURE OnGetIntegrationActivated@11(VAR IsSyncEnabled@1000 : Boolean);
+    LOCAL PROCEDURE OnGetIntegrationActivated@11(VAR IsSyncEnabled@1000 : Boolean);
     BEGIN
-    END;
-
-    LOCAL PROCEDURE IsIntegrationDisabled@37() : Boolean;
-    VAR
-      IsSyncDisabled@1000 : Boolean;
-    BEGIN
-      OnGetIntegrationDisabled(IsSyncDisabled);
-      IF IsSyncDisabled THEN BEGIN
-        IntegrationIsActivated := FALSE;
-        EXIT(TRUE);
-      END;
     END;
 
     [Integration]
-    [External]
-    PROCEDURE OnGetIntegrationDisabled@35(VAR IsSyncDisabled@1000 : Boolean);
+    LOCAL PROCEDURE OnGetIntegrationDisabled@33(VAR IsSyncDisabled@1000 : Boolean);
     BEGIN
     END;
 

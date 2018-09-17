@@ -2,9 +2,9 @@ OBJECT Codeunit 5700 User Setup Management
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -32,7 +32,7 @@ OBJECT Codeunit 5700 User Setup Management
       HasGotSalesUserSetup@1009 : Boolean;
       HasGotPurchUserSetup@1010 : Boolean;
       HasGotServUserSetup@1011 : Boolean;
-      AllowedPostingDateErr@1015 : TextConst 'DAN=The date in the Allow Posting From field must not be after the date in the Allow Posting To field.;ENU=The date in the Allow Posting From field must not be after the date in the Allow Posting To field.';
+      AllowedPostingDateErr@1015 : TextConst 'DAN=Datoen i feltet Bogf. tilladt fra m† ikke ligge efter datoen i feltet Bogf. tilladt til.;ENU=The date in the Allow Posting From field must not be after the date in the Allow Posting To field.';
 
     [External]
     PROCEDURE GetSalesFilter@1() : Code[10];

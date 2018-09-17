@@ -2,9 +2,9 @@ OBJECT Page 43 Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -989,7 +989,11 @@ OBJECT Page 43 Sales Invoice
                 ToolTipML=[DAN=Angiver, om felterne Enhedspris og Linjebel›b p† bilagslinjer skal vises med eller uden moms.;
                            ENU=Specifies if the Unit Price and Line Amount fields on document lines should be shown with or without VAT.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Prices Including VAT" }
+                SourceExpr="Prices Including VAT";
+                OnValidate=BEGIN
+                             CurrPage.UPDATE;
+                           END;
+                            }
 
     { 156 ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver den involverede debitors eller kreditors momsspecifikation for at knytte transaktioner, der er foretaget for denne record, til den relevante finanskonto i overensstemmelse med den generelle momsbogf›ringsops‘tning.;

@@ -2,9 +2,9 @@ OBJECT Codeunit 415 Release Purchase Document
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -29,6 +29,7 @@ OBJECT Codeunit 415 Release Purchase Document
       Text005@1001 : TextConst 'DAN=Der er ubetalte forudbetalingsfakturaer, der er knyttet til dokumentet af typen %1 med nummer %2.;ENU=There are unpaid prepayment invoices that are related to the document of type %1 with the number %2.';
       UnpostedPrepaymentAmountsErr@1003 : TextConst '@@@="%1 - Document Type; %2 - Document No.";DAN=Der er ikke-bogf›rte forudbetalingsbel›b p† dokumentet af typen %1 med nummer %2.;ENU=There are unposted prepayment amounts on the document of type %1 with the number %2.';
       PreviewMode@1008 : Boolean;
+      SkipCheckReleaseRestrictions@1009 : Boolean;
 
     LOCAL PROCEDURE Code@11() LinesWereModified : Boolean;
     VAR
@@ -43,7 +44,7 @@ OBJECT Codeunit 415 Release Purchase Document
           EXIT;
 
         OnBeforeReleasePurchaseDoc(PurchaseHeader,PreviewMode);
-        IF NOT PreviewMode THEN
+        IF NOT (PreviewMode OR SkipCheckReleaseRestrictions) THEN
           CheckPurchaseReleaseRestrictions;
 
         TESTFIELD("Buy-from Vendor No.");
@@ -179,6 +180,11 @@ OBJECT Codeunit 415 Release Purchase Document
       LinesWereModified :=
         PurchLine.UpdateVATOnLines(0,PurchaseHeader,PurchLine,TempVATAmountLine0) OR
         PurchLine.UpdateVATOnLines(1,PurchaseHeader,PurchLine,TempVATAmountLine1);
+    END;
+
+    PROCEDURE SetSkipCheckReleaseRestrictions@17();
+    BEGIN
+      SkipCheckReleaseRestrictions := TRUE;
     END;
 
     [Integration]

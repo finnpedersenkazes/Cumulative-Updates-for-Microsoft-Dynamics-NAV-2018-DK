@@ -2,9 +2,9 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -66,6 +66,8 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
       Text003@1003 : TextConst 'DAN=Der er intet at registrere.;ENU=There is nothing to register.';
       Text004@1024 : TextConst 'DAN=Den varesporing, der er angivet for kildelinjen, bel›ber sig til mere end den m‘ngde, du har angivet.\Du skal regulere den eksisterende varesporing og derefter indtaste den nye m‘ngde igen.;ENU=Item tracking defined for the source line accounts for more than the quantity you have entered.\You must adjust the existing item tracking and then reenter the new quantity.';
       Text005@1028 : TextConst 'DAN=%1 %2 er ikke disponibel p† lager eller er allerede reserveret til et andet dokument.;ENU=%1 %2 is not available on inventory or it has already been reserved for another document.';
+      OrderToOrderBindingOnSalesLineQst@1038 : TextConst 'DAN=Registering af plukket fjerner den eksisterende order-til-order-reservation til salgsordren.\Vil du forts‘tte?;ENU=Registering the pick will remove the existing order-to-order reservation for the sales order.\Do you want to continue?';
+      RegisterInterruptedErr@1039 : TextConst 'DAN=Handlingen er afbrudt p† grund af advarslen.;ENU=The action has been interrupted to respect the warning.';
 
     LOCAL PROCEDURE Code@3();
     VAR
@@ -148,6 +150,8 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
 
             OldWhseActivLine.DeleteBinContent(OldWhseActivLine."Action Type"::Take);
           UNTIL LastLine;
+
+        CheckAndRemoveOrderToOrderBinding(TempWhseActivLineToReserve);
         ItemTrackingMgt.SetPick(OldWhseActivLine."Activity Type" = OldWhseActivLine."Activity Type"::Pick);
         ItemTrackingMgt.SynchronizeWhseItemTracking(TempTrackingSpecification,RegisteredWhseActivLine."No.",FALSE);
         AutoReserveForSalesLine(TempWhseActivLineToReserve);
@@ -1614,6 +1618,38 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
         UNTIL TempWhseActivLineToReserve.NEXT = 0;
     END;
 
+    LOCAL PROCEDURE CheckAndRemoveOrderToOrderBinding@42(VAR TempWhseActivLineToReserve@1003 : TEMPORARY Record 5767);
+    VAR
+      SalesLine@1002 : Record 37;
+      ReservationEntry@1005 : Record 337;
+      ReservMgt@1001 : Codeunit 99000845;
+      ReservationEngineMgt@1006 : Codeunit 99000831;
+      IsConfirmed@1000 : Boolean;
+    BEGIN
+      IF TempWhseActivLineToReserve.FINDSET THEN
+        REPEAT
+          SalesLine.GET(
+            SalesLine."Document Type"::Order,TempWhseActivLineToReserve."Source No.",TempWhseActivLineToReserve."Source Line No.");
+          ReservationEntry.SetSourceFilter(
+            DATABASE::"Sales Line",SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.",TRUE);
+          ReservationEntry.SETFILTER("Item Tracking",'<>%1',ReservationEntry."Item Tracking"::None);
+          ReservationEntry.SETRANGE(Binding,ReservationEntry.Binding::"Order-to-Order");
+
+          IF ReservationEntry.FINDSET THEN BEGIN
+            IF NOT IsConfirmed AND GUIALLOWED THEN
+              IF NOT CONFIRM(OrderToOrderBindingOnSalesLineQst) THEN
+                ERROR(RegisterInterruptedErr);
+            IsConfirmed := TRUE;
+            REPEAT
+              ReservationEngineMgt.CancelReservation(ReservationEntry);
+              ReservMgt.SetSalesLine(SalesLine);
+              ReservMgt.SetItemTrackingHandling(1);
+              ReservMgt.ClearSurplus;
+            UNTIL ReservationEntry.NEXT = 0;
+          END;
+        UNTIL TempWhseActivLineToReserve.NEXT = 0;
+    END;
+
     LOCAL PROCEDURE CopyWhseActivityLineToReservBuf@39(VAR TempWhseActivLineToReserve@1001 : TEMPORARY Record 5767;WhseActivLine@1000 : Record 5767);
     BEGIN
       IF NOT IsPickPlaceForSalesOrderTrackedItem(WhseActivLine) THEN
@@ -1658,7 +1694,7 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
     BEGIN
       EXIT(
         (WhseActivityLine."Activity Type" = WhseActivityLine."Activity Type"::Pick) AND
-        (WhseActivityLine."Action Type" = WhseActivityLine."Action Type"::Place) AND
+        (WhseActivityLine."Action Type" IN [WhseActivityLine."Action Type"::Place,WhseActivityLine."Action Type"::" "]) AND
         (WhseActivityLine."Source Document" = WhseActivityLine."Source Document"::"Sales Order") AND
         ((WhseActivityLine."Serial No." <> '') OR (WhseActivityLine."Lot No." <> '')));
     END;

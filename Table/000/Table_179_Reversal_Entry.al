@@ -2,9 +2,9 @@ OBJECT Table 179 Reversal Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -18,9 +18,9 @@ OBJECT Table 179 Reversal Entry
                                                               ENU=Line No.] }
     { 2   ;   ;Entry Type          ;Option        ;CaptionML=[DAN=Posttype;
                                                               ENU=Entry Type];
-                                                   OptionCaptionML=[DAN=" ,Finanskonto,Debitor,Kreditor,Bankkonto,Anl‘g,Reparation,Moms";
-                                                                    ENU=" ,G/L Account,Customer,Vendor,Bank Account,Fixed Asset,Maintenance,VAT"];
-                                                   OptionString=[ ,G/L Account,Customer,Vendor,Bank Account,Fixed Asset,Maintenance,VAT] }
+                                                   OptionCaptionML=[DAN=" ,Finanskonto,Debitor,Kreditor,Bankkonto,Anl‘g,Reparation,Moms,Medarbejder";
+                                                                    ENU=" ,G/L Account,Customer,Vendor,Bank Account,Fixed Asset,Maintenance,VAT,Employee"];
+                                                   OptionString=[ ,G/L Account,Customer,Vendor,Bank Account,Fixed Asset,Maintenance,VAT,Employee] }
     { 3   ;   ;Entry No.           ;Integer       ;TableRelation=IF (Entry Type=CONST(G/L Account)) "G/L Entry"
                                                                  ELSE IF (Entry Type=CONST(Customer)) "Cust. Ledger Entry"
                                                                  ELSE IF (Entry Type=CONST(Vendor)) "Vendor Ledger Entry"
@@ -42,13 +42,14 @@ OBJECT Table 179 Reversal Entry
                                                               ENU=Transaction No.] }
     { 8   ;   ;Source Type         ;Option        ;CaptionML=[DAN=Kildetype;
                                                               ENU=Source Type];
-                                                   OptionCaptionML=[DAN=" ,Debitor,Kreditor,Bankkonto,Anl‘g,IC-partner";
-                                                                    ENU=" ,Customer,Vendor,Bank Account,Fixed Asset,IC Partner"];
-                                                   OptionString=[ ,Customer,Vendor,Bank Account,Fixed Asset,IC Partner] }
+                                                   OptionCaptionML=[DAN=" ,Debitor,Kreditor,Bankkonto,Anl‘g,Medarbejder";
+                                                                    ENU=" ,Customer,Vendor,Bank Account,Fixed Asset,Employee"];
+                                                   OptionString=[ ,Customer,Vendor,Bank Account,Fixed Asset,Employee] }
     { 9   ;   ;Source No.          ;Code20        ;TableRelation=IF (Source Type=CONST(Customer)) Customer
                                                                  ELSE IF (Source Type=CONST(Vendor)) Vendor
                                                                  ELSE IF (Source Type=CONST(Bank Account)) "Bank Account"
-                                                                 ELSE IF (Source Type=CONST(Fixed Asset)) "Fixed Asset";
+                                                                 ELSE IF (Source Type=CONST(Fixed Asset)) "Fixed Asset"
+                                                                 ELSE IF (Source Type=CONST(Employee)) Employee;
                                                    CaptionML=[DAN=Kildenr.;
                                                               ENU=Source No.] }
     { 10  ;   ;Currency Code       ;Code10        ;TableRelation=Currency;
@@ -142,6 +143,7 @@ OBJECT Table 179 Reversal Entry
       GLEntry@1007 : Record 17;
       CustLedgEntry@1006 : Record 21;
       VendLedgEntry@1005 : Record 25;
+      EmployeeLedgerEntry@1031 : Record 5222;
       BankAccLedgEntry@1004 : Record 271;
       VATEntry@1003 : Record 254;
       FALedgEntry@1002 : Record 5601;
@@ -164,7 +166,7 @@ OBJECT Table 179 Reversal Entry
       Text009@1025 : TextConst 'DAN=Transaktionen kan ikke tilbagef›res, fordi %1 er blevet komprimeret, eller fordi %2 er blevet slettet.;ENU=The transaction cannot be reversed, because the %1 has been compressed or a %2 has been deleted.';
       Text010@1023 : TextConst 'DAN=Du kan ikke tilbagef›re %1 nr. %2, fordi journalen allerede har v‘ret involveret i en tilbagef›rsel.;ENU=You cannot reverse %1 No. %2 because the register has already been involved in a reversal.';
       Text011@1026 : TextConst 'DAN=Du kan ikke tilbagef›re %1 nr. %2, fordi posten allerede har v‘ret involveret i en tilbagef›rsel.;ENU=You cannot reverse %1 No. %2 because the entry has already been involved in a reversal.';
-      Text012@1028 : TextConst 'DAN=Du kan ikke fortryde registernr. %1, fordi det indeholder poster for kunder eller leverand›rer, som allerede er bogf›rt og anvendt i samme transaktion.\\Du skal fortryde hver transaktion i registernr. %1 separat.;ENU=You cannot reverse register No. %1 because it contains customer or vendor ledger entries that have been posted and applied in the same transaction.\\You must reverse each transaction in register No. %1 separately.';
+      PostedAndAppliedSameTransactionErr@1028 : TextConst '@@@="%1=""G/L Register No.""";DAN=Du kan ikke fortryde registernummer %1, fordi det indeholder poster for kunder, leverand›rer eller medarbejdere, som allerede er bogf›rt og anvendt i samme transaktion.\\Du skal fortryde hver transaktion i registernummer %1 separat.;ENU=You cannot reverse register number %1 because it contains customer or vendor or employee ledger entries that have been posted and applied in the same transaction.\\You must reverse each transaction in register number %1 separately.';
       Text013@1039 : TextConst 'DAN=Du kan ikke tilbagef›re %1 nr. %2, fordi posten har en tilknyttet realiseret gevinst-/tabspost.;ENU=You cannot reverse %1 No. %2 because the entry has an associated Realized Gain/Loss entry.';
       HideDialog@1030 : Boolean;
       UnrealizedVATReverseErr@1027 : TextConst 'DAN=Du kan ikke tilbagef›re %1 nr. %2, fordi posten har et tilknyttet urealiseret momsl›benr.;ENU=You cannot reverse %1 No. %2 because the entry has an associated Unrealized VAT Entry.';
@@ -220,6 +222,7 @@ OBJECT Table 179 Reversal Entry
 
       InsertFromCustLedgEntry(TempRevertTransactionNo,Number,RevType,NextLineNo);
       InsertFromVendLedgEntry(TempRevertTransactionNo,Number,RevType,NextLineNo);
+      InsertFromEmplLedgerEntry(TempRevertTransactionNo,Number,RevType,NextLineNo);
       InsertFromBankAccLedgEntry(Number,RevType,NextLineNo);
       InsertFromFALedgEntry(Number,RevType,NextLineNo);
       InsertFromMaintenanceLedgEntry(Number,RevType,NextLineNo);
@@ -234,15 +237,18 @@ OBJECT Table 179 Reversal Entry
       GLAcc@1001 : Record 15;
       DtldCustLedgEntry@1006 : Record 379;
       DtldVendLedgEntry@1007 : Record 380;
+      DetailedEmployeeLedgerEntry@1003 : Record 5223;
       DateComprReg@1000 : Record 87;
       BalanceCheckAmount@1012 : Decimal;
       BalanceCheckAddCurrAmount@1010 : Decimal;
     BEGIN
       DtldCustLedgEntry.LOCKTABLE;
       DtldVendLedgEntry.LOCKTABLE;
+      DetailedEmployeeLedgerEntry.LOCKTABLE;
       GLEntry.LOCKTABLE;
       CustLedgEntry.LOCKTABLE;
       VendLedgEntry.LOCKTABLE;
+      EmployeeLedgerEntry.LOCKTABLE;
       BankAccLedgEntry.LOCKTABLE;
       FALedgEntry.LOCKTABLE;
       MaintenanceLedgEntry.LOCKTABLE;
@@ -272,6 +278,11 @@ OBJECT Table 179 Reversal Entry
         REPEAT
           CheckVend(VendLedgEntry);
         UNTIL VendLedgEntry.NEXT = 0;
+
+      IF EmployeeLedgerEntry.FINDSET THEN
+        REPEAT
+          CheckEmpl(EmployeeLedgerEntry);
+        UNTIL EmployeeLedgerEntry.NEXT = 0;
 
       IF BankAccLedgEntry.FIND('-') THEN
         REPEAT
@@ -334,6 +345,19 @@ OBJECT Table 179 Reversal Entry
       IF VendLedgEntry.Reversed THEN
         AlreadyReversedEntry(VendLedgEntry.TABLECAPTION,VendLedgEntry."Entry No.");
       CheckDtldVendLedgEntry(VendLedgEntry);
+    END;
+
+    LOCAL PROCEDURE CheckEmpl@68(EmployeeLedgerEntry@1000 : Record 5222);
+    VAR
+      Employee@1001 : Record 5200;
+    BEGIN
+      Employee.GET(EmployeeLedgerEntry."Employee No.");
+      CheckPostingDate(
+        EmployeeLedgerEntry."Posting Date",EmployeeLedgerEntry.TABLECAPTION,EmployeeLedgerEntry."Entry No.");
+      Employee.CheckBlockedEmployeeOnJnls(FALSE);
+      IF EmployeeLedgerEntry.Reversed THEN
+        AlreadyReversedEntry(EmployeeLedgerEntry.TABLECAPTION,EmployeeLedgerEntry."Entry No.");
+      CheckDtldEmplLedgEntry(EmployeeLedgerEntry);
     END;
 
     LOCAL PROCEDURE CheckBankAcc@18(BankAccLedgEntry@1000 : Record 271);
@@ -454,6 +478,17 @@ OBJECT Table 179 Reversal Entry
         ERROR(Text013,VendLedgEntry.TABLECAPTION,VendLedgEntry."Entry No.");
     END;
 
+    LOCAL PROCEDURE CheckDtldEmplLedgEntry@72(EmployeeLedgerEntry@1000 : Record 5222);
+    VAR
+      DetailedEmployeeLedgerEntry@1001 : Record 5223;
+    BEGIN
+      DetailedEmployeeLedgerEntry.SETRANGE("Employee Ledger Entry No.",EmployeeLedgerEntry."Entry No.");
+      DetailedEmployeeLedgerEntry.SETFILTER("Entry Type",'<>%1',DetailedEmployeeLedgerEntry."Entry Type"::"Initial Entry");
+      DetailedEmployeeLedgerEntry.SETRANGE(Unapplied,FALSE);
+      IF NOT DetailedEmployeeLedgerEntry.ISEMPTY THEN
+        ERROR(ReversalErrorForChangedEntry(EmployeeLedgerEntry.TABLECAPTION,EmployeeLedgerEntry."Entry No."));
+    END;
+
     [External]
     PROCEDURE SetReverseFilter@1(Number@1001 : Integer;RevType@1000 : 'Transaction,Register');
     BEGIN
@@ -461,6 +496,7 @@ OBJECT Table 179 Reversal Entry
         GLEntry.SETCURRENTKEY("Transaction No.");
         CustLedgEntry.SETCURRENTKEY("Transaction No.");
         VendLedgEntry.SETCURRENTKEY("Transaction No.");
+        EmployeeLedgerEntry.SETCURRENTKEY("Transaction No.");
         BankAccLedgEntry.SETCURRENTKEY("Transaction No.");
         FALedgEntry.SETCURRENTKEY("Transaction No.");
         MaintenanceLedgEntry.SETCURRENTKEY("Transaction No.");
@@ -468,6 +504,7 @@ OBJECT Table 179 Reversal Entry
         GLEntry.SETRANGE("Transaction No.",Number);
         CustLedgEntry.SETRANGE("Transaction No.",Number);
         VendLedgEntry.SETRANGE("Transaction No.",Number);
+        EmployeeLedgerEntry.SETRANGE("Transaction No.",Number);
         BankAccLedgEntry.SETRANGE("Transaction No.",Number);
         FALedgEntry.SETRANGE("Transaction No.",Number);
         FALedgEntry.SETFILTER("G/L Entry No.",'<>%1',0);
@@ -478,6 +515,7 @@ OBJECT Table 179 Reversal Entry
         GLEntry.SETRANGE("Entry No.",GLReg."From Entry No.",GLReg."To Entry No.");
         CustLedgEntry.SETRANGE("Entry No.",GLReg."From Entry No.",GLReg."To Entry No.");
         VendLedgEntry.SETRANGE("Entry No.",GLReg."From Entry No.",GLReg."To Entry No.");
+        EmployeeLedgerEntry.SETRANGE("Entry No.",GLReg."From Entry No.",GLReg."To Entry No.");
         BankAccLedgEntry.SETRANGE("Entry No.",GLReg."From Entry No.",GLReg."To Entry No.");
         FALedgEntry.SETCURRENTKEY("G/L Entry No.");
         FALedgEntry.SETRANGE("G/L Entry No.",GLReg."From Entry No.",GLReg."To Entry No.");
@@ -488,11 +526,12 @@ OBJECT Table 179 Reversal Entry
     END;
 
     [External]
-    PROCEDURE CopyReverseFilters@15(VAR GLEntry2@1007 : Record 17;VAR CustLedgEntry2@1006 : Record 21;VAR VendLedgEntry2@1005 : Record 25;VAR BankAccLedgEntry2@1004 : Record 271;VAR VATEntry2@1003 : Record 254;VAR FALedgEntry2@1002 : Record 5601;VAR MaintenanceLedgEntry2@1001 : Record 5625);
+    PROCEDURE CopyReverseFilters@15(VAR GLEntry2@1007 : Record 17;VAR CustLedgEntry2@1006 : Record 21;VAR VendLedgEntry2@1005 : Record 25;VAR BankAccLedgEntry2@1004 : Record 271;VAR VATEntry2@1003 : Record 254;VAR FALedgEntry2@1002 : Record 5601;VAR MaintenanceLedgEntry2@1001 : Record 5625;VAR EmployeeLedgerEntry2@1000 : Record 5222);
     BEGIN
       GLEntry2.COPY(GLEntry);
       CustLedgEntry2.COPY(CustLedgEntry);
       VendLedgEntry2.COPY(VendLedgEntry);
+      EmployeeLedgerEntry2.COPY(EmployeeLedgerEntry);
       BankAccLedgEntry2.COPY(BankAccLedgEntry);
       VATEntry2.COPY(VATEntry);
       FALedgEntry2.COPY(FALedgEntry);
@@ -550,6 +589,8 @@ OBJECT Table 179 Reversal Entry
       CustLedgEntry@1003 : Record 21;
       Vend@1004 : Record 23;
       VendLedgEntry@1005 : Record 25;
+      Employee@1013 : Record 5200;
+      EmployeeLedgerEntry@1014 : Record 5222;
       BankAcc@1006 : Record 270;
       BankAccLedgEntry@1007 : Record 271;
       FA@1008 : Record 5600;
@@ -571,6 +612,11 @@ OBJECT Table 179 Reversal Entry
         IF VendLedgEntry.GET("Entry No.") THEN;
         IF Vend.GET(VendLedgEntry."Vendor No.") THEN;
         EXIT(STRSUBSTNO('%1 %2 %3',Vend.TABLECAPTION,Vend."No.",Vend.Name));
+      END;
+      IF "Entry Type" = "Entry Type"::Employee THEN BEGIN
+        IF EmployeeLedgerEntry.GET("Entry No.") THEN;
+        IF Employee.GET(EmployeeLedgerEntry."Employee No.") THEN;
+        EXIT(STRSUBSTNO('%1 %2 %3',Employee.TABLECAPTION,Employee."No.",Employee.FullName));
       END;
       IF "Entry Type" = "Entry Type"::"Bank Account" THEN BEGIN
         IF BankAccLedgEntry.GET("Entry No.") THEN;
@@ -697,7 +743,7 @@ OBJECT Table 179 Reversal Entry
           DtldCustLedgEntry.SETRANGE("Transaction No.",CustLedgEntry."Transaction No.");
           DtldCustLedgEntry.SETRANGE("Customer No.",CustLedgEntry."Customer No.");
           IF (NOT DtldCustLedgEntry.ISEMPTY) AND (RevType = RevType::Register) THEN
-            ERROR(Text012,Number);
+            ERROR(PostedAndAppliedSameTransactionErr,Number);
 
           CLEAR(TempReversalEntry);
           IF RevType = RevType::Register THEN
@@ -734,7 +780,7 @@ OBJECT Table 179 Reversal Entry
           DtldVendLedgEntry.SETRANGE("Transaction No.",VendLedgEntry."Transaction No.");
           DtldVendLedgEntry.SETRANGE("Vendor No.",VendLedgEntry."Vendor No.");
           IF (NOT DtldVendLedgEntry.ISEMPTY) AND (RevType = RevType::Register) THEN
-            ERROR(Text012,Number);
+            ERROR(PostedAndAppliedSameTransactionErr,Number);
 
           CLEAR(TempReversalEntry);
           IF RevType = RevType::Register THEN
@@ -756,6 +802,29 @@ OBJECT Table 179 Reversal Entry
             UNTIL DtldVendLedgEntry.NEXT = 0;
           DtldVendLedgEntry.SETRANGE(Unapplied);
         UNTIL VendLedgEntry.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE InsertFromEmplLedgerEntry@61(VAR TempRevertTransactionNo@1003 : TEMPORARY Record 2000000026;Number@1002 : Integer;RevType@1001 : 'Transaction,Register';VAR NextLineNo@1000 : Integer);
+    VAR
+      DetailedEmployeeLedgerEntry@1004 : Record 5223;
+    BEGIN
+      DetailedEmployeeLedgerEntry.SETCURRENTKEY("Transaction No.","Employee No.","Entry Type");
+      DetailedEmployeeLedgerEntry.SETFILTER(
+        "Entry Type",'<>%1',DetailedEmployeeLedgerEntry."Entry Type"::"Initial Entry");
+
+      IF EmployeeLedgerEntry.FINDSET THEN
+        REPEAT
+          DetailedEmployeeLedgerEntry.SETRANGE("Transaction No.",EmployeeLedgerEntry."Transaction No.");
+          DetailedEmployeeLedgerEntry.SETRANGE("Employee No.",EmployeeLedgerEntry."Employee No.");
+          IF (NOT DetailedEmployeeLedgerEntry.ISEMPTY) AND (RevType = RevType::Register) THEN
+            ERROR(PostedAndAppliedSameTransactionErr,Number);
+
+          InsertTempReversalEntryEmployee(Number,RevType,NextLineNo);
+          NextLineNo += 1;
+
+          InsertTempRevertTransactionNoUnappliedEmployeeEntries(TempRevertTransactionNo,DetailedEmployeeLedgerEntry);
+
+        UNTIL EmployeeLedgerEntry.NEXT = 0;
     END;
 
     LOCAL PROCEDURE InsertFromBankAccLedgEntry@36(Number@1002 : Integer;RevType@1001 : 'Transaction,Register';VAR NextLineNo@1000 : Integer);
@@ -869,6 +938,23 @@ OBJECT Table 179 Reversal Entry
             TempReversalEntry.INSERT;
           UNTIL GLEntry.NEXT = 0;
       UNTIL TempRevertTransactionNo.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE InsertTempReversalEntryEmployee@69(Number@1004 : Integer;RevType@1003 : 'Transaction,Register';NextLineNo@1002 : Integer);
+    VAR
+      Employee@1000 : Record 5200;
+    BEGIN
+      CLEAR(TempReversalEntry);
+      IF RevType = RevType::Register THEN
+        TempReversalEntry."G/L Register No." := Number;
+      TempReversalEntry."Reversal Type" := RevType;
+      TempReversalEntry."Entry Type" := TempReversalEntry."Entry Type"::Employee;
+      Employee.GET(EmployeeLedgerEntry."Employee No.");
+      TempReversalEntry."Account No." := Employee."No.";
+      TempReversalEntry."Account Name" := COPYSTR(Employee.FullName,1,MAXSTRLEN(TempReversalEntry."Account Name"));
+      TempReversalEntry.CopyFromEmployeeLedgerEntry(EmployeeLedgerEntry);
+      TempReversalEntry."Line No." := NextLineNo;
+      TempReversalEntry.INSERT;
     END;
 
     PROCEDURE CopyFromCustLedgEntry@57(CustLedgEntry@1001 : Record 21);
@@ -1008,6 +1094,29 @@ OBJECT Table 179 Reversal Entry
       "Bal. Account No." := VendLedgEntry."Bal. Account No.";
     END;
 
+    PROCEDURE CopyFromEmployeeLedgerEntry@62(EmployeeLedgerEntry@1000 : Record 5222);
+    BEGIN
+      "Entry No." := EmployeeLedgerEntry."Entry No.";
+      "Posting Date" := EmployeeLedgerEntry."Posting Date";
+      "Source Code" := EmployeeLedgerEntry."Source Code";
+      "Journal Batch Name" := EmployeeLedgerEntry."Journal Batch Name";
+      "Transaction No." := EmployeeLedgerEntry."Transaction No.";
+      "Currency Code" := EmployeeLedgerEntry."Currency Code";
+      Description := EmployeeLedgerEntry.Description;
+      EmployeeLedgerEntry.CALCFIELDS(
+        Amount,"Debit Amount","Credit Amount","Amount (LCY)","Debit Amount (LCY)","Credit Amount (LCY)");
+      Amount := EmployeeLedgerEntry.Amount;
+      "Debit Amount" := EmployeeLedgerEntry."Debit Amount";
+      "Credit Amount" := EmployeeLedgerEntry."Credit Amount";
+      "Amount (LCY)" := EmployeeLedgerEntry."Amount (LCY)";
+      "Debit Amount (LCY)" := EmployeeLedgerEntry."Debit Amount (LCY)";
+      "Credit Amount (LCY)" := EmployeeLedgerEntry."Credit Amount (LCY)";
+      "Document Type" := EmployeeLedgerEntry."Document Type";
+      "Document No." := EmployeeLedgerEntry."Document No.";
+      "Bal. Account Type" := EmployeeLedgerEntry."Bal. Account Type";
+      "Bal. Account No." := EmployeeLedgerEntry."Bal. Account No.";
+    END;
+
     LOCAL PROCEDURE InsertCustTempRevertTransNo@44(VAR TempRevertTransactionNo@1000 : TEMPORARY Record 2000000026;CustLedgEntryNo@1001 : Integer);
     VAR
       DtldCustLedgEntry@1002 : Record 379;
@@ -1028,6 +1137,27 @@ OBJECT Table 179 Reversal Entry
         TempRevertTransactionNo.Number := DtldVendLedgEntry."Transaction No.";
         IF TempRevertTransactionNo.INSERT THEN;
       END;
+    END;
+
+    LOCAL PROCEDURE InsertEmplTempRevertTransNo@64(VAR TempRevertTransactionNo@1001 : TEMPORARY Record 2000000026;EmployeeLedgEntryNo@1000 : Integer);
+    VAR
+      DetailedEmployeeLedgerEntry@1002 : Record 5223;
+    BEGIN
+      DetailedEmployeeLedgerEntry.GET(EmployeeLedgEntryNo);
+      IF DetailedEmployeeLedgerEntry."Transaction No." <> 0 THEN BEGIN
+        TempRevertTransactionNo.Number := DetailedEmployeeLedgerEntry."Transaction No.";
+        IF TempRevertTransactionNo.INSERT THEN;
+      END;
+    END;
+
+    LOCAL PROCEDURE InsertTempRevertTransactionNoUnappliedEmployeeEntries@79(VAR TempRevertTransactionNo@1001 : TEMPORARY Record 2000000026;VAR DetailedEmployeeLedgerEntry@1000 : Record 5223);
+    BEGIN
+      DetailedEmployeeLedgerEntry.SETRANGE(Unapplied,TRUE);
+      IF DetailedEmployeeLedgerEntry.FINDSET THEN
+        REPEAT
+          InsertEmplTempRevertTransNo(TempRevertTransactionNo,DetailedEmployeeLedgerEntry."Unapplied by Entry No.");
+        UNTIL DetailedEmployeeLedgerEntry.NEXT = 0;
+      DetailedEmployeeLedgerEntry.SETRANGE(Unapplied);
     END;
 
     BEGIN

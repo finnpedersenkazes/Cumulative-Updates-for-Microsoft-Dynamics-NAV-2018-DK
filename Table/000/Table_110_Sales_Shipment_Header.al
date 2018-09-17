@@ -2,9 +2,9 @@ OBJECT Table 110 Sales Shipment Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -308,6 +308,9 @@ OBJECT Table 110 Sales Shipment Header
     { 151 ;   ;Quote No.           ;Code20        ;CaptionML=[DAN=Tilbudsnr.;
                                                               ENU=Quote No.];
                                                    Editable=No }
+    { 200 ;   ;Work Description    ;BLOB          ;DataClassification=CustomerContent;
+                                                   CaptionML=[DAN=Arbejdsbeskrivelse;
+                                                              ENU=Work Description] }
     { 480 ;   ;Dimension Set ID    ;Integer       ;TableRelation="Dimension Set Entry";
                                                    OnLookup=BEGIN
                                                               ShowDimensions;
@@ -462,6 +465,20 @@ OBJECT Table 110 Sales Shipment Header
       IF STRPOS(TrackingInternetAddr,HttpStr) = 0 THEN
         TrackingInternetAddr := HttpStr + TrackingInternetAddr;
       EXIT(TrackingInternetAddr);
+    END;
+
+    PROCEDURE GetWorkDescription@9() : Text;
+    VAR
+      TempBlob@1000 : TEMPORARY Record 99008535;
+      CR@1004 : Text[1];
+    BEGIN
+      CALCFIELDS("Work Description");
+      IF NOT "Work Description".HASVALUE THEN
+        EXIT('');
+
+      CR[1] := 10;
+      TempBlob.Blob := "Work Description";
+      EXIT(TempBlob.ReadAsText(CR,TEXTENCODING::Windows));
     END;
 
     BEGIN

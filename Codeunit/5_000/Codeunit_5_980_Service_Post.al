@@ -2,9 +2,9 @@ OBJECT Codeunit 5980 Service-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -87,7 +87,7 @@ OBJECT Codeunit 5980 Service-Post
 
       CLEAR(ServDocumentsMgt);
       IF PostingDateExists AND (ReplacePostingDate OR (ServiceHeader."Posting Date" = 0D)) THEN BEGIN
-        ServiceHeader."Posting Date" := PostingDate;
+        ServiceHeader.VALIDATE("Posting Date",PostingDate);
         ServiceHeader.VALIDATE("Currency Code");
       END;
       IF PostingDateExists AND (ReplaceDocumentDate OR (ServiceHeader."Document Date" = 0D)) THEN

@@ -2,9 +2,9 @@ OBJECT Table 5223 Detailed Employee Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -119,6 +119,8 @@ OBJECT Table 5223 Detailed Employee Ledger Entry
   KEYS
   {
     {    ;Entry No.                               ;Clustered=Yes }
+    {    ;Employee Ledger Entry No.,Posting Date   }
+    {    ;Transaction No.,Employee No.,Entry Type  }
   }
   FIELDGROUPS
   {

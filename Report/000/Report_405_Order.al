@@ -2,9 +2,9 @@ OBJECT Report 405 Order
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -40,7 +40,7 @@ OBJECT Report 405 Order
 
                                   DimSetEntry1.SETRANGE("Dimension Set ID","Dimension Set ID");
 
-                                  IF NOT CurrReport.PREVIEW THEN BEGIN
+                                  IF NOT IsReportInPreviewMode THEN BEGIN
                                     IF ArchiveDocument THEN
                                       ArchiveManagement.StorePurchDocument("Purchase Header",LogInteraction);
 
@@ -164,7 +164,7 @@ OBJECT Report 405 Order
                                 END;
 
                OnPostDataItem=BEGIN
-                                IF NOT CurrReport.PREVIEW THEN
+                                IF NOT IsReportInPreviewMode THEN
                                   CODEUNIT.RUN(CODEUNIT::"Purch.Header-Printed","Purchase Header");
                               END;
                                }
@@ -1133,6 +1133,13 @@ OBJECT Report 405 Order
       ShowInternalInfo := NewShowInternalInfo;
       ArchiveDocument := NewArchiveDocument;
       LogInteraction := NewLogInteraction;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@8() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE InitLogInteraction@6();

@@ -2,9 +2,9 @@ OBJECT Report 206 Sales - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -37,10 +37,7 @@ OBJECT Report 206 Sales - Invoice
                OnAfterGetRecord=VAR
                                   Handled@1000 : Boolean;
                                 BEGIN
-                                  IF GLOBALLANGUAGE = Language.GetLanguageID("Language Code") THEN
-                                    CurrReport.LANGUAGE := Language.GetLanguageID("Language Code")
-                                  ELSE
-                                    CurrReport.LANGUAGE := Language.GetLanguageID('ENU');
+                                  CurrReport.LANGUAGE := Language.GetLanguageID("Language Code");
 
                                   FormatAddressFields("Sales Invoice Header");
                                   FormatDocumentFields("Sales Invoice Header");
@@ -53,7 +50,7 @@ OBJECT Report 206 Sales - Invoice
                                   GetLineFeeNoteOnReportHist("No.");
 
                                   IF LogInteraction THEN
-                                    IF NOT CurrReport.PREVIEW THEN BEGIN
+                                    IF NOT IsReportInPreviewMode THEN BEGIN
                                       IF "Bill-to Contact No." <> '' THEN
                                         SegManagement.LogDocument(
                                           SegManagement.SalesInvoiceInterDocType,"No.",0,0,DATABASE::Contact,"Bill-to Contact No.","Salesperson Code",
@@ -140,7 +137,7 @@ OBJECT Report 206 Sales - Invoice
                                 END;
 
                OnPostDataItem=BEGIN
-                                IF NOT CurrReport.PREVIEW THEN
+                                IF NOT IsReportInPreviewMode THEN
                                   CODEUNIT.RUN(CODEUNIT::"Sales Inv.-Printed","Sales Invoice Header");
                               END;
                                }
@@ -1143,6 +1140,13 @@ OBJECT Report 206 Sales - Invoice
     PROCEDURE InitLogInteraction@1();
     BEGIN
       LogInteraction := SegManagement.FindInteractTmplCode(4) <> '';
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@18() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE InitializeShipmentBuffer@6();

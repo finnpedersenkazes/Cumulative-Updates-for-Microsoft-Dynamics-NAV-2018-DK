@@ -2,9 +2,9 @@ OBJECT Report 205 Order Confirmation
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -33,7 +33,7 @@ OBJECT Report 205 Order Confirmation
                ReqFilterHeadingML=[DAN=Salgsordre;
                                    ENU=Sales Order];
                OnPreDataItem=BEGIN
-                               Print := Print OR NOT CurrReport.PREVIEW;
+                               Print := Print OR NOT IsReportInPreviewMode;
                                AsmInfoExistsForLine := FALSE;
                              END;
 
@@ -1245,6 +1245,13 @@ OBJECT Report 205 Order Confirmation
       LogInteraction := LogInteractionFrom;
       Print := PrintFrom;
       DisplayAssemblyInformation := DisplayAsmInfo;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@8() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE InitLogInteraction@6();

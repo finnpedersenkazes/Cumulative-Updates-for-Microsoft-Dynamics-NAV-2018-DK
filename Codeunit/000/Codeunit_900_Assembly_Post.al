@@ -2,9 +2,9 @@ OBJECT Codeunit 900 Assembly-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -454,6 +454,7 @@ OBJECT Codeunit 900 Assembly-Post
             PostedAssemblyLine."Order Line No." := "Line No.";
             InsertLineItemEntryRelation(PostedAssemblyLine,ItemJnlPostLine,ItemLedgEntryNo);
             PostedAssemblyLine.INSERT;
+            OnAfterPostedAssemblyLineInsert(PostedAssemblyLine,AssemblyLine);
           UNTIL NEXT = 0;
       END;
     END;
@@ -491,6 +492,7 @@ OBJECT Codeunit 900 Assembly-Post
 
         InsertHeaderItemEntryRelation(PostedAssemblyHeader,ItemJnlPostLine,ItemLedgEntryNo);
         PostedAssemblyHeader.MODIFY;
+        OnAfterPostedAssemblyHeaderModify(PostedAssemblyHeader,AssemblyHeader);
       END;
     END;
 
@@ -1136,6 +1138,7 @@ OBJECT Codeunit 900 Assembly-Post
               "Consumed Quantity" := ROUND("Consumed Quantity (Base)" / "Qty. per Unit of Measure",0.00001);
               Quantity := PostedAsmLine.Quantity + "Consumed Quantity";
               "Quantity (Base)" := PostedAsmLine."Quantity (Base)" + "Consumed Quantity (Base)";
+              "Cost Amount" := CalcCostAmount(Quantity,"Unit Cost");
               IF Type = Type::Item THEN BEGIN
                 "Qty. Picked" := "Consumed Quantity";
                 "Qty. Picked (Base)" := "Consumed Quantity (Base)";
@@ -1444,6 +1447,16 @@ OBJECT Codeunit 900 Assembly-Post
 
     [Integration]
     LOCAL PROCEDURE OnBeforePost@59(VAR AssemblyHeader@1000 : Record 900);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterPostedAssemblyLineInsert@68(VAR PostedAssemblyLine@1000 : Record 911;AssemblyLine@1001 : Record 901);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterPostedAssemblyHeaderModify@70(VAR PostedAssemblyHeader@1000 : Record 910;AssemblyHeader@1001 : Record 900);
     BEGIN
     END;
 

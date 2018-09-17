@@ -2,9 +2,9 @@ OBJECT Page 55 Purch. Invoice Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1113,7 +1113,7 @@ OBJECT Page 55 Purch. Invoice Subform
         IF FIND THEN
           CalcInvDisc;
 
-      DocumentTotals.CalculatePurchaseTotals(TotalPurchaseLine,VATAmount,Rec);
+      DocumentTotals.CalculatePurchasePageTotals(TotalPurchaseLine,VATAmount,Rec);
       AmountWithDiscountAllowed := DocumentTotals.CalcTotalPurchAmountOnlyDiscountAllowed(Rec);
       InvoiceDiscountAmount := TotalPurchaseLine."Inv. Discount Amount";
       InvoiceDiscountPct := PurchCalcDiscByType.GetVendInvoiceDiscountPct(Rec);

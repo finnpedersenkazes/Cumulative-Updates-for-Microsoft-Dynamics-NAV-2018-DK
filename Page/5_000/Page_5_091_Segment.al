@@ -2,9 +2,9 @@ OBJECT Page 5091 Segment
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -75,7 +75,7 @@ OBJECT Page 5091 Segment
                                  ENU=Create opportunities];
                       ToolTipML=[DAN=Opret et nyt salgsmulighedskort, der er relateret til m†lgruppen.;
                                  ENU=Create a new opportunity card related to the segment.];
-                      ApplicationArea=#Advanced;
+                      ApplicationArea=#RelationshipMgmt;
                       OnAction=BEGIN
                                  CreateOpportunitiesForAllContacts;
                                END;
@@ -303,6 +303,7 @@ OBJECT Page 5091 Segment
                                END;
                                 }
       { 34      ;2   ;Action    ;
+                      Name=ExportContacts;
                       CaptionML=[DAN=E&ksporter kontakter;
                                  ENU=E&xport Contacts];
                       ToolTipML=[DAN=Eksport‚r listen over m†lgruppekontakter som en Excel-fil.;
@@ -311,9 +312,13 @@ OBJECT Page 5091 Segment
                       Image=ExportFile;
                       OnAction=VAR
                                  SegLineLocal@1001 : Record 5077;
+                                 PermissionManager@1000 : Codeunit 9002;
                                BEGIN
                                  SegLineLocal.SETRANGE("Segment No.","No.");
-                                 SegLineLocal.ExportODataFields;
+                                 IF PermissionManager.SoftwareAsAService THEN
+                                   SegLineLocal.ExportODataFields
+                                 ELSE
+                                   XMLPORT.RUN(XMLPORT::"Export Segment Contact",FALSE,FALSE,SegLineLocal);
                                END;
                                 }
       { 35      ;2   ;Action    ;

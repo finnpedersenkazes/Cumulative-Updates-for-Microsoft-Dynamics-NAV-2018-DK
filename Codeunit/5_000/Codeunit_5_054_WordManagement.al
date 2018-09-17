@@ -2,9 +2,9 @@ OBJECT Codeunit 5054 WordManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -601,9 +601,11 @@ OBJECT Codeunit 5054 WordManagement
         InStreamBLOB.READTEXT(CurrentLine);
         IF (STRPOS(CurrentLine,'<tr>') > 0) AND HeaderIsReady THEN BEGIN
           InStreamBLOB.READTEXT(NewLine);
-          MergeFile.WRITE(CurrentLine);
-          MergeFile.WRITE(NewLine);
-          LineIsFound := TRUE
+          IF STRPOS(NewLine,FORMAT(EntryNo)) > 0 THEN BEGIN
+            MergeFile.WRITE(CurrentLine);
+            MergeFile.WRITE(NewLine);
+            LineIsFound := TRUE;
+          END;
         END;
 
         IF NOT HeaderIsReady THEN BEGIN
@@ -618,8 +620,7 @@ OBJECT Codeunit 5054 WordManagement
         WHILE STRPOS(NewLine,'</tr>') = 0 DO BEGIN
           CurrentLine := NewLine;
           InStreamBLOB.READTEXT(NewLine);
-          IF STRPOS(NewLine,'</tr>') = 0 THEN
-            MergeFile.WRITE(CurrentLine);
+          MergeFile.WRITE(CurrentLine);
         END;
         IF InteractLogEntry.GET(EntryNo) THEN BEGIN
           CASE CorrespondenceType OF
@@ -630,7 +631,8 @@ OBJECT Codeunit 5054 WordManagement
             ELSE
               MergeFile.WRITE('<td></td>')
           END
-        END
+        END;
+        MergeFile.WRITE(NewLine);
       END;
     END;
 
@@ -768,7 +770,7 @@ OBJECT Codeunit 5054 WordManagement
       Attachment@1001 : Record 5062;
     BEGIN
       Attachment.GET(AttachmentNo);
-      Attachment.CALCFIELDS("Merge Source");
+      Attachment.CALCFIELDS("Merge Source","Attachment File");
       IF NOT Attachment."Merge Source".HASVALUE THEN BEGIN
         IF NOT DocumentContainMergefields(Attachment) THEN
           EXIT;

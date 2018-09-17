@@ -2,9 +2,9 @@ OBJECT Page 20 General Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -21,6 +21,8 @@ OBJECT Page 20 General Ledger Entries
            END;
 
     OnOpenPage=BEGIN
+                 SetConrolVisibility;
+
                  IF GETFILTERS <> '' THEN
                    IF FINDFIRST THEN;
 
@@ -28,8 +30,6 @@ OBJECT Page 20 General Ledger Entries
                  CurrPage."Power BI Report FactBox".PAGE.SetNameFilter(CurrPage.CAPTION);
                  CurrPage."Power BI Report FactBox".PAGE.SetContext(CurrPage.OBJECTID(FALSE));
                  CurrPage."Power BI Report FactBox".PAGE.SetCurrentListSelection("G/L Account No.",FALSE);
-
-                 ShowAmounts;
                END;
 
     OnAfterGetCurrRecord=VAR
@@ -514,7 +514,7 @@ OBJECT Page 20 General Ledger Entries
       EXIT(STRSUBSTNO('%1 %2',GLAcc."No.",GLAcc.Name))
     END;
 
-    LOCAL PROCEDURE ShowAmounts@8();
+    LOCAL PROCEDURE SetConrolVisibility@8();
     VAR
       GLSetup@1000 : Record 98;
     BEGIN

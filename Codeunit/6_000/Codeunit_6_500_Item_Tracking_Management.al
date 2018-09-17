@@ -2,9 +2,9 @@ OBJECT Codeunit 6500 Item Tracking Management
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1353,6 +1353,7 @@ OBJECT Codeunit 6500 Item Tracking Management
         IF WhseItemEntryRelation.FINDSET THEN BEGIN
           WhseItemTrkgLine.SetSourceFilter(SourceType,0,"No.","Line No.",FALSE);
           WhseItemTrkgLine.DELETEALL;
+          WhseItemTrkgLine.INIT;
           WhseItemTrkgLine.SETCURRENTKEY("Serial No.","Lot No.");
           REPEAT
             WhseItemTrkgLine.SetTrackingFilterFromRelation(WhseItemEntryRelation);

@@ -2,9 +2,9 @@ OBJECT Codeunit 5334 CRM Setup Defaults
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -112,7 +112,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::FromIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,ShouldRecreateJobQueueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,ShouldRecreateJobQueueEntry,1440);
     END;
 
     LOCAL PROCEDURE ResetCustomerAccountMapping@2(IntegrationTableMappingName@1004 : Code[20];ShouldRecreateJobQueueEntry@1003 : Boolean);
@@ -271,7 +271,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::Bidirectional,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,ShouldRecreateJobQueueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,ShouldRecreateJobQueueEntry,720);
     END;
 
     LOCAL PROCEDURE ResetContactContactMapping@3(IntegrationTableMappingName@1005 : Code[20];EnqueueJobQueEntry@1003 : Boolean);
@@ -443,7 +443,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         FORMAT(CRMContact.ParentCustomerIdType::account),FALSE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry,720);
     END;
 
     LOCAL PROCEDURE ResetCurrencyTransactionCurrencyMapping@10(IntegrationTableMappingName@1002 : Code[20];EnqueueJobQueEntry@1001 : Boolean);
@@ -486,7 +486,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry,720);
     END;
 
     LOCAL PROCEDURE ResetItemProductMapping@12(IntegrationTableMappingName@1002 : Code[20];EnqueueJobQueEntry@1001 : Boolean);
@@ -593,7 +593,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::Bidirectional,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry,1440);
     END;
 
     LOCAL PROCEDURE ResetResourceProductMapping@13(IntegrationTableMappingName@1002 : Code[20];EnqueueJobQueEntry@1001 : Boolean);
@@ -668,7 +668,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry,720);
     END;
 
     LOCAL PROCEDURE ResetSalesInvoiceHeaderInvoiceMapping@23(IntegrationTableMappingName@1002 : Code[20];EnqueueJobQueEntry@1001 : Boolean);
@@ -870,7 +870,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry,1440);
     END;
 
     LOCAL PROCEDURE ResetSalesInvoiceLineInvoiceMapping@25(IntegrationTableMappingName@1001 : Code[20]);
@@ -960,7 +960,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry,1440);
     END;
 
     LOCAL PROCEDURE ResetSalesPriceProductPricelevelMapping@27(IntegrationTableMappingName@1001 : Code[20];EnqueueJobQueEntry@1005 : Boolean);
@@ -1032,7 +1032,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,30,EnqueueJobQueEntry,1440);
     END;
 
     LOCAL PROCEDURE ResetUnitOfMeasureUoMScheduleMapping@11(IntegrationTableMappingName@1002 : Code[20];EnqueueJobQueEntry@1001 : Boolean);
@@ -1056,7 +1056,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         IntegrationFieldMapping.Direction::ToIntegrationTable,
         '',TRUE,FALSE);
 
-      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry);
+      RecreateJobQueueEntryFromIntTableMapping(IntegrationTableMapping,2,EnqueueJobQueEntry,720);
     END;
 
     LOCAL PROCEDURE ResetShippingAgentMapping@35(IntegrationTableMappingName@1003 : Code[20]);
@@ -1260,7 +1260,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         FALSE);
     END;
 
-    LOCAL PROCEDURE RecreateJobQueueEntryFromIntTableMapping@8(IntegrationTableMapping@1003 : Record 5335;IntervalInMinutes@1002 : Integer;ShouldRecreateJobQueueEntry@1000 : Boolean);
+    LOCAL PROCEDURE RecreateJobQueueEntryFromIntTableMapping@8(IntegrationTableMapping@1003 : Record 5335;IntervalInMinutes@1002 : Integer;ShouldRecreateJobQueueEntry@1000 : Boolean;InactivityTimeoutPeriod@1004 : Integer);
     VAR
       JobQueueEntry@1001 : Record 472;
     BEGIN
@@ -1281,6 +1281,7 @@ OBJECT Codeunit 5334 CRM Setup Defaults
         "Maximum No. of Attempts to Run" := 10;
         Status := Status::Ready;
         "Rerun Delay (sec.)" := 30;
+        "Inactivity Timeout Period" := InactivityTimeoutPeriod;
         IF ShouldRecreateJobQueueEntry THEN
           CODEUNIT.RUN(CODEUNIT::"Job Queue - Enqueue",JobQueueEntry)
         ELSE

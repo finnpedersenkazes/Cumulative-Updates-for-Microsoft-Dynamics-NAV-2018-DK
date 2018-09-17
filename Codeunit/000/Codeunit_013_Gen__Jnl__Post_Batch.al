@@ -2,9 +2,9 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -834,6 +834,7 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
 
     LOCAL PROCEDURE CheckAndCopyBalancingData@16(VAR GenJnlLine4@1002 : Record 81;VAR GenJnlLine6@1001 : Record 81;VAR TempGenJnlLine@1004 : TEMPORARY Record 81;CheckBalAcount@1003 : Boolean);
     VAR
+      TempGenJournalLineHistory@1006 : TEMPORARY Record 81;
       AccountType@1005 : 'G/L Account,Customer,Vendor,Bank Account,Fixed Asset,IC Partner';
       CheckAmount@1000 : Decimal;
       JnlLineTotalQty@1007 : Integer;
@@ -847,23 +848,28 @@ OBJECT Codeunit 13 Gen. Jnl.-Post Batch
         RefPostingSubState := RefPostingSubState::"Check account";
       IF GenJnlLine4.FINDSET THEN
         REPEAT
-          LineCount := LineCount + 1;
-          UpdateDialogUpdateBalLines(RefPostingSubState,LineCount,JnlLineTotalQty);
+          TempGenJournalLineHistory := GenJnlLine4;
+          IF NOT TempGenJournalLineHistory.FINDFIRST THEN BEGIN
+            LineCount := LineCount + 1;
+            UpdateDialogUpdateBalLines(RefPostingSubState,LineCount,JnlLineTotalQty);
 
-          GenJnlLine6.SETRANGE("Posting Date",GenJnlLine4."Posting Date");
-          GenJnlLine6.SETRANGE("Document No.",GenJnlLine4."Document No.");
-          AccountType := GetPostingTypeFilter(GenJnlLine4,CheckBalAcount);
-          CheckAmount := 0;
-          IF GenJnlLine6.FINDSET THEN
-            REPEAT
-              IF (GenJnlLine6."Account No." = '') <> (GenJnlLine6."Bal. Account No." = '') THEN BEGIN
-                CheckGenPostingType(GenJnlLine6,AccountType);
-                TempGenJnlLine := GenJnlLine6;
-                CopyGenJnlLineBalancingData(TempGenJnlLine,GenJnlLine4);
-                IF TempGenJnlLine.INSERT THEN;
-                CheckAmount := CheckAmount + GenJnlLine6.Amount;
-              END;
-            UNTIL (GenJnlLine6.NEXT = 0) OR (-GenJnlLine4.Amount = CheckAmount);
+            GenJnlLine6.SETRANGE("Posting Date",GenJnlLine4."Posting Date");
+            GenJnlLine6.SETRANGE("Document No.",GenJnlLine4."Document No.");
+            AccountType := GetPostingTypeFilter(GenJnlLine4,CheckBalAcount);
+            CheckAmount := 0;
+            IF GenJnlLine6.FINDSET THEN
+              REPEAT
+                IF (GenJnlLine6."Account No." = '') <> (GenJnlLine6."Bal. Account No." = '') THEN BEGIN
+                  CheckGenPostingType(GenJnlLine6,AccountType);
+                  TempGenJnlLine := GenJnlLine6;
+                  CopyGenJnlLineBalancingData(TempGenJnlLine,GenJnlLine4);
+                  IF TempGenJnlLine.INSERT THEN;
+                  TempGenJournalLineHistory := GenJnlLine6;
+                  TempGenJournalLineHistory.INSERT;
+                  CheckAmount := CheckAmount + GenJnlLine6.Amount;
+                END;
+              UNTIL (GenJnlLine6.NEXT = 0) OR (-GenJnlLine4.Amount = CheckAmount);
+          END;
         UNTIL GenJnlLine4.NEXT = 0;
     END;
 

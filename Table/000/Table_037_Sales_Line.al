@@ -2,9 +2,9 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -1168,13 +1168,10 @@ OBJECT Table 37 Sales Line
                                                                 ELSE
                                                                   IF "Drop Shipment" THEN BEGIN
                                                                     Reserve := Reserve::Never;
-                                                                    VALIDATE(Quantity,Quantity);
-                                                                    IF "Drop Shipment" THEN BEGIN
-                                                                      EVALUATE("Outbound Whse. Handling Time",'<0D>');
-                                                                      EVALUATE("Shipping Time",'<0D>');
-                                                                      UpdateDates;
-                                                                      "Bin Code" := '';
-                                                                    END;
+                                                                    EVALUATE("Outbound Whse. Handling Time",'<0D>');
+                                                                    EVALUATE("Shipping Time",'<0D>');
+                                                                    UpdateDates;
+                                                                    "Bin Code" := '';
                                                                   END ELSE
                                                                     SetReserveWithoutPurchasingCode;
 
@@ -2181,7 +2178,6 @@ OBJECT Table 37 Sales Line
                                                                     IF (Quantity <> 0) AND (Quantity = "Quantity Shipped") THEN
                                                                       ERROR(SalesLineCompletelyShippedErr);
                                                                     Reserve := Reserve::Never;
-                                                                    VALIDATE(Quantity,Quantity);
                                                                     IF "Drop Shipment" THEN BEGIN
                                                                       EVALUATE("Outbound Whse. Handling Time",'<0D>');
                                                                       EVALUATE("Shipping Time",'<0D>');
@@ -2324,10 +2320,7 @@ OBJECT Table 37 Sales Line
                                                                 IF "Planned Delivery Date" <> 0D THEN BEGIN
                                                                   PlannedDeliveryDateCalculated := TRUE;
 
-                                                                  IF FORMAT("Shipping Time") <> '' THEN
-                                                                    VALIDATE("Planned Shipment Date",CalcPlannedDeliveryDate(FIELDNO("Planned Delivery Date")))
-                                                                  ELSE
-                                                                    VALIDATE("Planned Shipment Date",CalcPlannedShptDate(FIELDNO("Planned Delivery Date")));
+                                                                  VALIDATE("Planned Shipment Date",CalcPlannedDate);
 
                                                                   IF "Planned Shipment Date" > "Planned Delivery Date" THEN
                                                                     "Planned Delivery Date" := "Planned Shipment Date";
@@ -2342,32 +2335,7 @@ OBJECT Table 37 Sales Line
                                                                 IF "Planned Shipment Date" <> 0D THEN BEGIN
                                                                   PlannedShipmentDateCalculated := TRUE;
 
-                                                                  IF FORMAT("Outbound Whse. Handling Time") <> '' THEN
-                                                                    VALIDATE(
-                                                                      "Shipment Date",
-                                                                      CalendarMgmt.CalcDateBOC2(
-                                                                        FORMAT("Outbound Whse. Handling Time"),
-                                                                        "Planned Shipment Date",
-                                                                        CalChange."Source Type"::Location,
-                                                                        "Location Code",
-                                                                        '',
-                                                                        CalChange."Source Type"::"Shipping Agent",
-                                                                        "Shipping Agent Code",
-                                                                        "Shipping Agent Service Code",
-                                                                        FALSE))
-                                                                  ELSE
-                                                                    VALIDATE(
-                                                                      "Shipment Date",
-                                                                      CalendarMgmt.CalcDateBOC(
-                                                                        FORMAT(FORMAT('')),
-                                                                        "Planned Shipment Date",
-                                                                        CalChange."Source Type"::"Shipping Agent",
-                                                                        "Shipping Agent Code",
-                                                                        "Shipping Agent Service Code",
-                                                                        CalChange."Source Type"::Location,
-                                                                        "Location Code",
-                                                                        '',
-                                                                        FALSE));
+                                                                  VALIDATE("Shipment Date",CalcShipmentDate);
                                                                 END;
                                                               END;
 
@@ -4732,9 +4700,12 @@ OBJECT Table 37 Sales Line
         LineAmount := ROUND(Quantity * "Unit Price",Currency."Amount Rounding Precision");
         LineAmount := ROUND(QtyToHandle * LineAmount / Quantity,Currency."Amount Rounding Precision");
       END;
-      LineDiscAmount :=
-        ROUND(
-          LineAmount * "Line Discount %" / 100,Currency."Amount Rounding Precision");
+
+      IF QtyToHandle <> Quantity THEN
+        LineDiscAmount := ROUND(LineAmount * "Line Discount %" / 100,Currency."Amount Rounding Precision")
+      ELSE
+        LineDiscAmount := "Line Discount Amount";
+
       EXIT(LineAmount - LineDiscAmount);
     END;
 
@@ -5698,6 +5669,14 @@ OBJECT Table 37 Sales Line
         "Prepmt. Line Amount" := Amount;
       IF SalesHeader."Prices Including VAT" AND ("Amount Including VAT" > 0) AND ("Amount Including VAT" < "Prepmt. Line Amount") THEN
         "Prepmt. Line Amount" := "Amount Including VAT";
+    END;
+
+    PROCEDURE CalcPlannedDate@218() : Date;
+    BEGIN
+      IF FORMAT("Shipping Time") <> '' THEN
+        EXIT(CalcPlannedDeliveryDate(FIELDNO("Planned Delivery Date")));
+
+      EXIT(CalcPlannedShptDate(FIELDNO("Planned Delivery Date")));
     END;
 
     [Integration]

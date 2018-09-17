@@ -2,9 +2,9 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -84,9 +84,13 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
            (Quantity <> 0) AND
            NOT Adjustment
         THEN BEGIN
-          IF (Type <> Type::Resource) AND (Item.Type = Item.Type::Inventory) THEN
+          IF (Type <> Type::Resource) AND (Item.Type = Item.Type::Inventory) AND
+             (NOT "Direct Transfer" OR ("Document Type" = "Document Type"::"Transfer Shipment"))
+          THEN
             TESTFIELD("Location Code");
-          IF "Entry Type" = "Entry Type"::Transfer THEN
+          IF ("Entry Type" = "Entry Type"::Transfer) AND
+             (NOT "Direct Transfer" OR ("Document Type" = "Document Type"::"Transfer Receipt"))
+          THEN
             TESTFIELD("New Location Code")
           ELSE
             TESTFIELD("New Location Code",'');

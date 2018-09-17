@@ -2,9 +2,9 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -96,7 +96,7 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
 
                                   FormatDocumentFields(Header);
 
-                                  IF NOT CurrReport.PREVIEW AND ArchiveDocument THEN
+                                  IF NOT IsReportInPreviewMode AND ArchiveDocument THEN
                                     ArchiveManagement.StoreSalesDocument(Header,FALSE);
 
                                   TotalSubTotal := 0;
@@ -1053,9 +1053,16 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
         FormatDocument.SetTotalLabels(GetCurrencySymbol,TotalText,TotalInclVATText,TotalExclVATText);
         FormatDocument.SetSalesPerson(SalespersonPurchaser,"Salesperson Code",SalesPersonText);
         FormatDocument.SetPaymentTerms(PaymentTerms,"Payment Terms Code","Language Code");
-        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code");
+        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code","Language Code");
         FormatDocument.SetShipmentMethod(ShipmentMethod,"Shipment Method Code","Language Code");
       END;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@3() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE CreateReportTotalLines@15();

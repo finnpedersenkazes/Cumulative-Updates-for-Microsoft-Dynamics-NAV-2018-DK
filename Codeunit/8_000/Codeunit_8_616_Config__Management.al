@@ -2,12 +2,13 @@ OBJECT Codeunit 8616 Config. Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
+    EventSubscriberInstance=Manual;
     OnRun=BEGIN
           END;
 
@@ -912,6 +913,12 @@ OBJECT Codeunit 8616 Config. Management
     PROCEDURE DimensionFieldID@20() : Integer;
     BEGIN
       EXIT(999999900);
+    END;
+
+    [EventSubscriber(Codeunit,5465,OnForceIsApiEnabledVerification)]
+    LOCAL PROCEDURE SetOnForceIsApiEnabledVerification@21(VAR ForceIsApiEnabledVerification@1000 : Boolean);
+    BEGIN
+      ForceIsApiEnabledVerification := TRUE;
     END;
 
     BEGIN

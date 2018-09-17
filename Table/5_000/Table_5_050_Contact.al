@@ -2,9 +2,9 @@ OBJECT Table 5050 Contact
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1067,7 +1067,7 @@ OBJECT Table 5050 Contact
       CLEAR(Cust);
       Cust.SetInsertFromContact(TRUE);
       Cust."Contact Type" := Type;
-      OnBeforeCustomerInsert(Cust);
+      OnBeforeCustomerInsert(Cust,CustomerTemplate);
       Cust.INSERT(TRUE);
       Cust.SetInsertFromContact(FALSE);
 
@@ -1521,9 +1521,11 @@ OBJECT Table 5050 Contact
             REPEAT
               SalesHeader2.GET(SalesHeader."Document Type",SalesHeader."No.");
               SalesHeader2."Sell-to Customer No." := Customer."No.";
+              SalesHeader2."Sell-to Customer Name" := Customer.Name;
               SalesHeader2."Sell-to Customer Template Code" := '';
               IF SalesHeader2."Sell-to Contact No." = SalesHeader2."Bill-to Contact No." THEN BEGIN
                 SalesHeader2."Bill-to Customer No." := Customer."No.";
+                SalesHeader2."Bill-to Name" := Customer.Name;
                 SalesHeader2."Bill-to Customer Template Code" := '';
                 SalesHeader2."Salesperson Code" := Customer."Salesperson Code";
               END;
@@ -2012,7 +2014,7 @@ OBJECT Table 5050 Contact
 
     [Integration(TRUE)]
     [External]
-    PROCEDURE OnBeforeCustomerInsert@42(VAR Cust@1000 : Record 18);
+    PROCEDURE OnBeforeCustomerInsert@42(VAR Cust@1000 : Record 18;CustomerTemplate@1001 : Code[10]);
     BEGIN
     END;
 

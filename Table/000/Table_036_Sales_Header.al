@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -494,6 +494,7 @@ OBJECT Table 36 Sales Header
                                                    CaptionML=[DAN=Ordredato;
                                                               ENU=Order Date] }
     { 20  ;   ;Posting Date        ;Date          ;OnValidate=BEGIN
+                                                                TESTFIELD("Posting Date");
                                                                 TestNoSeriesDate(
                                                                   "Posting No.","Posting No. Series",
                                                                   FIELDCAPTION("Posting No."),FIELDCAPTION("Posting No. Series"));
@@ -4055,6 +4056,9 @@ OBJECT Table 36 Sales Header
       Customer@1000 : Record 18;
       AvailableCreditLimit@1002 : Decimal;
     BEGIN
+      IF ("Bill-to Customer No." = '') AND ("Sell-to Customer No." = '') THEN
+        EXIT(0);
+
       IF NOT Customer.GET("Bill-to Customer No.") THEN
         Customer.GET("Sell-to Customer No.");
 

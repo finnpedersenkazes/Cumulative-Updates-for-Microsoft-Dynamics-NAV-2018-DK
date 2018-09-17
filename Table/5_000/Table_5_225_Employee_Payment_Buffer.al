@@ -2,9 +2,9 @@ OBJECT Table 5225 Employee Payment Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -59,8 +59,7 @@ OBJECT Table 5225 Employee Payment Buffer
     { 170 ;   ;Creditor No.        ;Code20        ;TableRelation="Employee Ledger Entry"."Creditor No." WHERE (Entry No.=FIELD(Employee Ledg. Entry No.));
                                                    DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Kreditornummer;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 171 ;   ;Payment Reference   ;Code50        ;TableRelation="Employee Ledger Entry"."Payment Reference" WHERE (Entry No.=FIELD(Employee Ledg. Entry No.));
                                                    DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Betalingsreference;

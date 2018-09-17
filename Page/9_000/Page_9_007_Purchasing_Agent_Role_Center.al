@@ -2,9 +2,9 @@ OBJECT Page 9007 Purchasing Agent Role Center
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -451,12 +451,6 @@ OBJECT Page 9007 Purchasing Agent Role Center
     { 1905989608;2;Part   ;
                 ApplicationArea=#Advanced;
                 PagePartID=Page9152;
-                PartType=Page }
-
-    { 1903012608;2;Part   ;
-                ApplicationArea=#Advanced;
-                PagePartID=Page9175;
-                Visible=FALSE;
                 PartType=Page }
 
     { 43  ;2   ;Part      ;

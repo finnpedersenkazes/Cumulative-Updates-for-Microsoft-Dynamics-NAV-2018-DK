@@ -2,9 +2,9 @@ OBJECT Page 573 Detailed Cust. Ledg. Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -20,7 +20,7 @@ OBJECT Page 573 Detailed Cust. Ledg. Entries
            END;
 
     OnOpenPage=BEGIN
-                 ShowAmounts;
+                 SetConrolVisibility;
                END;
 
     ActionList=ACTIONS
@@ -236,7 +236,7 @@ OBJECT Page 573 Detailed Cust. Ledg. Entries
       AmountVisible@1002 : Boolean;
       DebitCreditVisible@1001 : Boolean;
 
-    LOCAL PROCEDURE ShowAmounts@8();
+    LOCAL PROCEDURE SetConrolVisibility@8();
     VAR
       GLSetup@1000 : Record 98;
     BEGIN

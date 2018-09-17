@@ -2,9 +2,9 @@ OBJECT Table 25 Vendor Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -345,8 +345,7 @@ OBJECT Table 25 Vendor Ledger Entry
                                                               END;
 
                                                    CaptionML=[DAN=Kredit.nummer;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 171 ;   ;Payment Reference   ;Code50        ;CaptionML=[DAN=Betalingsreference;
                                                               ENU=Payment Reference];
                                                    Numeric=Yes }

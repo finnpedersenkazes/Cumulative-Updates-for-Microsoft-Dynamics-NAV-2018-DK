@@ -2,9 +2,9 @@ OBJECT Table 270 Bank Account
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -28,26 +28,7 @@ OBJECT Table 270 Bank Account
     OnModify=BEGIN
                "Last Date Modified" := TODAY;
 
-               IF (Name <> xRec.Name) OR
-                  ("Search Name" <> xRec."Search Name") OR
-                  ("Name 2" <> xRec."Name 2") OR
-                  (Address <> xRec.Address) OR
-                  ("Address 2" <> xRec."Address 2") OR
-                  (City <> xRec.City) OR
-                  ("Phone No." <> xRec."Phone No.") OR
-                  ("Telex No." <> xRec."Telex No.") OR
-                  ("Territory Code" <> xRec."Territory Code") OR
-                  ("Currency Code" <> xRec."Currency Code") OR
-                  ("Language Code" <> xRec."Language Code") OR
-                  ("Our Contact Code" <> xRec."Our Contact Code") OR
-                  ("Country/Region Code" <> xRec."Country/Region Code") OR
-                  ("Fax No." <> xRec."Fax No.") OR
-                  ("Telex Answer Back" <> xRec."Telex Answer Back") OR
-                  ("Post Code" <> xRec."Post Code") OR
-                  (County <> xRec.County) OR
-                  ("E-Mail" <> xRec."E-Mail") OR
-                  ("Home Page" <> xRec."Home Page")
-               THEN BEGIN
+               IF IsContactUpdateNeeded THEN BEGIN
                  MODIFY;
                  UpdateContFromBank.OnModify(Rec);
                  IF NOT FIND THEN BEGIN
@@ -936,6 +917,38 @@ OBJECT Table 270 Bank Account
     BEGIN
       JobQueueEntry.SETRANGE("Record ID to Process",RECORDID);
       EXIT(JobQueueEntry.FINDFIRST);
+    END;
+
+    LOCAL PROCEDURE IsContactUpdateNeeded@49() : Boolean;
+    VAR
+      BankContUpdate@1001 : Codeunit 5058;
+      UpdateNeeded@1000 : Boolean;
+    BEGIN
+      UpdateNeeded :=
+        (Name <> xRec.Name) OR
+        ("Search Name" <> xRec."Search Name") OR
+        ("Name 2" <> xRec."Name 2") OR
+        (Address <> xRec.Address) OR
+        ("Address 2" <> xRec."Address 2") OR
+        (City <> xRec.City) OR
+        ("Phone No." <> xRec."Phone No.") OR
+        ("Telex No." <> xRec."Telex No.") OR
+        ("Territory Code" <> xRec."Territory Code") OR
+        ("Currency Code" <> xRec."Currency Code") OR
+        ("Language Code" <> xRec."Language Code") OR
+        ("Our Contact Code" <> xRec."Our Contact Code") OR
+        ("Country/Region Code" <> xRec."Country/Region Code") OR
+        ("Fax No." <> xRec."Fax No.") OR
+        ("Telex Answer Back" <> xRec."Telex Answer Back") OR
+        ("Post Code" <> xRec."Post Code") OR
+        (County <> xRec.County) OR
+        ("E-Mail" <> xRec."E-Mail") OR
+        ("Home Page" <> xRec."Home Page");
+
+      IF NOT UpdateNeeded AND NOT ISTEMPORARY THEN
+        UpdateNeeded := BankContUpdate.ContactNameIsBlank("No.");
+
+      EXIT(UpdateNeeded);
     END;
 
     [Integration]

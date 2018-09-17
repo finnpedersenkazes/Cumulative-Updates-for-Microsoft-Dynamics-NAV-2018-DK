@@ -2,9 +2,9 @@ OBJECT Table 472 Job Queue Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -24,7 +24,6 @@ OBJECT Table 472 Job Queue Entry
                IF RunParametersChanged THEN
                  Reschedule;
                SetDefaultValues(RunParametersChanged);
-               "On Hold Due to Inactivity" := FALSE;
              END;
 
     OnDelete=BEGIN
@@ -170,9 +169,9 @@ OBJECT Table 472 Job Queue Entry
                                                    Editable=No }
     { 13  ;   ;Status              ;Option        ;CaptionML=[DAN=Status;
                                                               ENU=Status];
-                                                   OptionCaptionML=[DAN=Klar,Igangsat,Fejl,Afvent,Afsluttet;
-                                                                    ENU=Ready,In Process,Error,On Hold,Finished];
-                                                   OptionString=Ready,In Process,Error,On Hold,Finished;
+                                                   OptionCaptionML=[DAN=Klar,Igangv‘rende,Fejl,Afvent,F‘rdig,Afvent med inaktivitetstimeout;
+                                                                    ENU=Ready,In Process,Error,On Hold,Finished,On Hold with Inactivity Timeout];
+                                                   OptionString=Ready,In Process,Error,On Hold,Finished,On Hold with Inactivity Timeout;
                                                    Editable=No }
     { 14  ;   ;Priority            ;Integer       ;InitValue=1000;
                                                    CaptionML=[DAN=Prioritet;
@@ -333,9 +332,12 @@ OBJECT Table 472 Job Queue Entry
                                                               ENU=Scheduled] }
     { 50  ;   ;Manual Recurrence   ;Boolean       ;CaptionML=[DAN=Manuel gentagelse;
                                                               ENU=Manual Recurrence] }
-    { 51  ;   ;On Hold Due to Inactivity;Boolean  ;CaptionML=[DAN=Afvent pga. inaktivitet;
-                                                              ENU=On Hold Due to Inactivity];
-                                                   Editable=No }
+    { 51  ;   ;On Hold Due to Inactivity;Boolean  ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Functionality moved into new job queue status;
+                                                   CaptionML=[DAN=Afvent pga. inaktivitet;
+                                                              ENU=On Hold Due to Inactivity] }
+    { 52  ;   ;Inactivity Timeout Period;Integer  ;CaptionML=[DAN=Timeoutperiode for inaktivitet;
+                                                              ENU=Inactivity Timeout Period] }
   }
   KEYS
   {
@@ -382,7 +384,7 @@ OBJECT Table 472 Job Queue Entry
     [External]
     PROCEDURE IsReadyToStart@60() : Boolean;
     BEGIN
-      EXIT(Status IN [Status::Ready,Status::"In Process"]);
+      EXIT(Status IN [Status::Ready,Status::"In Process",Status::"On Hold with Inactivity Timeout"]);
     END;
 
     [External]
@@ -422,17 +424,16 @@ OBJECT Table 472 Job Queue Entry
     END;
 
     [Internal]
-    PROCEDURE SetResult@39(IsSuccess@1000 : Boolean;IsInactive@1001 : Boolean);
+    PROCEDURE SetResult@39(IsSuccess@1000 : Boolean;PrevStatus@1002 : Option);
     BEGIN
       IF (Status = Status::"On Hold") OR "Manual Recurrence" THEN
         EXIT;
-      IF IsSuccess THEN BEGIN
-        IF "Recurring Job" AND IsInactive THEN BEGIN
-          Status := Status::"On Hold";
-          "On Hold Due to Inactivity" := TRUE;
-        END ELSE
+      IF IsSuccess THEN
+        IF "Recurring Job" AND (PrevStatus IN [Status::"On Hold",Status::"On Hold with Inactivity Timeout"]) THEN
+          Status := PrevStatus
+        ELSE
           Status := Status::Finished
-      END ELSE BEGIN
+      ELSE BEGIN
         Status := Status::Error;
         SetErrorMessage(GETLASTERRORTEXT);
       END;
@@ -451,7 +452,7 @@ OBJECT Table 472 Job Queue Entry
     PROCEDURE FinalizeRun@44();
     BEGIN
       CASE Status OF
-        Status::Finished:
+        Status::Finished,Status::"On Hold with Inactivity Timeout":
           CleanupAfterExecution;
         Status::Error:
           HandleExecutionError;
@@ -534,6 +535,8 @@ OBJECT Table 472 Job Queue Entry
     BEGIN
       RefreshLocked;
       ClearServiceValues;
+      IF (Status = Status::"On Hold with Inactivity Timeout") AND ("Inactivity Timeout Period" > 0) THEN
+        "Earliest Start Date/Time" := CURRENTDATETIME;
       Status := Status::"On Hold";
       SetStatusValue(Status::Ready);
     END;
@@ -574,7 +577,7 @@ OBJECT Table 472 Job Queue Entry
     LOCAL PROCEDURE Reschedule@31();
     BEGIN
       CancelTask;
-      IF Status = Status::Ready THEN BEGIN
+      IF Status IN [Status::Ready,Status::"On Hold with Inactivity Timeout"] THEN BEGIN
         SetDefaultValues(FALSE);
         EnqueueTask;
       END;
@@ -614,9 +617,15 @@ OBJECT Table 472 Job Queue Entry
     END;
 
     LOCAL PROCEDURE SetDefaultValues@6(SetupUserId@1002 : Boolean);
+    VAR
+      Language@1001 : Record 8;
+      IdentityManagement@1000 : Codeunit 9801;
     BEGIN
       "Last Ready State" := CURRENTDATETIME;
-      "User Language ID" := GLOBALLANGUAGE;
+      IF IdentityManagement.IsInvAppId THEN
+        "User Language ID" := Language.GetLanguageID(Language.GetUserLanguage)
+      ELSE
+        "User Language ID" := GLOBALLANGUAGE;
       IF SetupUserId THEN
         "User ID" := USERID;
       "No. of Attempts to Run" := 0;
@@ -638,7 +647,10 @@ OBJECT Table 472 Job Queue Entry
 
       IF "Recurring Job" THEN BEGIN
         ClearServiceValues;
-        "Earliest Start Date/Time" := JobQueueDispatcher.CalcNextRunTimeForRecurringJob(Rec,CURRENTDATETIME);
+        IF Status = Status::"On Hold with Inactivity Timeout" THEN
+          "Earliest Start Date/Time" := JobQueueDispatcher.CalcNextRunTimeHoldDuetoInactivityJob(Rec,CURRENTDATETIME)
+        ELSE
+          "Earliest Start Date/Time" := JobQueueDispatcher.CalcNextRunTimeForRecurringJob(Rec,CURRENTDATETIME);
         EnqueueTask;
       END ELSE
         DELETE;
@@ -685,18 +697,19 @@ OBJECT Table 472 Job Queue Entry
         Status::Ready:
           BEGIN
             SetDefaultValues(FALSE);
-            IF "On Hold Due to Inactivity" THEN
-              "Earliest Start Date/Time" :=
-                JobQueueDispatcher.CalcNextRunTimeForRecurringJob(Rec,CURRENTDATETIME)
-            ELSE
-              "Earliest Start Date/Time" := JobQueueDispatcher.CalcInitialRunTime(Rec,CURRENTDATETIME);
+            "Earliest Start Date/Time" := JobQueueDispatcher.CalcInitialRunTime(Rec,CURRENTDATETIME);
             EnqueueTask;
           END;
         Status::"On Hold":
           CancelTask;
+        Status::"On Hold with Inactivity Timeout":
+          IF "Inactivity Timeout Period" > 0 THEN BEGIN
+            SetDefaultValues(FALSE);
+            "Earliest Start Date/Time" := JobQueueDispatcher.CalcNextRunTimeHoldDuetoInactivityJob(Rec,CURRENTDATETIME);
+            EnqueueTask;
+          END;
       END;
       Status := NewStatus;
-      "On Hold Due to Inactivity" := FALSE;
       MODIFY;
     END;
 
@@ -1009,8 +1022,7 @@ OBJECT Table 472 Job Queue Entry
     PROCEDURE FilterInactiveOnHoldEntries@53();
     BEGIN
       RESET;
-      SETRANGE(Status,Status::"On Hold");
-      SETRANGE("On Hold Due to Inactivity",TRUE);
+      SETRANGE(Status,Status::"On Hold with Inactivity Timeout");
     END;
 
     [External]

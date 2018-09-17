@@ -2,9 +2,9 @@ OBJECT Report 1322 Standard Purchase - Order
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -42,7 +42,7 @@ OBJECT Report 1322 Standard Purchase - Order
                                   FormatAddressFields("Purchase Header");
                                   FormatDocumentFields("Purchase Header");
 
-                                  IF NOT CurrReport.PREVIEW THEN BEGIN
+                                  IF NOT IsReportInPreviewMode THEN BEGIN
                                     CODEUNIT.RUN(CODEUNIT::"Purch.Header-Printed","Purchase Header");
                                     IF ArchiveDocument THEN
                                       ArchiveManagement.StorePurchDocument("Purchase Header",LogInteraction);
@@ -1047,6 +1047,13 @@ OBJECT Report 1322 Standard Purchase - Order
     PROCEDURE InitializeRequest@4(LogInteractionParam@1003 : Boolean);
     BEGIN
       LogInteraction := LogInteractionParam;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@7() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE FormatAddressFields@1(VAR PurchaseHeader@1000 : Record 38);

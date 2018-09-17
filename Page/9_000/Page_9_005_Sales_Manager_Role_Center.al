@@ -2,9 +2,9 @@ OBJECT Page 9005 Sales Manager Role Center
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -275,11 +275,6 @@ OBJECT Page 9005 Sales Manager Role Center
                 ContainerType=RoleCenterArea }
 
     { 1900724808;1;Group   }
-
-    { 21  ;2   ;Part      ;
-                ApplicationArea=#Advanced;
-                PagePartID=Page9175;
-                PartType=Page }
 
     { 1907692008;2;Part   ;
                 ApplicationArea=#Advanced;

@@ -2,9 +2,9 @@ OBJECT Report 207 Sales - Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -79,7 +79,7 @@ OBJECT Report 207 Sales - Credit Memo
                                   END;
 
                                   IF LogInteraction THEN
-                                    IF NOT CurrReport.PREVIEW THEN
+                                    IF NOT IsReportInPreviewMode THEN
                                       IF "Bill-to Contact No." <> '' THEN
                                         SegManagement.LogDocument(
                                           6,"No.",0,0,DATABASE::Contact,"Bill-to Contact No.","Salesperson Code",
@@ -136,7 +136,7 @@ OBJECT Report 207 Sales - Credit Memo
                                 END;
 
                OnPostDataItem=BEGIN
-                                IF NOT CurrReport.PREVIEW THEN
+                                IF NOT IsReportInPreviewMode THEN
                                   CODEUNIT.RUN(CODEUNIT::"Sales Cr. Memo-Printed","Sales Cr.Memo Header");
                               END;
                                }
@@ -1002,6 +1002,13 @@ OBJECT Report 207 Sales - Credit Memo
       NoOfCopies := NewNoOfCopies;
       ShowInternalInfo := NewShowInternalInfo;
       LogInteraction := NewLogInteraction;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@18() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE FormatAddressFields@11(VAR SalesCrMemoHeader@1000 : Record 114);

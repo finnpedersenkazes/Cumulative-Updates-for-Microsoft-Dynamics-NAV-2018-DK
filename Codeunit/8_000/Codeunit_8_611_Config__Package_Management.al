@@ -2,9 +2,9 @@ OBJECT Codeunit 8611 Config. Package Management
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -830,9 +830,14 @@ OBJECT Codeunit 8611 Config. Package Management
     PROCEDURE ApplyPackage@12(ConfigPackage@1004 : Record 8623;VAR ConfigPackageTable@1000 : Record 8613;SetupProcessingOrderForTables@1003 : Boolean) ErrorCount : Integer;
     VAR
       DimSetEntry@1006 : Record 480;
+      ConfigManagement@1002 : Codeunit 8616;
+      IntegrationManagement@1005 : Codeunit 5150;
       TableCount@1001 : Integer;
       DimSetIDUsed@1007 : Boolean;
     BEGIN
+      BINDSUBSCRIPTION(ConfigManagement);
+      IntegrationManagement.ResetIntegrationActivated;
+
       ConfigPackage.CALCFIELDS("No. of Records","No. of Errors");
       TableCount := ConfigPackageTable.COUNT;
       IF (ConfigPackage.Code <> MSGPPackageCodeTxt) AND (ConfigPackage.Code <> QBPackageCodeTxt) THEN
@@ -1812,9 +1817,6 @@ OBJECT Codeunit 8611 Config. Package Management
     LOCAL PROCEDURE UpdateValueUsingMapping@56(VAR ConfigPackageData@1000 : Record 8615;ConfigPackageField@1002 : Record 8616;PackageCode@1003 : Code[20]);
     VAR
       ConfigFieldMapping@1001 : Record 8628;
-      RecRef@1006 : RecordRef;
-      KeyRef@1009 : KeyRef;
-      FieldRef@1007 : FieldRef;
       NewValue@1004 : Text[250];
     BEGIN
       IF ConfigFieldMapping.GET(
@@ -1833,20 +1835,51 @@ OBJECT Codeunit 8611 Config. Package Management
         ConfigPackageData.MODIFY;
       END;
 
-      IF ConfigPackageField."Create Missing Codes" THEN BEGIN
-        RecRef.OPEN(ConfigPackageField."Relation Table ID");
-        KeyRef := RecRef.KEYINDEX(1);
-        FieldRef := KeyRef.FIELDINDEX(1);
-        FieldRef.VALUE(ConfigPackageData.Value);
-        // even "Create Missing Codes" is marked we should not create for blank account numbers and blank/zero account categories should not be created
-        IF ConfigPackageData."Table ID" <> 15 THEN BEGIN
-          IF RecRef.INSERT THEN;
-        END ELSE
-          IF (ConfigPackageData.Value <> '') AND ((ConfigPackageData.Value <> '0') AND (ConfigPackageData."Field ID" = 80)) OR
-             ((PackageCode <> QBPackageCodeTxt) AND (PackageCode <> MSGPPackageCodeTxt))
-          THEN
-            IF RecRef.INSERT THEN;
+      IF ConfigPackageField."Create Missing Codes" THEN
+        CreateMissingCodes(ConfigPackageData,ConfigPackageField."Relation Table ID",PackageCode);
+    END;
+
+    LOCAL PROCEDURE CreateMissingCodes@106(VAR ConfigPackageData@1000 : Record 8615;RelationTableID@1001 : Integer;PackageCode@1006 : Code[20]);
+    VAR
+      RecRef@1004 : RecordRef;
+      KeyRef@1003 : KeyRef;
+      FieldRef@1002 : ARRAY [16] OF FieldRef;
+      i@1007 : Integer;
+    BEGIN
+      RecRef.OPEN(RelationTableID);
+      KeyRef := RecRef.KEYINDEX(1);
+      FOR i := 1 TO KeyRef.FIELDCOUNT DO BEGIN
+        FieldRef[i] := KeyRef.FIELDINDEX(i);
+        FieldRef[i].VALUE(RelatedKeyFieldValue(ConfigPackageData,RelationTableID,FieldRef[i].NUMBER));
       END;
+
+      // even "Create Missing Codes" is marked we should not create for blank account numbers and blank/zero account categories should not be created
+      IF ConfigPackageData."Table ID" <> 15 THEN BEGIN
+        IF RecRef.INSERT THEN;
+      END ELSE
+        IF (ConfigPackageData.Value <> '') AND ((ConfigPackageData.Value <> '0') AND (ConfigPackageData."Field ID" = 80)) OR
+           ((PackageCode <> QBPackageCodeTxt) AND (PackageCode <> MSGPPackageCodeTxt))
+        THEN
+          IF RecRef.INSERT THEN;
+    END;
+
+    LOCAL PROCEDURE RelatedKeyFieldValue@94(VAR ConfigPackageData@1006 : Record 8615;TableID@1003 : Integer;FieldNo@1004 : Integer) : Text[250];
+    VAR
+      ConfigPackageDataOtherFields@1001 : Record 8615;
+      TableRelationsMetadata@1000 : Record 2000000141;
+    BEGIN
+      TableRelationsMetadata.SETRANGE("Table ID",TableID);
+      TableRelationsMetadata.SETRANGE("Field No.",FieldNo);
+      TableRelationsMetadata.SETRANGE("Related Table ID",ConfigPackageData."Table ID");
+      IF TableRelationsMetadata.FINDFIRST THEN BEGIN
+        ConfigPackageDataOtherFields.SETRANGE("Package Code",ConfigPackageData."Package Code");
+        ConfigPackageDataOtherFields.SETRANGE("Table ID",ConfigPackageData."Table ID");
+        ConfigPackageDataOtherFields.SETRANGE("No.",ConfigPackageData."No.");
+        ConfigPackageDataOtherFields.SETRANGE("Field ID",TableRelationsMetadata."Related Field No.");
+        ConfigPackageDataOtherFields.FINDFIRST;
+        EXIT(ConfigPackageDataOtherFields.Value);
+      END;
+      EXIT(ConfigPackageData.Value);
     END;
 
     LOCAL PROCEDURE GetMappingFromPKOfRelatedTable@63(ConfigPackageField@1002 : Record 8616;MappingOldValue@1003 : Text[250]) : Text[250];
@@ -2063,7 +2096,7 @@ OBJECT Codeunit 8611 Config. Package Management
       GraphMgtGeneralTools@1000 : Codeunit 5465;
     BEGIN
       COMMIT;
-      GraphMgtGeneralTools.ApiSetup;
+      GraphMgtGeneralTools.APISetupIfEnabled;
     END;
 
     PROCEDURE IsFieldMultiRelation@90(TableID@1000 : Integer;FieldID@1001 : Integer) : Boolean;

@@ -2,9 +2,9 @@ OBJECT Table 61 Electronic Document Format
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -355,7 +355,7 @@ OBJECT Table 61 Electronic Document Format
     VAR
       ElectronicDocumentFormat@1003 : Record 61;
     BEGIN
-      IF ElectronicDocumentFormat.GET(InsertElectronicFormatCode,Usage) THEN
+      IF ElectronicDocumentFormat.GET(InsertElectronicFormatCode,InsertElectronicFormatUsage) THEN
         EXIT;
 
       ElectronicDocumentFormat.INIT;

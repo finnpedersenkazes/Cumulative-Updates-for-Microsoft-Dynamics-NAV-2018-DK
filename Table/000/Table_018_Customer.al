@@ -2,9 +2,9 @@ OBJECT Table 18 Customer
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -273,6 +273,7 @@ OBJECT Table 18 Customer
                                                    OnLookup=VAR
                                                               ContactBusinessRelation@1001 : Record 5054;
                                                               Cont@1000 : Record 5050;
+                                                              TempCust@1002 : TEMPORARY Record 18;
                                                             BEGIN
                                                               IF ContactBusinessRelation.FindByRelation(ContactBusinessRelation."Link to Table"::Customer,"No.") THEN
                                                                 Cont.SETRANGE("Company No.",ContactBusinessRelation."Contact No.")
@@ -281,8 +282,12 @@ OBJECT Table 18 Customer
 
                                                               IF "Primary Contact No." <> '' THEN
                                                                 IF Cont.GET("Primary Contact No.") THEN ;
-                                                              IF PAGE.RUNMODAL(0,Cont) = ACTION::LookupOK THEN
+                                                              IF PAGE.RUNMODAL(0,Cont) = ACTION::LookupOK THEN BEGIN
+                                                                TempCust.COPY(Rec);
+                                                                FIND;
+                                                                TRANSFERFIELDS(TempCust,FALSE);
                                                                 VALIDATE("Primary Contact No.",Cont."No.");
+                                                              END;
                                                             END;
 
                                                    CaptionML=[DAN=Kontakt;
@@ -2122,6 +2127,7 @@ OBJECT Table 18 Customer
 
     LOCAL PROCEDURE IsContactUpdateNeeded@48() : Boolean;
     VAR
+      CustContUpdate@1001 : Codeunit 5056;
       UpdateNeeded@1000 : Boolean;
     BEGIN
       UpdateNeeded :=
@@ -2146,6 +2152,9 @@ OBJECT Table 18 Customer
         ("E-Mail" <> xRec."E-Mail") OR
         ("Home Page" <> xRec."Home Page") OR
         (Contact <> xRec.Contact);
+
+      IF NOT UpdateNeeded AND NOT ISTEMPORARY THEN
+        UpdateNeeded := CustContUpdate.ContactNameIsBlank("No.");
 
       OnBeforeIsContactUpdateNeeded(Rec,xRec,UpdateNeeded);
       EXIT(UpdateNeeded);

@@ -2,9 +2,9 @@ OBJECT Page 232 Apply Customer Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1269,6 +1269,7 @@ OBJECT Page 232 Apply Customer Entries
     VAR
       CustEntryApplyPostedEntries@1000 : Codeunit 226;
       PostApplication@1002 : Page 579;
+      Applied@1006 : Boolean;
       ApplicationDate@1001 : Date;
       NewApplicationDate@1003 : Date;
       NewDocumentNo@1004 : Code[20];
@@ -1289,9 +1290,9 @@ OBJECT Page 232 Apply Customer Entries
           IF PreviewMode THEN
             CustEntryApplyPostedEntries.PreviewApply(Rec,NewDocumentNo,NewApplicationDate)
           ELSE
-            CustEntryApplyPostedEntries.Apply(Rec,NewDocumentNo,NewApplicationDate);
+            Applied := CustEntryApplyPostedEntries.Apply(Rec,NewDocumentNo,NewApplicationDate);
 
-          IF NOT PreviewMode THEN BEGIN
+          IF (NOT PreviewMode) AND Applied THEN BEGIN
             MESSAGE(Text012);
             PostingDone := TRUE;
             CurrPage.CLOSE;

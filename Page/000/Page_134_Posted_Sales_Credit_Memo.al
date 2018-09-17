@@ -2,9 +2,9 @@ OBJECT Page 134 Posted Sales Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -526,6 +526,21 @@ OBJECT Page 134 Posted Sales Credit Memo
                 SourceExpr="No. Printed";
                 Importance=Additional;
                 Editable=FALSE }
+
+    { 63  ;2   ;Group     ;
+                CaptionML=[DAN=Arbejdsbeskrivelse;
+                           ENU=Work Description];
+                GroupType=Group }
+
+    { 62  ;3   ;Field     ;
+                ToolTipML=[DAN=Angiver de produkter eller tjenester, der tilbydes.;
+                           ENU=Specifies the products or services being offered.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=GetWorkDescription;
+                Importance=Additional;
+                Editable=FALSE;
+                MultiLine=Yes;
+                ShowCaption=No }
 
     { 46  ;1   ;Part      ;
                 Name=SalesCrMemoLines;

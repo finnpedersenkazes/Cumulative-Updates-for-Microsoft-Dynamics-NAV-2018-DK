@@ -2,9 +2,9 @@ OBJECT Codeunit 414 Release Sales Document
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -29,6 +29,7 @@ OBJECT Codeunit 414 Release Sales Document
       Text005@1006 : TextConst 'DAN=Der er ubetalte forudbetalingsfakturaer, der er knyttet til dokumentet af typen %1 med nummer %2.;ENU=There are unpaid prepayment invoices that are related to the document of type %1 with the number %2.';
       UnpostedPrepaymentAmountsErr@1007 : TextConst '@@@="%1 - Document Type; %2 - Document No.";DAN=Der er ikke-bogf›rte forudbetalingsbel›b p† dokumentet af typen %1 med nummer %2.;ENU=There are unposted prepayment amounts on the document of type %1 with the number %2.';
       PreviewMode@1009 : Boolean;
+      SkipCheckReleaseRestrictions@1010 : Boolean;
 
     LOCAL PROCEDURE Code@10() LinesWereModified : Boolean;
     VAR
@@ -43,7 +44,7 @@ OBJECT Codeunit 414 Release Sales Document
           EXIT;
 
         OnBeforeReleaseSalesDoc(SalesHeader,PreviewMode);
-        IF NOT PreviewMode THEN
+        IF NOT (PreviewMode OR SkipCheckReleaseRestrictions) THEN
           CheckSalesReleaseRestrictions;
 
         IF "Document Type" = "Document Type"::Quote THEN
@@ -206,6 +207,11 @@ OBJECT Codeunit 414 Release Sales Document
       SalesHeader.COPY(SalesHdr);
       LinesWereModified := Code;
       SalesHdr := SalesHeader;
+    END;
+
+    PROCEDURE SetSkipCheckReleaseRestrictions@21();
+    BEGIN
+      SkipCheckReleaseRestrictions := TRUE;
     END;
 
     PROCEDURE CalcAndUpdateVATOnLines@14(VAR SalesHeader@1003 : Record 36;VAR SalesLine@1002 : Record 37) LinesWereModified : Boolean;

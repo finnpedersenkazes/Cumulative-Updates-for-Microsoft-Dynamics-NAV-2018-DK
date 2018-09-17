@@ -2,9 +2,9 @@ OBJECT Page 608 IC Partner List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -39,8 +39,8 @@ OBJECT Page 608 IC Partner List
                       ShortCutKey=Shift+Ctrl+D;
                       CaptionML=[DAN=Dimensioner - enkelt;
                                  ENU=Dimensions-Single];
-                      ToolTipML=[DAN=F† vist eller rediger de enkelte s‘t af dimensioner, der er oprettet for den valgte record.;
-                                 ENU=View or edit the single set of dimensions that are set up for the selected record.];
+                      ToolTipML=[DAN=F† vist eller rediger dimensioner, f.eks. omr†de, projekt eller afdeling, som du kan tildele til koncerninterne transaktioner for at fordele omkostninger og analysere transaktionshistorik.;
+                                 ENU=View or edit dimensions, such as area, project, or department, that you can assign to intercompany transactions to distribute costs and analyze transaction history.];
                       ApplicationArea=#Intercompany;
                       RunObject=Page 540;
                       RunPageLink=Table ID=CONST(413),

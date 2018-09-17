@@ -2,9 +2,9 @@ OBJECT Codeunit 312 Cust-Check Cr. Limit
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -44,7 +44,7 @@ OBJECT Codeunit 312 Cust-Check Cr. Limit
     END;
 
     [External]
-    PROCEDURE SalesHeaderCheck@2(SalesHeader@1000 : Record 36) CreditLimitExceeded : Boolean;
+    PROCEDURE SalesHeaderCheck@2(VAR SalesHeader@1000 : Record 36) CreditLimitExceeded : Boolean;
     VAR
       AdditionalContextId@1001 : GUID;
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Table 1235 XML Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -38,12 +38,33 @@ OBJECT Table 1235 XML Buffer
     { 7   ;   ;Parent Entry No.    ;Integer       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Overordnet posteringsnr.;
                                                               ENU=Parent Entry No.] }
+    { 8   ;   ;Is Parent           ;Boolean       ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Is not used anomore;
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Er overordnet;
+                                                              ENU=Is Parent] }
     { 9   ;   ;Data Type           ;Option        ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Datatype;
                                                               ENU=Data Type];
                                                    OptionCaptionML=[DAN=Tekst,Dato,Decimal,Dato/klokkesl‘t;
                                                                     ENU=Text,Date,Decimal,DateTime];
                                                    OptionString=Text,Date,Decimal,DateTime }
+    { 10  ;   ;Code                ;Code20        ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Is not used anymore;
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Kode;
+                                                              ENU=Code] }
+    { 11  ;   ;Node Name           ;Text250       ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Is not used anymore;
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Nodenavn;
+                                                              ENU=Node Name] }
+    { 12  ;   ;Has Attributes      ;Boolean       ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Is not used anymore;
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Har attributter;
+                                                              ENU=Has Attributes];
+                                                   Editable=No }
     { 13  ;   ;Node Number         ;Integer       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Nodenummer;
                                                               ENU=Node Number] }

@@ -2,9 +2,9 @@ OBJECT Codeunit 368 Format Document
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -90,12 +90,14 @@ OBJECT Codeunit 368 Format Document
     END;
 
     [External]
-    PROCEDURE SetPaymentMethod@6(VAR PaymentMethod@1000 : Record 289;Code@1001 : Code[10]);
+    PROCEDURE SetPaymentMethod@6(VAR PaymentMethod@1000 : Record 289;Code@1001 : Code[10];LanguageCode@1002 : Code[10]);
     BEGIN
       IF Code = '' THEN
         PaymentMethod.INIT
-      ELSE
+      ELSE BEGIN
         PaymentMethod.GET(Code);
+        PaymentMethod.TranslateDescription(LanguageCode);
+      END;
     END;
 
     [External]

@@ -2,9 +2,9 @@ OBJECT Page 62 Applied Vendor Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -20,6 +20,7 @@ OBJECT Page 62 Applied Vendor Entries
 
     OnOpenPage=BEGIN
                  RESET;
+                 SetConrolVisibility;
 
                  IF "Entry No." <> 0 THEN BEGIN
                    CreateVendLedgEntry := Rec;
@@ -50,8 +51,6 @@ OBJECT Page 62 Applied Vendor Entries
                  END;
 
                  MARKEDONLY(TRUE);
-
-                 ShowAmounts;
                END;
 
     ActionList=ACTIONS
@@ -308,7 +307,7 @@ OBJECT Page 62 Applied Vendor Entries
         UNTIL DtldVendLedgEntry1.NEXT = 0;
     END;
 
-    LOCAL PROCEDURE ShowAmounts@8();
+    LOCAL PROCEDURE SetConrolVisibility@8();
     VAR
       GLSetup@1000 : Record 98;
     BEGIN

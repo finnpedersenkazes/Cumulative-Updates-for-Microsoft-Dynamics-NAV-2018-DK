@@ -2,9 +2,9 @@ OBJECT Report 1307 Standard Sales - Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -46,7 +46,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
                OnAfterGetRecord=VAR
                                   CurrencyExchangeRate@1000 : Record 330;
                                 BEGIN
-                                  IF NOT CurrReport.PREVIEW THEN
+                                  IF NOT IsReportInPreviewMode THEN
                                     CODEUNIT.RUN(CODEUNIT::"Sales Cr. Memo-Printed",Header);
 
                                   CurrReport.LANGUAGE := Language.GetLanguageID("Language Code");
@@ -64,7 +64,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
                                     ExchangeRateText := STRSUBSTNO(ExchangeRateTxt,CalculatedExchRate,CurrencyExchangeRate."Exchange Rate Amount");
                                   END;
 
-                                  IF LogInteraction AND NOT CurrReport.PREVIEW THEN BEGIN
+                                  IF LogInteraction AND NOT IsReportInPreviewMode THEN BEGIN
                                     IF "Bill-to Contact No." <> '' THEN
                                       SegManagement.LogDocument(
                                         6,"No.",0,0,DATABASE::Contact,"Bill-to Contact No.","Salesperson Code",
@@ -1052,6 +1052,13 @@ OBJECT Report 1307 Standard Sales - Credit Memo
       EXIT(Header."Posting Date");
     END;
 
+    LOCAL PROCEDURE IsReportInPreviewMode@7() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
+    END;
+
     LOCAL PROCEDURE DocumentCaption@4() : Text[250];
     BEGIN
       IF Header."Prepayment Credit Memo" THEN
@@ -1101,7 +1108,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
         FormatDocument.SetTotalLabels("Currency Code",TotalText,TotalInclVATText,TotalExclVATText);
         FormatDocument.SetSalesPerson(SalespersonPurchaser,"Salesperson Code",SalesPersonText);
         FormatDocument.SetPaymentTerms(PaymentTerms,"Payment Terms Code","Language Code");
-        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code");
+        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code","Language Code");
         FormatDocument.SetShipmentMethod(ShipmentMethod,"Shipment Method Code","Language Code");
 
         AppliesToText :=

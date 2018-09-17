@@ -2,9 +2,9 @@ OBJECT Table 23 Vendor
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -198,6 +198,7 @@ OBJECT Table 23 Vendor
                                                    OnLookup=VAR
                                                               ContactBusinessRelation@1001 : Record 5054;
                                                               Cont@1000 : Record 5050;
+                                                              TempVend@1002 : TEMPORARY Record 23;
                                                             BEGIN
                                                               IF ContactBusinessRelation.FindByRelation(ContactBusinessRelation."Link to Table"::Vendor,"No.") THEN
                                                                 Cont.SETRANGE("Company No.",ContactBusinessRelation."Contact No.")
@@ -206,8 +207,12 @@ OBJECT Table 23 Vendor
 
                                                               IF "Primary Contact No." <> '' THEN
                                                                 IF Cont.GET("Primary Contact No.") THEN ;
-                                                              IF PAGE.RUNMODAL(0,Cont) = ACTION::LookupOK THEN
+                                                              IF PAGE.RUNMODAL(0,Cont) = ACTION::LookupOK THEN BEGIN
+                                                                TempVend.COPY(Rec);
+                                                                FIND;
+                                                                TRANSFERFIELDS(TempVend,FALSE);
                                                                 VALIDATE("Primary Contact No.",Cont."No.");
+                                                              END;
                                                             END;
 
                                                    CaptionML=[DAN=Kontakt;
@@ -950,8 +955,7 @@ OBJECT Table 23 Vendor
                                                    CaptionML=[DAN=Beskyttelse af personlige oplysninger sp‘rret;
                                                               ENU=Privacy Blocked] }
     { 170 ;   ;Creditor No.        ;Code20        ;CaptionML=[DAN=Kreditornr.;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 288 ;   ;Preferred Bank Account Code;Code20 ;TableRelation="Vendor Bank Account".Code WHERE (Vendor No.=FIELD(No.));
                                                    CaptionML=[DAN=Foretrukken bankkontokode;
                                                               ENU=Preferred Bank Account Code] }
@@ -1654,6 +1658,7 @@ OBJECT Table 23 Vendor
 
     LOCAL PROCEDURE IsContactUpdateNeeded@48() : Boolean;
     VAR
+      VendContUpdate@1001 : Codeunit 5057;
       UpdateNeeded@1000 : Boolean;
     BEGIN
       UpdateNeeded :=
@@ -1677,6 +1682,9 @@ OBJECT Table 23 Vendor
         (County <> xRec.County) OR
         ("E-Mail" <> xRec."E-Mail") OR
         ("Home Page" <> xRec."Home Page");
+
+      IF NOT UpdateNeeded AND NOT ISTEMPORARY THEN
+        UpdateNeeded := VendContUpdate.ContactNameIsBlank("No.");
 
       OnBeforeIsContactUpdateNeeded(Rec,xRec,UpdateNeeded);
       EXIT(UpdateNeeded);

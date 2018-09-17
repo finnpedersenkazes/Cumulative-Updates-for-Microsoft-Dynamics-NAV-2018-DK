@@ -2,9 +2,9 @@ OBJECT Page 89 Job List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -14,22 +14,6 @@ OBJECT Page 89 Job List
     SourceTable=Table167;
     PageType=List;
     CardPageID=Job Card;
-    OnInit=BEGIN
-             JobSimplificationAvailable := IsJobSimplificationAvailable;
-           END;
-
-    OnOpenPage=BEGIN
-                 // Contextual Power BI FactBox: filtering available reports, setting context, loading Power BI related user settings
-                 CurrPage."Power BI Report FactBox".PAGE.SetNameFilter(CurrPage.CAPTION);
-                 CurrPage."Power BI Report FactBox".PAGE.SetContext(CurrPage.OBJECTID(FALSE));
-                 PowerBIVisible := SetPowerBIUserConfig.SetUserConfig(PowerBIUserConfiguration,CurrPage.OBJECTID(FALSE));
-               END;
-
-    OnAfterGetCurrRecord=BEGIN
-                           // Contextual Power BI FactBox: send data to filter the report in the FactBox
-                           CurrPage."Power BI Report FactBox".PAGE.SetCurrentListSelection("No.",FALSE);
-                         END;
-
     ActionList=ACTIONS
     {
       { 1900000003;0 ;ActionContainer;
@@ -296,26 +280,6 @@ OBJECT Page 89 Job List
                                  REPORT.RUNMODAL(REPORT::"Job Post WIP to G/L",TRUE,FALSE,Job);
                                END;
                                 }
-      { 42      ;1   ;ActionGroup;
-                      CaptionML=[DAN=Vis;
-                                 ENU=Display] }
-      { 41      ;2   ;Action    ;
-                      Name=ReportFactBoxVisibility;
-                      CaptionML=[DAN=Vis/skjul Power BI-rapporter;
-                                 ENU=Show/Hide Power BI Reports];
-                      ToolTipML=[DAN=V‘lg, om faktaboksen Power BI skal v‘re synlig eller ej.;
-                                 ENU=Select if the Power BI FactBox is visible or not.];
-                      ApplicationArea=#Basic,#Suite;
-                      Image=Report;
-                      OnAction=BEGIN
-                                 IF PowerBIVisible THEN
-                                   PowerBIVisible := FALSE
-                                 ELSE
-                                   PowerBIVisible := TRUE;
-                                 // save visibility value into the table
-                                 CurrPage."Power BI Report FactBox".PAGE.SetFactBoxVisibility(PowerBIVisible);
-                               END;
-                                }
       { 1900000006;0 ;ActionContainer;
                       ActionContainerType=Reports }
       { 1903776506;1 ;Action    ;
@@ -560,15 +524,6 @@ OBJECT Page 89 Job List
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }
 
-    { 36  ;1   ;Part      ;
-                Name=Power BI Report FactBox;
-                CaptionML=[DAN=Power BI-rapporter;
-                           ENU=Power BI Reports];
-                ApplicationArea=#Basic,#Suite;
-                PagePartID=Page6306;
-                Visible=PowerBIVisible;
-                PartType=Page }
-
     { 1907234507;1;Part   ;
                 ApplicationArea=#Jobs;
                 SubPageLink=No.=FIELD(Bill-to Customer No.);
@@ -587,16 +542,6 @@ OBJECT Page 89 Job List
                 ApplicationArea=#Jobs;
                 SubPageLink=No.=FIELD(No.);
                 PagePartID=Page9099;
-                Visible=TRUE;
-                PartType=Page }
-
-    { 25  ;1   ;Part      ;
-                CaptionML=[DAN=Sagsdetaljer;
-                           ENU=Job Details];
-                ApplicationArea=#Jobs;
-                SubPageLink=No.=FIELD(No.);
-                PagePartID=Page1030;
-                Visible=JobSimplificationAvailable;
                 PartType=Page }
 
     { 1900383207;1;Part   ;
@@ -605,18 +550,12 @@ OBJECT Page 89 Job List
                 SystemPartID=RecordLinks }
 
     { 1905767507;1;Part   ;
-                Visible=TRUE;
                 PartType=System;
                 SystemPartID=Notes }
 
   }
   CODE
   {
-    VAR
-      PowerBIUserConfiguration@1001 : Record 6304;
-      SetPowerBIUserConfig@1002 : Codeunit 6305;
-      PowerBIVisible@1003 : Boolean;
-      JobSimplificationAvailable@1000 : Boolean;
 
     BEGIN
     END.

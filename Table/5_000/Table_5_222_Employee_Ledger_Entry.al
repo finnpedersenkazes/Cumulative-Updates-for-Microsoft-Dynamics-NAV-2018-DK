@@ -2,9 +2,9 @@ OBJECT Table 5222 Employee Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -219,9 +219,21 @@ OBJECT Table 5222 Employee Ledger Entry
                                                    AutoFormatExpr="Currency Code" }
     { 86  ;   ;Applying Entry      ;Boolean       ;CaptionML=[DAN=Udlignende post;
                                                               ENU=Applying Entry] }
+    { 87  ;   ;Reversed            ;Boolean       ;DataClassification=CustomerContent;
+                                                   CaptionML=[DAN=Tilbagef›rt;
+                                                              ENU=Reversed] }
+    { 88  ;   ;Reversed by Entry No.;Integer      ;TableRelation="Employee Ledger Entry";
+                                                   DataClassification=CustomerContent;
+                                                   CaptionML=[DAN=Tilbagef›rt af l›benr.;
+                                                              ENU=Reversed by Entry No.];
+                                                   BlankZero=Yes }
+    { 89  ;   ;Reversed Entry No.  ;Integer       ;TableRelation="Employee Ledger Entry";
+                                                   DataClassification=CustomerContent;
+                                                   CaptionML=[DAN=Tilbagef›rt l›benr.;
+                                                              ENU=Reversed Entry No.];
+                                                   BlankZero=Yes }
     { 170 ;   ;Creditor No.        ;Code20        ;CaptionML=[DAN=Kreditornummer;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 171 ;   ;Payment Reference   ;Code50        ;OnValidate=BEGIN
                                                                 IF "Payment Reference" <> '' THEN
                                                                   TESTFIELD("Creditor No.");

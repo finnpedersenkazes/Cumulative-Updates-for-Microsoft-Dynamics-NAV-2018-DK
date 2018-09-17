@@ -2,9 +2,9 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -751,7 +751,6 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
         SalesLine."Document Type" := SalesHeader."Document Type";
         SalesLine."Document No." := SalesHeader."No.";
         SalesLine."Line No." := "Line No.";
-        SalesLine.INSERT(TRUE);
         CASE "IC Partner Ref. Type" OF
           "IC Partner Ref. Type"::"Common Item No.":
             BEGIN
@@ -827,6 +826,8 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
         END;
         SalesLine."Shortcut Dimension 1 Code" := '';
         SalesLine."Shortcut Dimension 2 Code" := '';
+        SalesLine.INSERT(TRUE);
+        SalesLine.VALIDATE(Quantity);
 
         DimMgt.SetICDocDimFilters(
           ICDocDim,DATABASE::"IC Inbox Sales Line","IC Transaction No.","IC Partner Code","Transaction Source","Line No.");

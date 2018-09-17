@@ -2,9 +2,9 @@ OBJECT Report 406 Purchase - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -39,7 +39,7 @@ OBJECT Report 406 Purchase - Invoice
                                   DimSetEntry1.SETRANGE("Dimension Set ID","Dimension Set ID");
 
                                   IF LogInteraction THEN
-                                    IF NOT CurrReport.PREVIEW THEN
+                                    IF NOT IsReportInPreviewMode THEN
                                       SegManagement.LogDocument(
                                         14,"No.",0,0,DATABASE::Vendor,"Buy-from Vendor No.","Purchaser Code",'',"Posting Description",'');
                                 END;
@@ -81,7 +81,7 @@ OBJECT Report 406 Purchase - Invoice
                                 END;
 
                OnPostDataItem=BEGIN
-                                IF NOT CurrReport.PREVIEW THEN
+                                IF NOT IsReportInPreviewMode THEN
                                   CODEUNIT.RUN(CODEUNIT::"Purch. Inv.-Printed","Purch. Inv. Header");
                               END;
                                }
@@ -903,6 +903,13 @@ OBJECT Report 406 Purchase - Invoice
       NoOfCopies := NewNoOfCopies;
       ShowInternalInfo := NewShowInternalInfo;
       LogInteraction := NewLogInteraction;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@8() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE FormatAddressFields@3(VAR PurchInvHeader@1000 : Record 122);

@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -227,7 +227,8 @@ OBJECT Table 38 Purchase Header
                                                                 END ELSE
                                                                   "Payment Method Code" := Vend."Payment Method Code";
 
-                                                                "Shipment Method Code" := Vend."Shipment Method Code";
+                                                                IF "Buy-from Vendor No." = Vend."No." THEN
+                                                                  "Shipment Method Code" := Vend."Shipment Method Code";
                                                                 "Vendor Posting Group" := Vend."Vendor Posting Group";
                                                                 GLSetup.GET;
                                                                 IF GLSetup."Bill-to/Sell-to VAT Calc." = GLSetup."Bill-to/Sell-to VAT Calc."::"Bill-to/Pay-to No." THEN BEGIN
@@ -1485,19 +1486,20 @@ OBJECT Table 38 Purchase Header
                                                    CaptionML=[DAN=L›benr. for indg†ende bilag;
                                                               ENU=Incoming Document Entry No.] }
     { 170 ;   ;Creditor No.        ;Code20        ;CaptionML=[DAN=Kreditornr.;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 171 ;   ;Payment Reference   ;Code50        ;CaptionML=[DAN=Betalingsreference;
                                                               ENU=Payment Reference];
                                                    Numeric=Yes }
     { 300 ;   ;A. Rcd. Not Inv. Ex. VAT (LCY);Decimal;
                                                    FieldClass=FlowField;
-                                                   CalcFormula=Sum("Purchase Line"."A. Rcd. Not Inv. Ex. VAT (LCY)" WHERE (Document No.=FIELD(No.)));
+                                                   CalcFormula=Sum("Purchase Line"."A. Rcd. Not Inv. Ex. VAT (LCY)" WHERE (Document Type=FIELD(Document Type),
+                                                                                                                           Document No.=FIELD(No.)));
                                                    CaptionML=[DAN=Bel›b modtaget, men ikke faktureret (RV);
                                                               ENU=Amount Received Not Invoiced (LCY)] }
     { 301 ;   ;Amt. Rcd. Not Invoiced (LCY);Decimal;
                                                    FieldClass=FlowField;
-                                                   CalcFormula=Sum("Purchase Line"."Amt. Rcd. Not Invoiced (LCY)" WHERE (Document No.=FIELD(No.)));
+                                                   CalcFormula=Sum("Purchase Line"."Amt. Rcd. Not Invoiced (LCY)" WHERE (Document Type=FIELD(Document Type),
+                                                                                                                         Document No.=FIELD(No.)));
                                                    CaptionML=[DAN=Bel›b modtaget, men ikke faktureret (RV), inkl, moms;
                                                               ENU=Amount Received Not Invoiced (LCY) Incl. VAT] }
     { 480 ;   ;Dimension Set ID    ;Integer       ;TableRelation="Dimension Set Entry";
@@ -3746,7 +3748,7 @@ OBJECT Table 38 Purchase Header
       PurchaseLine.SETRANGE("Document Type","Document Type");
       PurchaseLine.SETRANGE("Document No.","No.");
       PurchaseLine.SETFILTER("No.",'<>%1','');
-      PurchaseLine.SETFILTER(Type,'<>%1',PurchaseLine.Type::" ");
+      PurchaseLine.SETFILTER(Type,'%1|%2',PurchaseLine.Type::Item,PurchaseLine.Type::"Fixed Asset");
       PurchaseLine.SETRANGE("Drop Shipment",TRUE);
 
       HasDropShipmentLines := NOT PurchaseLine.ISEMPTY;

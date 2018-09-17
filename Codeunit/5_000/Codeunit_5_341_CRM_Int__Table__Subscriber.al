@@ -2,9 +2,9 @@ OBJECT Codeunit 5341 CRM Int. Table. Subscriber
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -45,8 +45,11 @@ OBJECT Codeunit 5341 CRM Int. Table. Subscriber
       CRMCustomerContactLink@1002 : Codeunit 5351;
     BEGIN
       IF IsJobQueueEntryCRMIntegrationJob(JobQueueEntry,IntegrationTableMapping) THEN BEGIN
-        JobQueueEntry."On Hold Due to Inactivity" :=
-          IntegrationSynchJob.HaveJobsBeenIdle(JobQueueEntry.GetLastLogEntryNo);
+        IF IntegrationSynchJob.HaveJobsBeenIdle(JobQueueEntry.GetLastLogEntryNo) THEN BEGIN
+          IF JobQueueEntry."Recurring Job" THEN
+            JobQueueEntry.Status := JobQueueEntry.Status::"On Hold with Inactivity Timeout"
+        END ELSE
+          JobQueueEntry.Status := JobQueueEntry.Status::Ready;
 
         IF IntegrationTableMapping."Table ID" IN [DATABASE::Customer,DATABASE::Contact] THEN
           CRMCustomerContactLink.EnqueueJobQueueEntry(CODEUNIT::"CRM Customer-Contact Link",IntegrationTableMapping);

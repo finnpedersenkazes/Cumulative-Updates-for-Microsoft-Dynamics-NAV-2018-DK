@@ -2,9 +2,9 @@ OBJECT Codeunit 1372 Purchase Batch Post Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -50,7 +50,9 @@ OBJECT Codeunit 1372 Purchase Batch Post Mgt.
       BatchProcessingMgt.AddParameter(BatchPostParameterTypes.ReplaceDocumentDate,ReplaceDocumentDate);
 
       PurchaseBatchPostMgt.SetBatchProcessor(BatchProcessingMgt);
-      PurchaseBatchPostMgt.RUN(PurchaseHeader);
+      COMMIT;
+      IF PurchaseBatchPostMgt.RUN(PurchaseHeader) THEN;
+      BatchProcessingMgt.ResetBatchID;
     END;
 
     PROCEDURE RunWithUI@14(VAR PurchaseHeader@1000 : Record 38;TotalCount@1001 : Integer;Question@1002 : Text);
@@ -63,7 +65,9 @@ OBJECT Codeunit 1372 Purchase Batch Post Mgt.
         EXIT;
 
       PurchaseBatchPostMgt.SetBatchProcessor(BatchProcessingMgt);
-      PurchaseBatchPostMgt.RUN(PurchaseHeader);
+      COMMIT;
+      IF PurchaseBatchPostMgt.RUN(PurchaseHeader) THEN;
+      BatchProcessingMgt.ResetBatchID;
       BatchProcessingMgt.GetErrorMessages(TempErrorMessage);
 
       IF TempErrorMessage.FINDFIRST THEN BEGIN
@@ -128,16 +132,15 @@ OBJECT Codeunit 1372 Purchase Batch Post Mgt.
     LOCAL PROCEDURE CalculateInvoiceDiscount@7(VAR PurchaseHeader@1001 : Record 38);
     VAR
       PurchaseLine@1000 : Record 39;
-      PurchCalcDiscount@1002 : Codeunit 70;
     BEGIN
       PurchaseLine.RESET;
       PurchaseLine.SETRANGE("Document Type",PurchaseHeader."Document Type");
       PurchaseLine.SETRANGE("Document No.",PurchaseHeader."No.");
-      IF PurchaseLine.FINDFIRST THEN
-        IF PurchCalcDiscount.RUN(PurchaseLine) THEN BEGIN
-          PurchaseHeader.GET(PurchaseHeader."Document Type",PurchaseHeader."No.");
-          COMMIT;
-        END;
+      IF PurchaseLine.FINDFIRST THEN BEGIN
+        CODEUNIT.RUN(CODEUNIT::"Purch.-Calc.Discount",PurchaseLine);
+        COMMIT;
+        PurchaseHeader.GET(PurchaseHeader."Document Type",PurchaseHeader."No.");
+      END;
     END;
 
     LOCAL PROCEDURE CanPostDocument@8(VAR PurchaseHeader@1000 : Record 38) : Boolean;

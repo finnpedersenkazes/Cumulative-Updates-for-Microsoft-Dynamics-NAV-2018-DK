@@ -2,9 +2,9 @@ OBJECT Page 9015 Job Project Manager RC
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -641,12 +641,6 @@ OBJECT Page 9015 Job Project Manager RC
     { 21  ;2   ;Part      ;
                 ApplicationArea=#Advanced;
                 PagePartID=Page675;
-                Visible=false;
-                PartType=Page }
-
-    { 1903012608;2;Part   ;
-                ApplicationArea=#Advanced;
-                PagePartID=Page9175;
                 Visible=false;
                 PartType=Page }
 

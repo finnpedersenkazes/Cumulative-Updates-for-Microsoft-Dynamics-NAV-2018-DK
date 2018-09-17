@@ -2,9 +2,9 @@ OBJECT Report 204 Sales - Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -34,7 +34,7 @@ OBJECT Report 204 Sales - Quote
                                    ENU=Sales Quote];
                OnPreDataItem=BEGIN
                                NoOfRecords := COUNT;
-                               Print := Print OR NOT CurrReport.PREVIEW;
+                               Print := Print OR NOT IsReportInPreviewMode;
                              END;
 
                OnAfterGetRecord=BEGIN
@@ -915,6 +915,13 @@ OBJECT Report 204 Sales - Quote
       ArchiveDocument := ArchiveDocumentFrom;
       LogInteraction := LogInteractionFrom;
       Print := PrintFrom;
+    END;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@8() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
     END;
 
     LOCAL PROCEDURE InitLogInteraction@6();

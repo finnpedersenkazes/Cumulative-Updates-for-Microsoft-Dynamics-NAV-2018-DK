@@ -2,9 +2,9 @@ OBJECT Page 130 Posted Sales Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -322,6 +322,21 @@ OBJECT Page 130 Posted Sales Shipment
                 SourceExpr="Responsibility Center";
                 Importance=Additional;
                 Editable=FALSE }
+
+    { 33  ;2   ;Group     ;
+                CaptionML=[DAN=Arbejdsbeskrivelse;
+                           ENU=Work Description];
+                GroupType=Group }
+
+    { 31  ;3   ;Field     ;
+                ToolTipML=[DAN=Angiver de produkter eller tjenester, der tilbydes.;
+                           ENU=Specifies the products or services being offered.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=GetWorkDescription;
+                Importance=Additional;
+                Editable=FALSE;
+                MultiLine=Yes;
+                ShowCaption=No }
 
     { 46  ;1   ;Part      ;
                 Name=SalesShipmLines;

@@ -2,9 +2,9 @@ OBJECT Codeunit 1501 Workflow Management
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -259,7 +259,7 @@ OBJECT Codeunit 1501 Workflow Management
       IF NOT LookupRecRef.GET(SourceRecordId) THEN
         EXIT(FALSE);
 
-      LookupRecRef.SETVIEW(RecRef.GETVIEW);
+      LookupRecRef.SETVIEW(RecRef.GETVIEW(FALSE));
 
       EXIT(LookupRecRef.FIND);
     END;

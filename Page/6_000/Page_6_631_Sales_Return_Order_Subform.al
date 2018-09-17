@@ -2,9 +2,9 @@ OBJECT Page 6631 Sales Return Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -1145,7 +1145,7 @@ OBJECT Page 6631 Sales Return Order Subform
         IF FIND THEN
           CalcInvDisc;
 
-      DocumentTotals.CalculateSalesTotals(TotalSalesLine,VATAmount,Rec);
+      DocumentTotals.CalculateSalesPageTotals(TotalSalesLine,VATAmount,Rec);
       AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
       InvoiceDiscountAmount := TotalSalesLine."Inv. Discount Amount";
       InvoiceDiscountPct := SalesCalcDiscByType.GetCustInvoiceDiscountPct(Rec);

@@ -2,9 +2,9 @@ OBJECT Page 9020 Small Business Owner RC
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.24232,NAVDK11.00.00.24232;
   }
   PROPERTIES
   {
@@ -933,11 +933,6 @@ OBJECT Page 9020 Small Business Owner RC
     { 78  ;2   ;Part      ;
                 ApplicationArea=#Advanced;
                 PagePartID=Page9073;
-                PartType=Page }
-
-    { 24  ;2   ;Part      ;
-                ApplicationArea=#Advanced;
-                PagePartID=Page9175;
                 PartType=Page }
 
     { 1900724708;1;Group   }

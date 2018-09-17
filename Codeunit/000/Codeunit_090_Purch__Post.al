@@ -2,9 +2,9 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -4062,7 +4062,6 @@ OBJECT Codeunit 90 Purch.-Post
 
     LOCAL PROCEDURE UpdatePrepmtPurchLineWithRounding@89(VAR PrepmtPurchLine@1002 : Record 39;TotalRoundingAmount@1001 : ARRAY [2] OF Decimal;TotalPrepmtAmount@1000 : ARRAY [2] OF Decimal;FinalInvoice@1005 : Boolean;PricesInclVATRoundingAmount@1006 : ARRAY [2] OF Decimal);
     VAR
-      AdjustAmount@1008 : Boolean;
       NewAmountIncludingVAT@1003 : Decimal;
       Prepmt100PctVATRoundingAmt@1004 : Decimal;
       AmountRoundingPrecision@1007 : Decimal;
@@ -4117,13 +4116,9 @@ OBJECT Codeunit 90 Purch.-Post
           TotalPurchLine."Amount Including VAT" := TotalPurchLineLCY."Amount Including VAT";
         "Amount Including VAT" := NewAmountIncludingVAT;
 
-        IF FinalInvoice THEN
-          AdjustAmount :=
-            (TotalPurchLine.Amount = 0) AND (TotalPurchLine."Amount Including VAT" <> 0) AND
-            (ABS(TotalPurchLine."Amount Including VAT") <= Currency."Amount Rounding Precision")
-        ELSE
-          AdjustAmount := (TotalPurchLineLCY.Amount < 0) AND (TotalPurchLineLCY."Amount Including VAT" < 0);
-        IF AdjustAmount THEN BEGIN
+        IF FinalInvoice AND (TotalPurchLine.Amount = 0) AND (TotalPurchLine."Amount Including VAT" <> 0) AND
+           (ABS(TotalPurchLine."Amount Including VAT") <= Currency."Amount Rounding Precision")
+        THEN BEGIN
           "Amount Including VAT" -= TotalPurchLineLCY."Amount Including VAT";
           TotalPurchLine."Amount Including VAT" := 0;
           TotalPurchLineLCY."Amount Including VAT" := 0;
@@ -4254,6 +4249,9 @@ OBJECT Codeunit 90 Purch.-Post
         "Source Line No." := PurchLine."Line No.";
         VALIDATE("Bal. Account Type","Bal. Account Type"::"G/L Account");
         VALIDATE("Bal. Account No.",PurchLine."No.");
+        "Shortcut Dimension 1 Code" := PurchLine."Shortcut Dimension 1 Code";
+        "Shortcut Dimension 2 Code" := PurchLine."Shortcut Dimension 2 Code";
+        "Dimension Set ID" := PurchLine."Dimension Set ID";
 
         Cust.SETRANGE("IC Partner Code",PurchLine."IC Partner Code");
         IF Cust.FINDFIRST THEN BEGIN

@@ -2,9 +2,9 @@ OBJECT Table 87 Date Compr. Register
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -128,6 +128,7 @@ OBJECT Table 87 Date Compr. Register
       GLEntry@1004 : Record 17;
       CustLedgEntry@1010 : Record 21;
       VendLedgEntry@1009 : Record 25;
+      EmployeeLedgerEntry@1000 : Record 5222;
       BankAccLedgEntry@1008 : Record 271;
       VATEntry@1007 : Record 254;
       FALedgEntry@1006 : Record 5601;
@@ -135,6 +136,7 @@ OBJECT Table 87 Date Compr. Register
     BEGIN
       CheckLedgerEntryCompressed(MaxPostingDate,DATABASE::"Cust. Ledger Entry",CustLedgEntry.TABLECAPTION,Type);
       CheckLedgerEntryCompressed(MaxPostingDate,DATABASE::"Vendor Ledger Entry",VendLedgEntry.TABLECAPTION,Type);
+      CheckLedgerEntryCompressed(MaxPostingDate,DATABASE::"Employee Ledger Entry",EmployeeLedgerEntry.TABLECAPTION,Type);
       CheckLedgerEntryCompressed(MaxPostingDate,DATABASE::"Bank Account Ledger Entry",BankAccLedgEntry.TABLECAPTION,Type);
       CheckLedgerEntryCompressed(MaxPostingDate,DATABASE::"VAT Entry",VATEntry.TABLECAPTION,Type);
       CheckLedgerEntryCompressed(MaxPostingDate,DATABASE::"G/L Entry",GLEntry.TABLECAPTION,Type);

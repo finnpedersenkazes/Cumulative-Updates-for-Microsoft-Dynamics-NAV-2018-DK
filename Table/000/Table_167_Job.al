@@ -2,9 +2,9 @@ OBJECT Table 167 Job
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -822,9 +822,10 @@ OBJECT Table 167 Job
       JobPlanningLine@1000 : Record 1003;
     BEGIN
       JobPlanningLine.SETRANGE("Job No.","No.");
+      JobPlanningLine.SETAUTOCALCFIELDS("Qty. Transferred to Invoice");
+      JobPlanningLine.LOCKTABLE;
       IF JobPlanningLine.FIND('-') THEN
         REPEAT
-          JobPlanningLine.CALCFIELDS("Qty. Transferred to Invoice");
           IF JobPlanningLine."Qty. Transferred to Invoice" <> 0 THEN
             ERROR(AssociatedEntriesExistErr,FIELDCAPTION("Currency Code"),TABLECAPTION);
           JobPlanningLine.VALIDATE("Currency Code","Currency Code");
@@ -876,7 +877,7 @@ OBJECT Table 167 Job
     END;
 
     [External]
-    PROCEDURE GetQuantityAvailable@9(ItemNo@1000 : Code[20];LocationCode@1001 : Code[10];VariantCode@1002 : Code[10];InEntryType@1004 : 'Usage,Sale,Both';Direction@1005 : 'Positive,Negative,Both') QtyBase : Decimal;
+    PROCEDURE GetQuantityAvailable@9(ItemNo@1000 : Code[20];LocationCode@1001 : Code[10];VariantCode@1002 : Code[10];InEntryType@1004 : 'Usage,Sale,Both';Direction@1005 : 'Positive,Negative,Both') : Decimal;
     VAR
       JobLedgEntry@1003 : Record 169;
     BEGIN
@@ -887,17 +888,19 @@ OBJECT Table 167 Job
         JobLedgEntry.SETRANGE("Entry Type",InEntryType);
       JobLedgEntry.SETRANGE(Type,JobLedgEntry.Type::Item);
       JobLedgEntry.SETRANGE("No.",ItemNo);
-      IF JobLedgEntry.FINDSET THEN
-        REPEAT
-          IF (JobLedgEntry."Location Code" = LocationCode) AND
-             (JobLedgEntry."Variant Code" = VariantCode) AND
-             ((Direction = Direction::Both) OR
-              ((Direction = Direction::Positive) AND (JobLedgEntry."Quantity (Base)" > 0)) OR
-              ((Direction = Direction::Negative) AND (JobLedgEntry."Quantity (Base)" < 0)))
-          THEN
-            QtyBase := QtyBase + JobLedgEntry."Quantity (Base)";
-
-        UNTIL JobLedgEntry.NEXT = 0;
+      CASE Direction OF
+        Direction::Both:
+          BEGIN
+            JobLedgEntry.SETRANGE("Location Code",LocationCode);
+            JobLedgEntry.SETRANGE("Variant Code",VariantCode);
+          END;
+        Direction::Positive:
+          JobLedgEntry.SETFILTER("Quantity (Base)",'>0');
+        Direction::Negative:
+          JobLedgEntry.SETFILTER("Quantity (Base)",'<0');
+      END;
+      JobLedgEntry.CALCSUMS("Quantity (Base)");
+      EXIT(JobLedgEntry."Quantity (Base)");
     END;
 
     LOCAL PROCEDURE CheckDate@30();
@@ -985,21 +988,16 @@ OBJECT Table 167 Job
     VAR
       JobPlanningLine@1000 : Record 1003;
       QtyOverdue@1001 : Decimal;
-      QtyOnSchedule@1002 : Decimal;
       QtyTotal@1003 : Decimal;
     BEGIN
       JobPlanningLine.SETRANGE("Job No.","No.");
-      IF JobPlanningLine.FINDSET THEN
-        REPEAT
-          IF (JobPlanningLine."Planning Date" < WORKDATE) AND (JobPlanningLine."Remaining Qty." > 0) THEN
-            QtyOverdue += 1
-          ELSE
-            QtyOnSchedule += 1;
-        UNTIL JobPlanningLine.NEXT = 0;
-      QtyTotal := QtyOverdue + QtyOnSchedule;
-      IF QtyTotal <> 0 THEN
-        EXIT((QtyOverdue / QtyTotal) * 100);
-      EXIT(0);
+      QtyTotal := JobPlanningLine.COUNT;
+      IF QtyTotal = 0 THEN
+        EXIT(0);
+      JobPlanningLine.SETFILTER("Planning Date",'<%1',WORKDATE);
+      JobPlanningLine.SETFILTER("Remaining Qty.",'>%1',0);
+      QtyOverdue := JobPlanningLine.COUNT;
+      EXIT((QtyOverdue / QtyTotal) * 100);
     END;
 
     LOCAL PROCEDURE UpdateJobNoInReservationEntries@21();
@@ -1179,10 +1177,10 @@ OBJECT Table 167 Job
         EndingDate := "Ending Date";
 
       JobLedgerEntry.SETRANGE("Job No.","No.");
-      REPEAT
+      JobLedgerEntry.SETCURRENTKEY("Job No.","Posting Date");
+      IF JobLedgerEntry.FINDLAST THEN
         IF JobLedgerEntry."Posting Date" > EndingDate THEN
           EndingDate := JobLedgerEntry."Posting Date";
-      UNTIL JobLedgerEntry.NEXT = 0;
 
       IF "Ending Date" >= EndingDate THEN
         EndingDate := "Ending Date";

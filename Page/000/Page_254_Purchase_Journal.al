@@ -2,9 +2,9 @@ OBJECT Page 254 Purchase Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=27-07-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23572;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -32,6 +32,7 @@ OBJECT Page 254 Purchase Journal
                  IF ClientTypeManagement.GetCurrentClientType = CLIENTTYPE::ODataV4 THEN
                    EXIT;
 
+                 SetConrolVisibility;
                  BalAccName := '';
                  IF IsOpenedFromBatch THEN BEGIN
                    CurrentJnlBatchName := "Journal Batch Name";
@@ -42,8 +43,6 @@ OBJECT Page 254 Purchase Journal
                  IF NOT JnlSelected THEN
                    ERROR('');
                  GenJnlManagement.OpenJnl(CurrentJnlBatchName,Rec);
-
-                 ShowAmounts;
                END;
 
     OnAfterGetRecord=BEGIN
@@ -922,7 +921,7 @@ OBJECT Page 254 Purchase Journal
       CurrPage.UPDATE(FALSE);
     END;
 
-    LOCAL PROCEDURE ShowAmounts@8();
+    LOCAL PROCEDURE SetConrolVisibility@8();
     VAR
       GLSetup@1000 : Record 98;
     BEGIN

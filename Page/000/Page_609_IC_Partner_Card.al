@@ -2,9 +2,9 @@ OBJECT Page 609 IC Partner Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -32,8 +32,8 @@ OBJECT Page 609 IC Partner Card
                       ShortCutKey=Shift+Ctrl+D;
                       CaptionML=[DAN=Dimensioner;
                                  ENU=Dimensions];
-                      ToolTipML=[DAN=Vis eller rediger dimensioner, f.eks. omr†de, projekt eller afdeling, som du kan tildele til salgs- og k›bsdokumenter for at fordele omkostninger og analysere transaktionshistorik.;
-                                 ENU=View or edit dimensions, such as area, project, or department, that you can assign to sales and purchase documents to distribute costs and analyze transaction history.];
+                      ToolTipML=[DAN=F† vist eller rediger dimensioner, f.eks. omr†de, projekt eller afdeling, som du kan tildele til koncerninterne transaktioner for at fordele omkostninger og analysere transaktionshistorik.;
+                                 ENU=View or edit dimensions, such as area, project, or department, that you can assign to intercompany transactions to distribute costs and analyze transaction history.];
                       ApplicationArea=#Suite;
                       RunObject=Page 540;
                       RunPageLink=Table ID=CONST(413),

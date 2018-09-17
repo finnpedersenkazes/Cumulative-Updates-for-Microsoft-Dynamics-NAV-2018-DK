@@ -2,9 +2,9 @@ OBJECT Report 1304 Standard Sales - Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -48,7 +48,6 @@ OBJECT Report 1304 Standard Sales - Quote
                                   CurrencyExchangeRate@1000 : Record 330;
                                   ArchiveManagement@1001 : Codeunit 5063;
                                   SalesPost@1002 : Codeunit 80;
-                                  CancelArchiving@1003 : Boolean;
                                 BEGIN
                                   FirstLineHasBeenOutput := FALSE;
                                   CLEAR(Line);
@@ -59,6 +58,8 @@ OBJECT Report 1304 Standard Sales - Quote
                                   Line.CalcVATAmountLines(0,Header,Line,VATAmountLine);
                                   Line.UpdateVATOnLines(0,Header,Line,VATAmountLine);
 
+                                  IF NOT IsReportInPreviewMode THEN
+                                    CODEUNIT.RUN(CODEUNIT::"Sales-Printed",Header);
                                   IF "Language Code" = '' THEN
                                     IF IdentityManagement.IsInvAppId THEN
                                       "Language Code" := Language.GetUserLanguage;
@@ -72,6 +73,12 @@ OBJECT Report 1304 Standard Sales - Quote
                                   FormatAddr.SalesHeaderBillTo(CustAddr,Header);
                                   ShowShippingAddr := FormatAddr.SalesHeaderShipTo(ShipToAddr,CustAddr,Header);
 
+                                  TotalSubTotal := 0;
+                                  TotalInvDiscAmount := 0;
+                                  TotalAmount := 0;
+                                  TotalAmountVAT := 0;
+                                  TotalAmountInclVAT := 0;
+
                                   IF NOT Cust.GET("Bill-to Customer No.") THEN
                                     CLEAR(Cust);
 
@@ -84,16 +91,13 @@ OBJECT Report 1304 Standard Sales - Quote
 
                                   FormatDocumentFields(Header);
 
-                                  OnBeforeArchiving(CancelArchiving);
-                                  LogInteraction := LogInteraction AND NOT CancelArchiving;
-
-                                  IF NOT CurrReport.PREVIEW AND NOT CancelArchiving AND
+                                  IF NOT IsReportInPreviewMode AND
                                      (CurrReport.USEREQUESTPAGE AND ArchiveDocument OR
                                       NOT CurrReport.USEREQUESTPAGE AND SalesSetup."Archive Quotes and Orders")
                                   THEN
                                     ArchiveManagement.StoreSalesDocument(Header,LogInteraction);
 
-                                  IF LogInteraction AND NOT CurrReport.PREVIEW THEN BEGIN
+                                  IF LogInteraction AND NOT IsReportInPreviewMode THEN BEGIN
                                     CALCFIELDS("No. of Archived Versions");
                                     IF "Bill-to Contact No." <> '' THEN
                                       SegManagement.LogDocument(
@@ -106,12 +110,6 @@ OBJECT Report 1304 Standard Sales - Quote
                                         "No. of Archived Versions",DATABASE::Customer,"Bill-to Customer No.",
                                         "Salesperson Code","Campaign No.","Posting Description","Opportunity No.");
                                   END;
-
-                                  TotalSubTotal := 0;
-                                  TotalInvDiscAmount := 0;
-                                  TotalAmount := 0;
-                                  TotalAmountVAT := 0;
-                                  TotalAmountInclVAT := 0;
                                 END;
 
                ReqFilterFields=No.,Sell-to Customer No.,No. Printed }
@@ -1025,13 +1023,20 @@ OBJECT Report 1304 Standard Sales - Quote
       LogInteraction := NewLogInteraction;
     END;
 
+    LOCAL PROCEDURE IsReportInPreviewMode@3() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
+    END;
+
     LOCAL PROCEDURE FormatDocumentFields@2(SalesHeader@1000 : Record 36);
     BEGIN
       WITH SalesHeader DO BEGIN
         FormatDocument.SetTotalLabels(GetCurrencySymbol,TotalText,TotalInclVATText,TotalExclVATText);
         FormatDocument.SetSalesPerson(SalespersonPurchaser,"Salesperson Code",SalesPersonText);
         FormatDocument.SetPaymentTerms(PaymentTerms,"Payment Terms Code","Language Code");
-        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code");
+        FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code","Language Code");
         FormatDocument.SetShipmentMethod(ShipmentMethod,"Shipment Method Code","Language Code");
       END;
     END;
@@ -1048,11 +1053,6 @@ OBJECT Report 1304 Standard Sales - Quote
       END;
       IF TotalAmountVAT <> 0 THEN
         ReportTotalsLine.Add(VATAmountLine.VATAmountText,TotalAmountVAT,FALSE,TRUE,FALSE);
-    END;
-
-    [Integration]
-    PROCEDURE OnBeforeArchiving@3(VAR CancelArchiving@1000 : Boolean);
-    BEGIN
     END;
 
     BEGIN

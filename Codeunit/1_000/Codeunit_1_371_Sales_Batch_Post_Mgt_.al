@@ -2,9 +2,9 @@ OBJECT Codeunit 1371 Sales Batch Post Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -50,7 +50,9 @@ OBJECT Codeunit 1371 Sales Batch Post Mgt.
       BatchProcessingMgt.AddParameter(BatchPostParameterTypes.ReplaceDocumentDate,ReplaceDocumentDate);
 
       SalesBatchPostMgt.SetBatchProcessor(BatchProcessingMgt);
-      SalesBatchPostMgt.RUN(SalesHeader);
+      COMMIT;
+      IF SalesBatchPostMgt.RUN(SalesHeader) THEN;
+      BatchProcessingMgt.ResetBatchID;
     END;
 
     PROCEDURE RunWithUI@12(VAR SalesHeader@1000 : Record 36;TotalCount@1001 : Integer;Question@1002 : Text);
@@ -63,7 +65,9 @@ OBJECT Codeunit 1371 Sales Batch Post Mgt.
         EXIT;
 
       SalesBatchPostMgt.SetBatchProcessor(BatchProcessingMgt);
-      SalesBatchPostMgt.RUN(SalesHeader);
+      COMMIT;
+      IF SalesBatchPostMgt.RUN(SalesHeader) THEN;
+      BatchProcessingMgt.ResetBatchID;
       BatchProcessingMgt.GetErrorMessages(TempErrorMessage);
 
       IF TempErrorMessage.FINDFIRST THEN BEGIN
@@ -128,16 +132,15 @@ OBJECT Codeunit 1371 Sales Batch Post Mgt.
     LOCAL PROCEDURE CalculateInvoiceDiscount@7(VAR SalesHeader@1001 : Record 36);
     VAR
       SalesLine@1000 : Record 37;
-      SalesCalcDiscount@1002 : Codeunit 60;
     BEGIN
       SalesLine.RESET;
       SalesLine.SETRANGE("Document Type",SalesHeader."Document Type");
       SalesLine.SETRANGE("Document No.",SalesHeader."No.");
-      IF SalesLine.FINDFIRST THEN
-        IF SalesCalcDiscount.RUN(SalesLine) THEN BEGIN
-          SalesHeader.GET(SalesHeader."Document Type",SalesHeader."No.");
-          COMMIT;
-        END;
+      IF SalesLine.FINDFIRST THEN BEGIN
+        CODEUNIT.RUN(CODEUNIT::"Sales-Calc. Discount",SalesLine);
+        COMMIT;
+        SalesHeader.GET(SalesHeader."Document Type",SalesHeader."No.");
+      END;
     END;
 
     LOCAL PROCEDURE CanPostDocument@8(VAR SalesHeader@1000 : Record 36) : Boolean;

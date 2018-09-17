@@ -2,9 +2,9 @@ OBJECT Table 372 Payment Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -57,8 +57,7 @@ OBJECT Table 372 Payment Buffer
     { 170 ;   ;Creditor No.        ;Code20        ;TableRelation="Vendor Ledger Entry"."Creditor No." WHERE (Entry No.=FIELD(Vendor Ledg. Entry No.));
                                                    DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Kreditornummer;
-                                                              ENU=Creditor No.];
-                                                   Numeric=Yes }
+                                                              ENU=Creditor No.] }
     { 171 ;   ;Payment Reference   ;Code50        ;TableRelation="Vendor Ledger Entry"."Payment Reference" WHERE (Entry No.=FIELD(Vendor Ledg. Entry No.));
                                                    DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Betalingsreference;

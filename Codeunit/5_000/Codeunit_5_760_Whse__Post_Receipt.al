@@ -2,9 +2,9 @@ OBJECT Codeunit 5760 Whse.-Post Receipt
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -158,6 +158,7 @@ OBJECT Codeunit 5760 Whse.-Post Receipt
                  (PurchHeader."Posting Date" <> WhseRcptHeader."Posting Date")
               THEN BEGIN
                 PurchRelease.Reopen(PurchHeader);
+                PurchRelease.SetSkipCheckReleaseRestrictions;
                 PurchHeader.SetHideValidationDialog(TRUE);
                 PurchHeader.VALIDATE("Posting Date",WhseRcptHeader."Posting Date");
                 PurchRelease.RUN(PurchHeader);
@@ -176,6 +177,7 @@ OBJECT Codeunit 5760 Whse.-Post Receipt
                  (SalesHeader."Posting Date" <> WhseRcptHeader."Posting Date")
               THEN BEGIN
                 SalesRelease.Reopen(SalesHeader);
+                SalesRelease.SetSkipCheckReleaseRestrictions;
                 SalesHeader.SetHideValidationDialog(TRUE);
                 SalesHeader.VALIDATE("Posting Date",WhseRcptHeader."Posting Date");
                 SalesRelease.RUN(SalesHeader);

@@ -2,9 +2,9 @@ OBJECT Table 169 Job Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -288,13 +288,15 @@ OBJECT Table 169 Job Ledger Entry
   {
     {    ;Entry No.                               ;Clustered=Yes }
     {    ;Job No.,Job Task No.,Entry Type,Posting Date;
-                                                   SumIndexFields=Total Cost (LCY),Line Amount (LCY) }
+                                                   SumIndexFields=Total Cost (LCY),Line Amount (LCY),Total Cost,Line Amount }
     {    ;Document No.,Posting Date                }
     {    ;Job No.,Posting Date                     }
     {    ;Entry Type,Type,No.,Posting Date         }
     {    ;Service Order No.,Posting Date           }
     {    ;Job No.,Entry Type,Type,No.              }
     {    ;Type,Entry Type,Country/Region Code,Source Code,Posting Date }
+    {    ;Job No.,Entry Type,Type,Posting Date    ;SumIndexFields=Total Cost (LCY),Line Amount (LCY),Total Cost,Line Amount;
+                                                   MaintainSQLIndex=No }
   }
   FIELDGROUPS
   {

@@ -2,9 +2,9 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -43,6 +43,8 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
       TempCustLedgEntry@1005 : TEMPORARY Record 21;
       VendLedgEntry@1008 : Record 25;
       TempVendLedgEntry@1012 : TEMPORARY Record 25;
+      EmployeeLedgerEntry@1022 : Record 5222;
+      TempEmployeeLedgerEntry@1023 : TEMPORARY Record 5222;
       BankAccLedgEntry@1009 : Record 271;
       TempBankAccLedgEntry@1015 : TEMPORARY Record 271;
       VATEntry@1010 : Record 254;
@@ -53,6 +55,7 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
       UpdateAnalysisView@1020 : Codeunit 410;
       NextDtldCustLedgEntryEntryNo@1014 : Integer;
       NextDtldVendLedgEntryEntryNo@1013 : Integer;
+      NextDtldEmplLedgEntryNo@1025 : Integer;
       TransactionKey@1001 : Integer;
     BEGIN
       OnBeforeReverse(ReversalEntry,ReversalEntry2);
@@ -62,7 +65,7 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
         GLReg2."No." := ReversalEntry2."G/L Register No.";
 
       ReversalEntry.CopyReverseFilters(
-        GLEntry2,CustLedgEntry,VendLedgEntry,BankAccLedgEntry,VATEntry,FALedgEntry,MaintenanceLedgEntry);
+        GLEntry2,CustLedgEntry,VendLedgEntry,BankAccLedgEntry,VATEntry,FALedgEntry,MaintenanceLedgEntry,EmployeeLedgerEntry);
 
       IF ReversalEntry2."Reversal Type" = ReversalEntry2."Reversal Type"::Transaction THEN BEGIN
         IF ReversalEntry2.FINDSET(FALSE,FALSE) THEN
@@ -87,6 +90,7 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
 
       CopyCustLedgEntry(CustLedgEntry,TempCustLedgEntry);
       CopyVendLedgEntry(VendLedgEntry,TempVendLedgEntry);
+      CopyEmplLedgEntry(EmployeeLedgerEntry,TempEmployeeLedgerEntry);
       CopyBankAccLedgEntry(BankAccLedgEntry,TempBankAccLedgEntry);
 
       IF TempRevertTransactionNo.FINDSET THEN;
@@ -95,8 +99,8 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
           GLEntry2.SETRANGE("Transaction No.",TempRevertTransactionNo.Number);
         ReverseGLEntry(
           GLEntry2,GenJnlLine,TempCustLedgEntry,
-          TempVendLedgEntry,TempBankAccLedgEntry,NextDtldCustLedgEntryEntryNo,NextDtldVendLedgEntryEntryNo,
-          FAInsertLedgEntry);
+          TempVendLedgEntry,TempEmployeeLedgerEntry,TempBankAccLedgEntry,NextDtldCustLedgEntryEntryNo,NextDtldVendLedgEntryEntryNo,
+          NextDtldEmplLedgEntryNo,FAInsertLedgEntry);
       UNTIL TempRevertTransactionNo.NEXT = 0;
 
       IF FALedgEntry.FINDSET THEN
@@ -115,6 +119,8 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
         ERROR(ReversalMismatchErr,CustLedgEntry.TABLECAPTION);
       IF NOT TempVendLedgEntry.ISEMPTY THEN
         ERROR(ReversalMismatchErr,VendLedgEntry.TABLECAPTION);
+      IF NOT TempEmployeeLedgerEntry.ISEMPTY THEN
+        ERROR(ReversalMismatchErr,EmployeeLedgerEntry.TABLECAPTION);
       IF NOT TempBankAccLedgEntry.ISEMPTY THEN
         ERROR(ReversalMismatchErr,BankAccLedgEntry.TABLECAPTION);
 
@@ -131,7 +137,7 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
       UpdateAnalysisView.UpdateAll(0,TRUE);
     END;
 
-    LOCAL PROCEDURE ReverseGLEntry@6(VAR GLEntry2@1000 : Record 17;VAR GenJnlLine@1003 : Record 81;VAR TempCustLedgEntry@1006 : TEMPORARY Record 21;VAR TempVendLedgEntry@1007 : TEMPORARY Record 25;VAR TempBankAccLedgEntry@1008 : TEMPORARY Record 271;VAR NextDtldCustLedgEntryEntryNo@1009 : Integer;VAR NextDtldVendLedgEntryEntryNo@1010 : Integer;FAInsertLedgerEntry@1002 : Codeunit 5600);
+    LOCAL PROCEDURE ReverseGLEntry@6(VAR GLEntry2@1000 : Record 17;VAR GenJnlLine@1003 : Record 81;VAR TempCustLedgEntry@1006 : TEMPORARY Record 21;VAR TempVendLedgEntry@1007 : TEMPORARY Record 25;VAR TempEmployeeLedgerEntry@1005 : TEMPORARY Record 5222;VAR TempBankAccLedgEntry@1008 : TEMPORARY Record 271;VAR NextDtldCustLedgEntryEntryNo@1009 : Integer;VAR NextDtldVendLedgEntryEntryNo@1010 : Integer;VAR NextDtldEmplLedgEntryNo@1011 : Integer;FAInsertLedgerEntry@1002 : Codeunit 5600);
     VAR
       GLEntry@1001 : Record 17;
       ReversedGLEntry@1004 : Record 17;
@@ -201,6 +207,15 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
                     TempVendLedgEntry,GLEntry."Entry No.",GenJnlLine.Correction,GenJnlLine."Source Code",
                     NextDtldVendLedgEntryEntryNo);
                   TempVendLedgEntry.DELETE;
+                END;
+              TempEmployeeLedgerEntry.GET("Entry No."):
+                BEGIN
+                  CheckDimComb(
+                    "Entry No.","Dimension Set ID",DATABASE::Employee,TempEmployeeLedgerEntry."Employee No.",0,'');
+                  ReverseEmplLedgEntry(
+                    TempEmployeeLedgerEntry,GLEntry."Entry No.",GenJnlLine.Correction,GenJnlLine."Source Code",
+                    NextDtldEmplLedgEntryNo);
+                  TempEmployeeLedgerEntry.DELETE;
                 END;
               TempBankAccLedgEntry.GET("Entry No."):
                 BEGIN
@@ -366,6 +381,71 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
       END;
     END;
 
+    LOCAL PROCEDURE ReverseEmplLedgEntry@24(EmployeeLedgerEntry@1000 : Record 5222;NewEntryNo@1004 : Integer;Correction@1003 : Boolean;SourceCode@1002 : Code[10];VAR NextDtldEmplLedgEntryNo@1001 : Integer);
+    VAR
+      NewEmployeeLedgerEntry@1005 : Record 5222;
+      ReversedEmployeeLedgerEntry@1006 : Record 5222;
+      DetailedEmployeeLedgerEntry@1007 : Record 5223;
+      NewDetailedEmployeeLedgerEntry@1008 : Record 5223;
+    BEGIN
+      WITH NewEmployeeLedgerEntry DO BEGIN
+        NewEmployeeLedgerEntry := EmployeeLedgerEntry;
+        Positive := NOT Positive;
+        "User ID" := USERID;
+        "Entry No." := NewEntryNo;
+        "Transaction No." := GenJnlPostLine.GetNextTransactionNo;
+        "Journal Batch Name" := '';
+        "Source Code" := SourceCode;
+        SetReversalDescription(EmployeeLedgerEntry,Description);
+        "Reversed Entry No." := EmployeeLedgerEntry."Entry No.";
+        Reversed := TRUE;
+        "Applies-to ID" := '';
+        // Reversal of Reversal
+        IF EmployeeLedgerEntry."Reversed Entry No." <> 0 THEN BEGIN
+          ReversedEmployeeLedgerEntry.GET(EmployeeLedgerEntry."Reversed Entry No.");
+          ReversedEmployeeLedgerEntry."Reversed by Entry No." := 0;
+          ReversedEmployeeLedgerEntry.Reversed := FALSE;
+          ReversedEmployeeLedgerEntry.MODIFY;
+          EmployeeLedgerEntry."Reversed Entry No." := "Entry No.";
+          "Reversed by Entry No." := EmployeeLedgerEntry."Entry No.";
+        END;
+        EmployeeLedgerEntry."Applies-to ID" := '';
+        EmployeeLedgerEntry."Reversed by Entry No." := "Entry No.";
+        EmployeeLedgerEntry.Reversed := TRUE;
+        EmployeeLedgerEntry.MODIFY;
+        OnReverseEmplLedgEntryOnBeforeInsertEmplLedgEntry(NewEmployeeLedgerEntry,EmployeeLedgerEntry);
+        INSERT;
+
+        IF NextDtldEmplLedgEntryNo = 0 THEN BEGIN
+          DetailedEmployeeLedgerEntry.FINDLAST;
+          NextDtldEmplLedgEntryNo := DetailedEmployeeLedgerEntry."Entry No." + 1;
+        END;
+        DetailedEmployeeLedgerEntry.SETCURRENTKEY("Employee Ledger Entry No.");
+        DetailedEmployeeLedgerEntry.SETRANGE("Employee Ledger Entry No.",EmployeeLedgerEntry."Entry No.");
+        DetailedEmployeeLedgerEntry.SETRANGE(Unapplied,FALSE);
+        DetailedEmployeeLedgerEntry.FINDSET;
+        REPEAT
+          DetailedEmployeeLedgerEntry.TESTFIELD("Entry Type",DetailedEmployeeLedgerEntry."Entry Type"::"Initial Entry");
+          NewDetailedEmployeeLedgerEntry := DetailedEmployeeLedgerEntry;
+          NewDetailedEmployeeLedgerEntry.Amount := -DetailedEmployeeLedgerEntry.Amount;
+          NewDetailedEmployeeLedgerEntry."Amount (LCY)" := -DetailedEmployeeLedgerEntry."Amount (LCY)";
+          NewDetailedEmployeeLedgerEntry.UpdateDebitCredit(Correction);
+          NewDetailedEmployeeLedgerEntry."Employee Ledger Entry No." := NewEntryNo;
+          NewDetailedEmployeeLedgerEntry."User ID" := USERID;
+          NewDetailedEmployeeLedgerEntry."Transaction No." := GenJnlPostLine.GetNextTransactionNo;
+          NewDetailedEmployeeLedgerEntry."Entry No." := NextDtldEmplLedgEntryNo;
+          NextDtldEmplLedgEntryNo += 1;
+          OnReverseEmplLedgEntryOnBeforeInsertDtldEmplLedgEntry(NewDetailedEmployeeLedgerEntry,DetailedEmployeeLedgerEntry);
+          NewDetailedEmployeeLedgerEntry.INSERT(TRUE);
+        UNTIL DetailedEmployeeLedgerEntry.NEXT = 0;
+
+        ApplyEmplLedgEntryByReversal(
+          EmployeeLedgerEntry,NewEmployeeLedgerEntry,NewDetailedEmployeeLedgerEntry,"Entry No.",NextDtldEmplLedgEntryNo);
+        ApplyEmplLedgEntryByReversal(
+          NewEmployeeLedgerEntry,EmployeeLedgerEntry,DetailedEmployeeLedgerEntry,"Entry No.",NextDtldEmplLedgEntryNo);
+      END;
+    END;
+
     LOCAL PROCEDURE ReverseBankAccLedgEntry@68(BankAccLedgEntry@1000 : Record 271;NewEntryNo@1001 : Integer;SourceCode@1005 : Code[10]);
     VAR
       NewBankAccLedgEntry@1002 : Record 271;
@@ -512,6 +592,30 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
       NewDtldVendLedgEntry.INSERT(TRUE);
     END;
 
+    LOCAL PROCEDURE ApplyEmplLedgEntryByReversal@26(EmployeeLedgerEntry@1000 : Record 5222;EmployeeLedgerEntry2@1001 : Record 5222;DetailedEmployeeLedgerEntry2@1002 : Record 5223;AppliedEntryNo@1004 : Integer;VAR NextDtldEmplLedgEntryNo@1003 : Integer);
+    VAR
+      NewDetailedEmployeeLedgerEntry@1005 : Record 5223;
+    BEGIN
+      EmployeeLedgerEntry2.CALCFIELDS("Remaining Amount","Remaining Amt. (LCY)");
+      EmployeeLedgerEntry."Closed by Entry No." := EmployeeLedgerEntry2."Entry No.";
+      EmployeeLedgerEntry."Closed at Date" := EmployeeLedgerEntry2."Posting Date";
+      EmployeeLedgerEntry."Closed by Amount" := -EmployeeLedgerEntry2."Remaining Amount";
+      EmployeeLedgerEntry."Closed by Amount (LCY)" := -EmployeeLedgerEntry2."Remaining Amt. (LCY)";
+      EmployeeLedgerEntry.Open := FALSE;
+      EmployeeLedgerEntry.MODIFY;
+
+      NewDetailedEmployeeLedgerEntry := DetailedEmployeeLedgerEntry2;
+      NewDetailedEmployeeLedgerEntry."Employee Ledger Entry No." := EmployeeLedgerEntry."Entry No.";
+      NewDetailedEmployeeLedgerEntry."Entry Type" := NewDetailedEmployeeLedgerEntry."Entry Type"::Application;
+      NewDetailedEmployeeLedgerEntry."Applied Empl. Ledger Entry No." := AppliedEntryNo;
+      NewDetailedEmployeeLedgerEntry."User ID" := USERID;
+      NewDetailedEmployeeLedgerEntry."Transaction No." := GenJnlPostLine.GetNextTransactionNo;
+      NewDetailedEmployeeLedgerEntry."Entry No." := NextDtldEmplLedgEntryNo;
+      NextDtldEmplLedgEntryNo += 1;
+      OnApplyEmplLedgEntryByReversalOnBeforeInsertDtldEmplLedgEntry(NewDetailedEmployeeLedgerEntry,DetailedEmployeeLedgerEntry2);
+      NewDetailedEmployeeLedgerEntry.INSERT(TRUE);
+    END;
+
     LOCAL PROCEDURE CheckDimComb@91(EntryNo@1001 : Integer;DimSetID@1002 : Integer;TableID1@1006 : Integer;AccNo1@1007 : Code[20];TableID2@1009 : Integer;AccNo2@1008 : Code[20]);
     VAR
       DimMgt@1010 : Codeunit 408;
@@ -552,6 +656,17 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
         UNTIL VendLedgEntry.NEXT = 0;
     END;
 
+    LOCAL PROCEDURE CopyEmplLedgEntry@21(VAR EmployeeLedgerEntry@1000 : Record 5222;VAR TempEmployeeLedgerEntry@1001 : TEMPORARY Record 5222);
+    BEGIN
+      IF EmployeeLedgerEntry.FINDSET THEN
+        REPEAT
+          IF EmployeeLedgerEntry."Reversed by Entry No." <> 0 THEN
+            ERROR(CannotReverseErr);
+          TempEmployeeLedgerEntry := EmployeeLedgerEntry;
+          TempEmployeeLedgerEntry.INSERT;
+        UNTIL EmployeeLedgerEntry.NEXT = 0;
+    END;
+
     LOCAL PROCEDURE CopyBankAccLedgEntry@4(VAR BankAccLedgEntry@1000 : Record 271;VAR TempBankAccLedgEntry@1001 : TEMPORARY Record 271);
     BEGIN
       IF BankAccLedgEntry.FINDSET THEN
@@ -587,6 +702,7 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
       GLEntry@1002 : Record 17;
       CustLedgerEntry@1003 : Record 21;
       VendorLedgerEntry@1004 : Record 25;
+      EmployeeLedgerEntry@1009 : Record 5222;
       BankAccountLedgerEntry@1005 : Record 271;
       FALedgerEntry@1006 : Record 5601;
       MaintenanceLedgerEntry@1007 : Record 5625;
@@ -611,6 +727,12 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
             ReversalEntry.SETRANGE("Entry Type",ReversalEntry."Entry Type"::Vendor);
             VendorLedgerEntry := RecVar;
             ReversalEntry.SETRANGE("Entry No.",VendorLedgerEntry."Entry No.");
+          END;
+        DATABASE::"Employee Ledger Entry":
+          BEGIN
+            ReversalEntry.SETRANGE("Entry Type",ReversalEntry."Entry Type"::Employee);
+            EmployeeLedgerEntry := RecVar;
+            ReversalEntry.SETRANGE("Entry No.",EmployeeLedgerEntry."Entry No.");
           END;
         DATABASE::"Bank Account Ledger Entry":
           BEGIN
@@ -674,6 +796,11 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnReverseEmplLedgEntryOnBeforeInsertEmplLedgEntry@31(VAR NewEmployeeLedgerEntry@1000 : Record 5222;EmployeeLedgerEntry@1002 : Record 5222);
+    BEGIN
+    END;
+
+    [Integration]
     LOCAL PROCEDURE OnReverseBankAccLedgEntryOnBeforeInsert@12(VAR NewBankAccLedgEntry@1002 : Record 271;BankAccLedgEntry@1001 : Record 271);
     BEGIN
     END;
@@ -689,6 +816,11 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnReverseEmplLedgEntryOnBeforeInsertDtldEmplLedgEntry@32(VAR NewDetailedEmployeeLedgerEntry@1000 : Record 5223;DetailedEmployeeLedgerEntry@1001 : Record 5223);
+    BEGIN
+    END;
+
+    [Integration]
     LOCAL PROCEDURE OnReverseVATEntryOnBeforeInsert@17(VAR NewVATEntry@1000 : Record 254;VATEntry@1001 : Record 254);
     BEGIN
     END;
@@ -700,6 +832,11 @@ OBJECT Codeunit 17 Gen. Jnl.-Post Reverse
 
     [Integration]
     LOCAL PROCEDURE OnApplyVendLedgEntryByReversalOnBeforeInsertDtldVendLedgEntry@20(VAR NewDtldVendLedgEntry@1000 : Record 380;DtldVendLedgEntry@1001 : Record 380);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnApplyEmplLedgEntryByReversalOnBeforeInsertDtldEmplLedgEntry@33(VAR NewDetailedEmployeeLedgerEntry@1000 : Record 5223;DetailedEmployeeLedgerEntry@1001 : Record 5223);
     BEGIN
     END;
 

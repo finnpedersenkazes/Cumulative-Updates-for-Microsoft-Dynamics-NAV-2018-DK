@@ -2,9 +2,9 @@ OBJECT Page 9018 Administrator Role Center
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -883,11 +883,6 @@ OBJECT Page 9018 Administrator Role Center
                 ApplicationArea=#Advanced;
                 PagePartID=Page675;
                 Visible=false;
-                PartType=Page }
-
-    { 1903012608;2;Part   ;
-                ApplicationArea=#Advanced;
-                PagePartID=Page9175;
                 PartType=Page }
 
     { 1901377608;2;Part   ;

@@ -2,9 +2,9 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -1021,6 +1021,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
            ("Shipment Date" <= ToDate)) OR
           ((Binding = Binding::"Order-to-Order") AND ("Shipment Date" <= ToDate) AND
            (Item."Manufacturing Policy" = Item."Manufacturing Policy"::"Make-to-Stock") AND
+           (Item."Replenishment System" = Item."Replenishment System"::"Prod. Order") AND
            (NOT IsReservedForProdComponent)));
     END;
 
@@ -3624,7 +3625,9 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
               "Attribute Priority" := 6
           ELSE
             IF Binding = Binding::"Order-to-Order" THEN
-              "Attribute Priority" := 7;
+              "Attribute Priority" := 7
+            ELSE
+              "Attribute Priority" := 8;
         END;
       END;
     END;
@@ -4234,7 +4237,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
             UntrackedQty -= "Untracked Quantity";
           UNTIL NEXT = 0;
           IF (UntrackedQty = 0) AND (SKU."Reordering Policy" = SKU."Reordering Policy"::"Lot-for-Lot") THEN BEGIN
-            SETRANGE("Attribute Priority",0);
+            SETRANGE("Attribute Priority",8);
             CALCSUMS("Untracked Quantity");
             IF "Untracked Quantity" = 0 THEN BEGIN
               COPYFILTERS(xToInventoryProfile);

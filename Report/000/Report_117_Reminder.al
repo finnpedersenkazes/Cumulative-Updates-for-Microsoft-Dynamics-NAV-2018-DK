@@ -2,9 +2,9 @@ OBJECT Report 117 Reminder
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -75,7 +75,7 @@ OBJECT Report 117 Reminder
                                     TotalInclVATText := STRSUBSTNO(Text001,"Currency Code");
                                   END;
                                   CurrReport.PAGENO := 1;
-                                  IF NOT CurrReport.PREVIEW THEN BEGIN
+                                  IF NOT IsReportInPreviewMode THEN BEGIN
                                     IF LogInteraction THEN
                                       SegManagement.LogDocument(
                                         8,"No.",0,0,DATABASE::Customer,"Customer No.",'','',"Posting Description",'');
@@ -853,6 +853,13 @@ OBJECT Report 117 Reminder
       AmtDueTxt@1059 : Text;
       RemainingAmt@1060 : Text;
       TotalRemAmt@1061 : Decimal;
+
+    LOCAL PROCEDURE IsReportInPreviewMode@8() : Boolean;
+    VAR
+      MailManagement@1000 : Codeunit 9520;
+    BEGIN
+      EXIT(CurrReport.PREVIEW OR MailManagement.IsHandlingGetEmailBody);
+    END;
 
     BEGIN
     END.

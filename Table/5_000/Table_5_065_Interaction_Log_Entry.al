@@ -2,9 +2,9 @@ OBJECT Table 5065 Interaction Log Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=30-08-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.24232;
   }
   PROPERTIES
   {
@@ -315,6 +315,7 @@ OBJECT Table 5065 Interaction Log Entry
     VAR
       Attachment@1000 : Record 5062;
       SegLine@1001 : Record 5077;
+      WebRequestHelper@1004 : Codeunit 1299;
       IStream@1003 : InStream;
       EmailMessageUrl@1002 : Text;
     BEGIN
@@ -339,9 +340,12 @@ OBJECT Table 5065 Interaction Log Entry
         IF Attachment."Email Message Url".HASVALUE THEN BEGIN
           Attachment."Email Message Url".CREATEINSTREAM(IStream);
           IStream.READ(EmailMessageUrl);
-          HYPERLINK(EmailMessageUrl);
-        END ELSE
-          Attachment.DisplayInOutlook;
+          IF WebRequestHelper.IsHttpUrl(EmailMessageUrl) THEN BEGIN
+            HYPERLINK(EmailMessageUrl);
+            EXIT;
+          END;
+        END;
+        Attachment.DisplayInOutlook;
       END;
     END;
 
