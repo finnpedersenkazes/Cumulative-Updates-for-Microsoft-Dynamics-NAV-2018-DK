@@ -2,9 +2,9 @@ OBJECT Page 5097 Create Task
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -497,7 +497,7 @@ OBJECT Page 5097 Create Task
       SegHeader@1009 : Record 5076;
       AttendeeTemp@1012 : TEMPORARY Record 5199;
       ClientTypeManagement@1003 : Codeunit 4;
-      SalespersonFilter@1026 : Code[10];
+      SalespersonFilter@1026 : Code[20];
       ContactFilter@1030 : Code[20];
       TeamTaskEditable@19073246 : Boolean INDATASET;
       WizardContactNameEditable@19024232 : Boolean INDATASET;

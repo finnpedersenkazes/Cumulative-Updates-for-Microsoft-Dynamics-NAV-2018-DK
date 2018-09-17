@@ -2,9 +2,9 @@ OBJECT Table 740 VAT Report Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -200,6 +200,7 @@ OBJECT Table 740 VAT Report Header
                                                    CaptionML=[DAN=Momsrapportversion;
                                                               ENU=VAT Report Version] }
     { 17  ;   ;Submitted By        ;GUID          ;TableRelation=User."User Security ID";
+                                                   DataClassification=EndUserPseudonymousIdentifiers;
                                                    CaptionML=[DAN=Sendt af;
                                                               ENU=Submitted By] }
     { 18  ;   ;Submitted Date      ;Date          ;CaptionML=[DAN=Sendt dato;

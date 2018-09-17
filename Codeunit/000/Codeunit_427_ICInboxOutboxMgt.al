@@ -2,9 +2,9 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -680,6 +680,8 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
         SalesHeader."Ship-to Address 2" := "Ship-to Address 2";
         SalesHeader."Ship-to City" := "Ship-to City";
         SalesHeader."Ship-to Post Code" := "Ship-to Post Code";
+        SalesHeader."Ship-to County" := "Ship-to County";
+        SalesHeader."Ship-to Country/Region Code" := "Ship-to Country/Region Code";
         IF ReplacePostingDate THEN
           SalesHeader.VALIDATE("Posting Date",PostingDate)
         ELSE
@@ -874,6 +876,8 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
         PurchHeader."Ship-to Address 2" := "Ship-to Address 2";
         PurchHeader."Ship-to City" := "Ship-to City";
         PurchHeader."Ship-to Post Code" := "Ship-to Post Code";
+        PurchHeader."Ship-to County" := "Ship-to County";
+        PurchHeader."Ship-to Country/Region Code" := "Ship-to Country/Region Code";
         PurchHeader."Vendor Order No." := "Vendor Order No.";
         IF ReplacePostingDate THEN
           PurchHeader.VALIDATE("Posting Date",PostingDate)
@@ -1760,6 +1764,8 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
       ICInboxPurchHdr."Ship-to Address 2" := ICOutboxSalesHdr."Ship-to Address 2";
       ICInboxPurchHdr."Ship-to City" := ICOutboxSalesHdr."Ship-to City";
       ICInboxPurchHdr."Ship-to Post Code" := ICOutboxSalesHdr."Ship-to Post Code";
+      ICInboxPurchHdr."Ship-to County" := ICOutboxSalesHdr."Ship-to County";
+      ICInboxPurchHdr."Ship-to Country/Region Code" := ICOutboxSalesHdr."Ship-to Country/Region Code";
       ICInboxPurchHdr."Posting Date" := ICOutboxSalesHdr."Posting Date";
       ICInboxPurchHdr."Due Date" := ICOutboxSalesHdr."Due Date";
       ICInboxPurchHdr."Payment Discount %" := ICOutboxSalesHdr."Payment Discount %";
@@ -1840,6 +1846,8 @@ OBJECT Codeunit 427 ICInboxOutboxMgt
       ICInboxSalesHdr."Ship-to Address 2" := ICOutboxPurchHdr."Ship-to Address 2";
       ICInboxSalesHdr."Ship-to City" := ICOutboxPurchHdr."Ship-to City";
       ICInboxSalesHdr."Ship-to Post Code" := ICOutboxPurchHdr."Ship-to Post Code";
+      ICInboxSalesHdr."Ship-to County" := ICOutboxPurchHdr."Ship-to County";
+      ICInboxSalesHdr."Ship-to Country/Region Code" := ICOutboxPurchHdr."Ship-to Country/Region Code";
       ICInboxSalesHdr."Posting Date" := ICOutboxPurchHdr."Posting Date";
       ICInboxSalesHdr."Due Date" := ICOutboxPurchHdr."Due Date";
       ICInboxSalesHdr."Payment Discount %" := ICOutboxPurchHdr."Payment Discount %";

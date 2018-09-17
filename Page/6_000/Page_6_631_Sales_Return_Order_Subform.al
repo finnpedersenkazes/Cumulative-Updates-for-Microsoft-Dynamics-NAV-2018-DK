@@ -2,9 +2,9 @@ OBJECT Page 6631 Sales Return Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -560,7 +560,10 @@ OBJECT Page 6631 Sales Return Order Subform
                 SourceExpr="Allow Invoice Disc.";
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             RedistributeTotalsOnAfterValidate;
+                             CurrPage.SAVERECORD;
+                             AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             ValidateInvoiceDiscountAmount;
                            END;
                             }
 
@@ -880,18 +883,14 @@ OBJECT Page 6631 Sales Return Order Subform
                 ToolTipML=[DAN=Angiver et rabatbel›b, der tr‘kkes fra v‘rdien i feltet I alt inkl. moms. Du kan angive eller ‘ndre bel›bet manuelt.;
                            ENU=Specifies a discount amount that is deducted from the value in the Total Incl. VAT field. You can enter or change the amount manually.];
                 ApplicationArea=#SalesReturnOrder;
-                SourceExpr=TotalSalesLine."Inv. Discount Amount";
+                SourceExpr=InvoiceDiscountAmount;
                 AutoFormatType=1;
                 AutoFormatExpr=Currency.Code;
                 CaptionClass=DocumentTotals.GetInvoiceDiscAmountWithVATAndCurrencyCaption(FIELDCAPTION("Inv. Discount Amount"),Currency.Code);
                 Editable=InvDiscAmountEditable;
                 Style=Subordinate;
-                OnValidate=VAR
-                             SalesHeader@1000 : Record 36;
-                           BEGIN
-                             SalesHeader.GET("Document Type","Document No.");
-                             SalesCalcDiscByType.ApplyInvDiscBasedOnAmt(TotalSalesLine."Inv. Discount Amount",SalesHeader);
-                             CurrPage.UPDATE(FALSE);
+                OnValidate=BEGIN
+                             ValidateInvoiceDiscountAmount;
                            END;
                             }
 
@@ -903,9 +902,14 @@ OBJECT Page 6631 Sales Return Order Subform
                            ENU=Specifies a discount percentage that is granted if criteria that you have set up for the customer are met.];
                 ApplicationArea=#SalesReturnOrder;
                 DecimalPlaces=0:2;
-                SourceExpr=SalesCalcDiscByType.GetCustInvoiceDiscountPct(Rec);
+                SourceExpr=InvoiceDiscountPct;
                 Editable=FALSE;
-                Style=Subordinate }
+                Style=Subordinate;
+                OnValidate=BEGIN
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             ValidateInvoiceDiscountAmount;
+                           END;
+                            }
 
     { 15  ;2   ;Group     ;
                 GroupType=Group }
@@ -958,7 +962,13 @@ OBJECT Page 6631 Sales Return Order Subform
                 ApplicationArea=#SalesReturnOrder;
                 SourceExpr=RefreshMessageText;
                 Editable=FALSE;
-                OnDrillDown=BEGIN
+                OnDrillDown=VAR
+                              SalesHeader@1000 : Record 36;
+                            BEGIN
+                              IF SalesHeader.GET("Document Type","Document No.") THEN BEGIN
+                                SalesHeader."Invoice Discount Value" := InvoiceDiscountAmount;
+                                SalesHeader.MODIFY;
+                              END;
                               DocumentTotals.SalesRedistributeInvoiceDiscountAmounts(Rec,VATAmount,TotalSalesLine);
                               CurrPage.UPDATE(FALSE);
                             END;
@@ -980,6 +990,9 @@ OBJECT Page 6631 Sales Return Order Subform
       SalesCalcDiscByType@1008 : Codeunit 56;
       DocumentTotals@1007 : Codeunit 57;
       VATAmount@1006 : Decimal;
+      AmountWithDiscountAllowed@1009 : Decimal;
+      InvoiceDiscountAmount@1012 : Decimal;
+      InvoiceDiscountPct@1010 : Decimal;
       ShortcutDimCode@1017 : ARRAY [8] OF Code[20];
       LocationCodeMandatory@1018 : Boolean;
       InvDiscAmountEditable@1014 : Boolean;
@@ -1133,6 +1146,9 @@ OBJECT Page 6631 Sales Return Order Subform
           CalcInvDisc;
 
       DocumentTotals.CalculateSalesTotals(TotalSalesLine,VATAmount,Rec);
+      AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
+      InvoiceDiscountAmount := TotalSalesLine."Inv. Discount Amount";
+      InvoiceDiscountPct := SalesCalcDiscByType.GetCustInvoiceDiscountPct(Rec);
     END;
 
     LOCAL PROCEDURE RedistributeTotalsOnAfterValidate@8();
@@ -1191,6 +1207,15 @@ OBJECT Page 6631 Sales Return Order Subform
           CLEAR(Currency);
           Currency.InitRoundingPrecision;
         END
+    END;
+
+    LOCAL PROCEDURE ValidateInvoiceDiscountAmount@30();
+    VAR
+      SalesHeader@1000 : Record 36;
+    BEGIN
+      SalesHeader.GET("Document Type","Document No.");
+      SalesCalcDiscByType.ApplyInvDiscBasedOnAmt(InvoiceDiscountAmount,SalesHeader);
+      CurrPage.UPDATE(FALSE);
     END;
 
     BEGIN

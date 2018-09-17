@@ -2,9 +2,9 @@ OBJECT Report 7300 Calculate Bin Replenishment
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -55,9 +55,9 @@ OBJECT Report 7300 Calculate Bin Replenishment
 
       { 1   ;2   ;Field     ;
                   Name=WorksheetTemplateName;
-                  CaptionML=[DAN=Worksheet Template Name;
+                  CaptionML=[DAN=Kladdetypenavn;
                              ENU=Worksheet Template Name];
-                  ToolTipML=[DAN=Specifies the name of the worksheet template that applies to the movement lines.;
+                  ToolTipML=[DAN=Angiver navnet for den kladdetype, som g‘lder for bev‘gelseslinjerne.;
                              ENU=Specifies the name of the worksheet template that applies to the movement lines.];
                   ApplicationArea=#Warehouse;
                   SourceExpr=WhseWkshTemplateName;
@@ -70,9 +70,9 @@ OBJECT Report 7300 Calculate Bin Replenishment
 
       { 2   ;2   ;Field     ;
                   Name=WorksheetName;
-                  CaptionML=[DAN=Worksheet Name;
+                  CaptionML=[DAN=Kladdenavn;
                              ENU=Worksheet Name];
-                  ToolTipML=[DAN=Specifies the name of the worksheet the movement lines will belong to.;
+                  ToolTipML=[DAN=Angiver navnet for den kladdetype, som bev‘gelseslinjerne skal tilh›re.;
                              ENU=Specifies the name of the worksheet the movement lines will belong to.];
                   ApplicationArea=#Warehouse;
                   SourceExpr=WhseWkshName;
@@ -90,9 +90,9 @@ OBJECT Report 7300 Calculate Bin Replenishment
 
       { 3   ;2   ;Field     ;
                   Name=LocCode;
-                  CaptionML=[DAN=Location Code;
+                  CaptionML=[DAN=Lokationskode;
                              ENU=Location Code];
-                  ToolTipML=[DAN=Specifies the location at which bin replenishment will be calculated.;
+                  ToolTipML=[DAN=Angiver den lokation, hvorfra genopfyldning af placeringen beregnes.;
                              ENU=Specifies the location at which bin replenishment will be calculated.];
                   ApplicationArea=#Warehouse;
                   SourceExpr=LocationCode;

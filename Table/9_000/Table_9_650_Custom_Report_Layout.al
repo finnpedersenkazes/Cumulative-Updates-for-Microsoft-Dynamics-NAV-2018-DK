@@ -2,9 +2,9 @@ OBJECT Table 9650 Custom Report Layout
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -66,6 +66,7 @@ OBJECT Table 9650 Custom Report Layout
                                                             END;
 
                                                    ValidateTableRelation=No;
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Sidst ‘ndret af bruger;
                                                               ENU=Last Modified by User];
                                                    Editable=No }

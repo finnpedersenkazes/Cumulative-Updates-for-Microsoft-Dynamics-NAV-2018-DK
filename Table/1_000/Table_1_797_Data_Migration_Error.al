@@ -2,9 +2,9 @@ OBJECT Table 1797 Data Migration Error
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -21,6 +21,7 @@ OBJECT Table 1797 Data Migration Error
     { 3   ;   ;Destination Table ID;Integer       ;CaptionML=[DAN=Destinationstabel-id;
                                                               ENU=Destination Table ID] }
     { 4   ;   ;Source Staging Table Record ID;RecordID;
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Record-id for kildens stadieinddelingstabel;
                                                               ENU=Source Staging Table Record ID] }
     { 5   ;   ;Error Message       ;Text250       ;CaptionML=[DAN=Fejlmeddelelse;

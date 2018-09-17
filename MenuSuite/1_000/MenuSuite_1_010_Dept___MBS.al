@@ -2,9 +2,9 @@ OBJECT MenuSuite 1010 Dept - MBS
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -18032,7 +18032,7 @@ OBJECT MenuSuite 1010 Dept - MBS
                                                                 Visible=Yes;
                                                                 NextNodeID=[{8A3934DD-BE0A-4851-B8E0-50A64106B98A}];
                                                                 DepartmentCategory=Tasks }
-    { MenuItem       ;[{85C60724-2BF2-4C45-BF83-4F2C3297876F}] ;Name=CRM Connection Setup;
+    { MenuItem       ;[{85C60724-2BF2-4C45-BF83-4F2C3297876F}] ;Name=Microsoft Dynamics 365 Connection Setup;
                                                                 AccessByPermission=TableData 5330=IM;
                                                                 CaptionML=[DAN=Konfiguration af Microsoft Dynamics 365 for Sales-forbindelse;
                                                                            ENU=Microsoft Dynamics 365 for Sales Connection Setup];

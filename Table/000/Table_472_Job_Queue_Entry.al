@@ -2,9 +2,9 @@ OBJECT Table 472 Job Queue Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -41,6 +41,7 @@ OBJECT Table 472 Job Queue Entry
                                                               ENU=ID] }
     { 2   ;   ;User ID             ;Text65        ;TableRelation=User."User Name";
                                                    TestTableRelation=No;
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Bruger-id;
                                                               ENU=User ID];
                                                    Editable=No }
@@ -173,7 +174,8 @@ OBJECT Table 472 Job Queue Entry
     { 14  ;   ;Priority            ;Integer       ;InitValue=1000;
                                                    CaptionML=[DAN=Prioritet;
                                                               ENU=Priority] }
-    { 15  ;   ;Record ID to Process;RecordID      ;CaptionML=[DAN=Record-id, der skal behandles;
+    { 15  ;   ;Record ID to Process;RecordID      ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Record-id, der skal behandles;
                                                               ENU=Record ID to Process] }
     { 16  ;   ;Parameter String    ;Text250       ;CaptionML=[DAN=Parameterstreng;
                                                               ENU=Parameter String] }
@@ -255,7 +257,8 @@ OBJECT Table 472 Job Queue Entry
     { 31  ;   ;Run in User Session ;Boolean       ;CaptionML=[DAN=K›r i brugersession;
                                                               ENU=Run in User Session];
                                                    Editable=No }
-    { 32  ;   ;User Session ID     ;Integer       ;CaptionML=[DAN=Brugersessions-id;
+    { 32  ;   ;User Session ID     ;Integer       ;DataClassification=EndUserPseudonymousIdentifiers;
+                                                   CaptionML=[DAN=Brugersessions-id;
                                                               ENU=User Session ID] }
     { 33  ;   ;Job Queue Category Code;Code10     ;TableRelation="Job Queue Category";
                                                    CaptionML=[DAN=Opgavek›kategorikode;
@@ -268,7 +271,8 @@ OBJECT Table 472 Job Queue Entry
                                                               ENU=Error Message 3] }
     { 37  ;   ;Error Message 4     ;Text250       ;CaptionML=[DAN=Fejlmeddelelse 4;
                                                               ENU=Error Message 4] }
-    { 40  ;   ;User Service Instance ID;Integer   ;CaptionML=[DAN=Brugertjenesteforekomst-id;
+    { 40  ;   ;User Service Instance ID;Integer   ;DataClassification=EndUserPseudonymousIdentifiers;
+                                                   CaptionML=[DAN=Brugertjenesteforekomst-id;
                                                               ENU=User Service Instance ID] }
     { 41  ;   ;User Session Started;DateTime      ;CaptionML=[DAN=Brugersession startet;
                                                               ENU=User Session Started];

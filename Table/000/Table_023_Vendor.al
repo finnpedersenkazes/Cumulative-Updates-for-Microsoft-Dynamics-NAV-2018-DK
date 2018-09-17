@@ -2,9 +2,9 @@ OBJECT Table 23 Vendor
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -53,6 +53,7 @@ OBJECT Table 23 Vendor
                SocialListeningSearchTopic@1005 : Record 871;
                CustomReportSelection@1006 : Record 9657;
                PurchOrderLine@1007 : Record 39;
+               IntrastatSetup@1008 : Record 247;
                VATRegistrationLogMgt@1004 : Codeunit 249;
              BEGIN
                ApprovalsMgmt.OnCancelVendorApprovalRequest(Rec);
@@ -121,6 +122,8 @@ OBJECT Table 23 Vendor
                PurchPrepmtPct.DELETEALL(TRUE);
 
                VATRegistrationLogMgt.DeleteVendorLog(Rec);
+
+               IntrastatSetup.CheckDeleteIntrastatContact(IntrastatSetup."Intrastat Contact Type"::Vendor,"No.");
              END;
 
     OnRename=BEGIN
@@ -398,7 +401,6 @@ OBJECT Table 23 Vendor
                                                    AutoFormatType=1 }
     { 66  ;   ;Balance Due         ;Decimal       ;FieldClass=FlowField;
                                                    CalcFormula=-Sum("Detailed Vendor Ledg. Entry".Amount WHERE (Vendor No.=FIELD(No.),
-                                                                                                                Posting Date=FIELD(UPPERLIMIT(Date Filter)),
                                                                                                                 Initial Entry Due Date=FIELD(UPPERLIMIT(Date Filter)),
                                                                                                                 Initial Entry Global Dim. 1=FIELD(Global Dimension 1 Filter),
                                                                                                                 Initial Entry Global Dim. 2=FIELD(Global Dimension 2 Filter),
@@ -410,7 +412,6 @@ OBJECT Table 23 Vendor
                                                    AutoFormatExpr="Currency Code" }
     { 67  ;   ;Balance Due (LCY)   ;Decimal       ;FieldClass=FlowField;
                                                    CalcFormula=-Sum("Detailed Vendor Ledg. Entry"."Amount (LCY)" WHERE (Vendor No.=FIELD(No.),
-                                                                                                                        Posting Date=FIELD(UPPERLIMIT(Date Filter)),
                                                                                                                         Initial Entry Due Date=FIELD(UPPERLIMIT(Date Filter)),
                                                                                                                         Initial Entry Global Dim. 1=FIELD(Global Dimension 1 Filter),
                                                                                                                         Initial Entry Global Dim. 2=FIELD(Global Dimension 2 Filter),

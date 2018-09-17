@@ -2,16 +2,15 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
     DataCaptionFields=No.,Buy-from Vendor Name;
     OnInsert=BEGIN
-               IF NOT SkipInitialization THEN
-                 InitInsert;
+               InitInsert;
 
                IF GETFILTER("Buy-from Vendor No.") <> '' THEN
                  IF GETRANGEMIN("Buy-from Vendor No.") = GETRANGEMAX("Buy-from Vendor No.") THEN
@@ -1788,6 +1787,7 @@ OBJECT Table 38 Purchase Header
                                                                     RespCenter.TABLECAPTION,UserSetupMgt.GetPurchasesFilter2("Assigned User ID"));
                                                               END;
 
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
     { 9001;   ;Pending Approvals   ;Integer       ;FieldClass=FlowField;
@@ -1901,9 +1901,6 @@ OBJECT Table 38 Purchase Header
       MixedDropshipmentErr@1001 : TextConst 'DAN=Du kan ikke udskrive indk›bsordren, fordi den indeholder en eller flere linjer til direkte levering foruden almindelige k›bslinjer.;ENU=You cannot print the purchase order because it contains one or more lines for drop shipment in addition to regular purchase lines.';
       ModifyVendorAddressNotificationLbl@1062 : TextConst 'DAN=Opdater mailadressen;ENU=Update the address';
       DontShowAgainActionLbl@1064 : TextConst 'DAN=Vis ikke igen;ENU=Don''t show again';
-      DontShowAgainFunctionTok@1104 : TextConst 'DAN=SkjulK›bsnotificationForAktuelBruger;ENU=HidePurchaseNotificationForCurrentUser';
-      UpdateAddressWithBuyFromAddressFunctionTok@1105 : TextConst 'DAN=Kopi‚rLeverand›radressefelterFraSalgsbilag;ENU=CopyBuyFromVendorAddressFieldsFromSalesDocument';
-      UpdateAddressWithPayToAddressTok@1100 : TextConst 'DAN=Kopi‚rFaktureringsleverand›radressefelterFraSalgsbilag;ENU=CopyPayToVendorAddressFieldsFromSalesDocument';
       ModifyVendorAddressNotificationMsg@1063 : TextConst '@@@="%1=Vendor name";DAN=Den indtastede adresse for %1 er forskellig fra kreditorens eksisterende adresse.;ENU=The address you entered for %1 is different from the Vendor''s existing address.';
       ModifyBuyFromVendorAddressNotificationNameTxt@1106 : TextConst 'DAN=Opdater kreditorens leverand›radresse;ENU=Update Buy-from Vendor Address';
       ModifyBuyFromVendorAddressNotificationDescriptionTxt@1098 : TextConst 'DAN=Advar, hvis leverand›radressen p† salgsdokumenterne er forskellig fra kreditorens eksisterende adresse.;ENU=Warn if the Buy-from address on sales documents is different from the Vendor''s existing address.';
@@ -1921,7 +1918,8 @@ OBJECT Table 38 Purchase Header
         NoSeriesMgt.InitSeries(GetNoSeriesCode,xRec."No. Series","Posting Date","No.","No. Series");
       END;
 
-      InitRecord;
+      IF NOT SkipInitialization THEN
+        InitRecord;
     END;
 
     LOCAL PROCEDURE SkipInitialization@42() : Boolean;
@@ -3661,7 +3659,7 @@ OBJECT Table 38 Purchase Header
       CheckMixedDropShipment;
 
       DocumentSendingProfile.TrySendToPrinterVendor(
-        DummyReportSelections.Usage::"P.Order",Rec,"Buy-from Vendor No.",ShowRequestForm);
+        DummyReportSelections.Usage::"P.Order",Rec,FIELDNO("Buy-from Vendor No."),ShowRequestForm);
     END;
 
     [External]
@@ -3756,7 +3754,8 @@ OBJECT Table 38 Purchase Header
         IF HasPayToAddress AND HasDifferentPayToAddress(Vendor) THEN
           ShowModifyAddressNotification(GetModifyPayToVendorAddressNotificationId,
             ModifyVendorAddressNotificationLbl,ModifyVendorAddressNotificationMsg,
-            UpdateAddressWithPayToAddressTok,"Pay-to Vendor No.","Pay-to Name",FIELDNAME("Pay-to Vendor No."));
+            'CopyPayToVendorAddressFieldsFromSalesDocument',"Pay-to Vendor No.",
+            "Pay-to Name",FIELDNAME("Pay-to Vendor No."));
     END;
 
     LOCAL PROCEDURE ModifyVendorAddress@150();
@@ -3768,7 +3767,8 @@ OBJECT Table 38 Purchase Header
       IF Vendor.GET("Buy-from Vendor No.") AND HasBuyFromAddress AND HasDifferentBuyFromAddress(Vendor) THEN
         ShowModifyAddressNotification(GetModifyVendorAddressNotificationId,
           ModifyVendorAddressNotificationLbl,ModifyVendorAddressNotificationMsg,
-          UpdateAddressWithBuyFromAddressFunctionTok,"Buy-from Vendor No.","Buy-from Vendor Name",FIELDNAME("Buy-from Vendor No."));
+          'CopyBuyFromVendorAddressFieldsFromSalesDocument',"Buy-from Vendor No.",
+          "Buy-from Vendor Name",FIELDNAME("Buy-from Vendor No."));
     END;
 
     LOCAL PROCEDURE ShowModifyAddressNotification@157(NotificationID@1001 : GUID;NotificationLbl@1004 : Text;NotificationMsg@1005 : Text;NotificationFunctionTok@1006 : Text;VendorNumber@1002 : Code[20];VendorName@1003 : Text[50];VendorNumberFieldName@1008 : Text);
@@ -3783,7 +3783,8 @@ OBJECT Table 38 Purchase Header
       ModifyVendorAddressNotification.ID := NotificationID;
       ModifyVendorAddressNotification.MESSAGE := STRSUBSTNO(NotificationMsg,VendorName);
       ModifyVendorAddressNotification.ADDACTION(NotificationLbl,CODEUNIT::"Document Notifications",NotificationFunctionTok);
-      ModifyVendorAddressNotification.ADDACTION(DontShowAgainActionLbl,CODEUNIT::"Document Notifications",DontShowAgainFunctionTok);
+      ModifyVendorAddressNotification.ADDACTION(
+        DontShowAgainActionLbl,CODEUNIT::"Document Notifications",'HidePurchaseNotificationForCurrentUser');
       ModifyVendorAddressNotification.SCOPE := NOTIFICATIONSCOPE::LocalScope;
       ModifyVendorAddressNotification.SETDATA(FIELDNAME("Document Type"),FORMAT("Document Type"));
       ModifyVendorAddressNotification.SETDATA(FIELDNAME("No."),"No.");

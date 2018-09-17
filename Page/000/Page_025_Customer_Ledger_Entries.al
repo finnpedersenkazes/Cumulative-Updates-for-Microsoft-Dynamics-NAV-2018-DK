@@ -2,12 +2,13 @@ OBJECT Page 25 Customer Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
+    Permissions=TableData 21=rm;
     CaptionML=[DAN=Debitorposter;
                ENU=Customer Ledger Entries];
     InsertAllowed=No;

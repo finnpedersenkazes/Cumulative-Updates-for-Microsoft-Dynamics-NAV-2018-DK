@@ -2,9 +2,9 @@ OBJECT Codeunit 1002 Job Create-Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -305,6 +305,7 @@ OBJECT Codeunit 1002 Job Create-Invoice
     LOCAL PROCEDURE CreateSalesLine@15(VAR JobPlanningLine@1000 : Record 1003);
     VAR
       Job@1003 : Record 167;
+      SourceCodeSetup@1005 : Record 242;
       DimMgt@1001 : Codeunit 408;
       Factor@1002 : Integer;
       DimSetIDArr@1004 : ARRAY [10] OF Integer;
@@ -366,12 +367,21 @@ OBJECT Codeunit 1002 Job Create-Invoice
       SalesLine."Job No." := JobPlanningLine."Job No.";
       SalesLine."Job Task No." := JobPlanningLine."Job Task No.";
       IF SalesLine."Job Task No." <> '' THEN BEGIN
+        SourceCodeSetup.GET;
         DimSetIDArr[1] := SalesLine."Dimension Set ID";
         DimSetIDArr[2] :=
           DimMgt.CreateDimSetFromJobTaskDim(
             SalesLine."Job No.",SalesLine."Job Task No.",SalesLine."Shortcut Dimension 1 Code",SalesLine."Shortcut Dimension 2 Code");
         DimSetIDArr[3] := GetLedgEntryDimSetID(JobPlanningLine);
         DimSetIDArr[4] := GetJobLedgEntryDimSetID(JobPlanningLine);
+        DimMgt.CreateDimForSalesLineWithHigherPriorities(
+          SalesLine,
+          0,
+          DimSetIDArr[5],
+          SalesLine."Shortcut Dimension 1 Code",
+          SalesLine."Shortcut Dimension 2 Code",
+          SourceCodeSetup.Sales,
+          DATABASE::Job);
         SalesLine."Dimension Set ID" :=
           DimMgt.GetCombinedDimensionSetID(
             DimSetIDArr,SalesLine."Shortcut Dimension 1 Code",SalesLine."Shortcut Dimension 2 Code");

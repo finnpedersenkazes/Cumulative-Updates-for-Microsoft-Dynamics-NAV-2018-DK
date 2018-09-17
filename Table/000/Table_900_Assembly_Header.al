@@ -2,9 +2,9 @@ OBJECT Table 900 Assembly Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -501,6 +501,7 @@ OBJECT Table 900 Assembly Header
                                                               ENU=Dimension Set ID];
                                                    Editable=No }
     { 9000;   ;Assigned User ID    ;Code50        ;TableRelation="User Setup";
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
   }

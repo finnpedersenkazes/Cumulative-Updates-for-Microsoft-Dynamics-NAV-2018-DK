@@ -2,9 +2,9 @@ OBJECT Page 47 Sales Invoice Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -560,7 +560,10 @@ OBJECT Page 47 Sales Invoice Subform
                 SourceExpr="Allow Invoice Disc.";
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             RedistributeTotalsOnAfterValidate;
+                             CurrPage.SAVERECORD;
+                             AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             ValidateInvoiceDiscountAmount;
                            END;
                             }
 
@@ -892,7 +895,7 @@ OBJECT Page 47 Sales Invoice Subform
                 SourceExpr=InvoiceDiscountPct;
                 Editable=InvDiscAmountEditable;
                 OnValidate=BEGIN
-                             InvoiceDiscountAmount := ROUND(TotalSalesLine."Line Amount" * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
                              ValidateInvoiceDiscountAmount;
                            END;
                             }
@@ -958,6 +961,7 @@ OBJECT Page 47 Sales Invoice Subform
       VATAmount@1017 : Decimal;
       InvoiceDiscountAmount@1009 : Decimal;
       InvoiceDiscountPct@1023 : Decimal;
+      AmountWithDiscountAllowed@1021 : Decimal;
       ShortcutDimCode@1004 : ARRAY [8] OF Code[20];
       UpdateAllowedVar@1002 : Boolean;
       Text000@1006 : TextConst 'DAN=Denne funktion kan ikke k›res i visningstilstand.;ENU=Unable to run this function while in View mode.';
@@ -1110,6 +1114,7 @@ OBJECT Page 47 Sales Invoice Subform
           CalcInvDisc;
 
       DocumentTotals.CalculateSalesTotals(TotalSalesLine,VATAmount,Rec);
+      AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
       InvoiceDiscountAmount := TotalSalesLine."Inv. Discount Amount";
       InvoiceDiscountPct := SalesCalcDiscByType.GetCustInvoiceDiscountPct(Rec);
     END;

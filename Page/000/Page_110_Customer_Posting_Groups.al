@@ -2,9 +2,9 @@ OBJECT Page 110 Customer Posting Groups
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -149,20 +149,6 @@ OBJECT Page 110 Customer Posting Groups
                 SourceExpr="Payment Tolerance Credit Acc.";
                 Importance=Additional;
                 Visible=PmtToleranceVisible }
-
-    { 11  ;2   ;Field     ;
-                ToolTipML=[DAN=Angiver, hvor mange gange denne bogf›ringsgruppe er blevet anvendt i Debitorer.;
-                           ENU=Specifies how many times this posting group have been used in Customers.];
-                ApplicationArea=#Basic,#Suite;
-                SourceExpr="Used in Customers";
-                Importance=Additional }
-
-    { 13  ;2   ;Field     ;
-                ToolTipML=[DAN=Angiver, hvor mange gange denne bogf›ringsgruppe er blevet anvendt i Poster.;
-                           ENU=Specifies how many times this posting group have been used in Ledger Entries.];
-                ApplicationArea=#Basic,#Suite;
-                SourceExpr="Used in Ledger Entries";
-                Importance=Additional }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

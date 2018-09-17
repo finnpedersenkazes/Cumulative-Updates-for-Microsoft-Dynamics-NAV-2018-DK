@@ -2,12 +2,13 @@ OBJECT Page 29 Vendor Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
+    Permissions=TableData 25=rm;
     CaptionML=[DAN=Kreditorposter;
                ENU=Vendor Ledger Entries];
     InsertAllowed=No;

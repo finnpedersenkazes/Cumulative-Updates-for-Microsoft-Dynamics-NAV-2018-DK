@@ -2,9 +2,9 @@ OBJECT Report 206 Sales - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -408,10 +408,7 @@ OBJECT Report 206 Sales - Invoice
                              END;
 
                OnAfterGetRecord=BEGIN
-                                  PostedShipmentDate := 0D;
-                                  IF Quantity <> 0 THEN
-                                    PostedShipmentDate := FindPostedShipmentDate;
-
+                                  InitializeShipmentBuffer;
                                   IF (Type = Type::"G/L Account") AND (NOT ShowInternalInfo) THEN
                                     "No." := '';
 
@@ -472,7 +469,7 @@ OBJECT Report 206 Sales - Invoice
                SourceExpr="VAT Identifier" }
 
     { 100 ;4   ;Column  ;PostedShipmentDate  ;
-               SourceExpr=FORMAT(PostedShipmentDate) }
+               SourceExpr=FORMAT("Shipment Date") }
 
     { 155 ;4   ;Column  ;Type_SalesInvLine   ;
                SourceExpr=FORMAT(Type) }
@@ -1052,7 +1049,6 @@ OBJECT Report 206 Sales - Invoice
       FormatAddr@1019 : Codeunit 365;
       FormatDocument@1074 : Codeunit 368;
       SegManagement@1020 : Codeunit 5051;
-      PostedShipmentDate@1044 : Date;
       CustAddr@1021 : ARRAY [8] OF Text[50];
       ShipToAddr@1022 : ARRAY [8] OF Text[50];
       CompanyAddr@1023 : ARRAY [8] OF Text[50];
@@ -1143,18 +1139,18 @@ OBJECT Report 206 Sales - Invoice
       LogInteraction := SegManagement.FindInteractTmplCode(4) <> '';
     END;
 
-    LOCAL PROCEDURE FindPostedShipmentDate@6() : Date;
+    LOCAL PROCEDURE InitializeShipmentBuffer@6();
     VAR
       SalesShipmentHeader@1000 : Record 110;
-      SalesShipmentBuffer2@1001 : TEMPORARY Record 7190;
+      TempSalesShipmentBuffer@1001 : TEMPORARY Record 7190;
     BEGIN
       NextEntryNo := 1;
       IF "Sales Invoice Line"."Shipment No." <> '' THEN
         IF SalesShipmentHeader.GET("Sales Invoice Line"."Shipment No.") THEN
-          EXIT(SalesShipmentHeader."Posting Date");
+          EXIT;
 
       IF "Sales Invoice Header"."Order No." = '' THEN
-        EXIT("Sales Invoice Header"."Posting Date");
+        EXIT;
 
       CASE "Sales Invoice Line".Type OF
         "Sales Invoice Line".Type::Item:
@@ -1162,28 +1158,25 @@ OBJECT Report 206 Sales - Invoice
         "Sales Invoice Line".Type::"G/L Account","Sales Invoice Line".Type::Resource,
         "Sales Invoice Line".Type::"Charge (Item)","Sales Invoice Line".Type::"Fixed Asset":
           GenerateBufferFromShipment("Sales Invoice Line");
-        "Sales Invoice Line".Type::" ":
-          EXIT(0D);
       END;
 
       SalesShipmentBuffer.RESET;
       SalesShipmentBuffer.SETRANGE("Document No.","Sales Invoice Line"."Document No.");
       SalesShipmentBuffer.SETRANGE("Line No." ,"Sales Invoice Line"."Line No.");
       IF SalesShipmentBuffer.FIND('-') THEN BEGIN
-        SalesShipmentBuffer2 := SalesShipmentBuffer;
+        TempSalesShipmentBuffer := SalesShipmentBuffer;
         IF SalesShipmentBuffer.NEXT = 0 THEN BEGIN
           SalesShipmentBuffer.GET(
-            SalesShipmentBuffer2."Document No.",SalesShipmentBuffer2."Line No.",SalesShipmentBuffer2."Entry No.");
+            TempSalesShipmentBuffer."Document No.",TempSalesShipmentBuffer."Line No.",TempSalesShipmentBuffer."Entry No.");
           SalesShipmentBuffer.DELETE;
-          EXIT(SalesShipmentBuffer2."Posting Date");
+          EXIT;
         END ;
         SalesShipmentBuffer.CALCSUMS(Quantity);
         IF SalesShipmentBuffer.Quantity <> "Sales Invoice Line".Quantity THEN BEGIN
           SalesShipmentBuffer.DELETEALL;
-          EXIT("Sales Invoice Header"."Posting Date");
+          EXIT;
         END;
-      END ELSE
-        EXIT("Sales Invoice Header"."Posting Date");
+      END;
     END;
 
     LOCAL PROCEDURE GenerateBufferFromValueEntry@2(SalesInvoiceLine2@1002 : Record 113);

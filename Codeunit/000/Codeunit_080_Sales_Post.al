@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -1430,10 +1430,11 @@ OBJECT Codeunit 80 Sales-Post
       WITH SalesHeader DO BEGIN
         ResetTempLines(TempSalesLine);
         TempSalesLine.SETFILTER("Purch. Order Line No.",'<>0');
-        IF NOT TempSalesLine.ISEMPTY THEN BEGIN
-          DropShipment := TRUE;
-          IF Ship THEN BEGIN
-            TempSalesLine.FINDSET;
+        DropShipment := NOT TempSalesLine.ISEMPTY;
+
+        TempSalesLine.SETFILTER("Qty. to Ship",'<>0');
+        IF DropShipment AND Ship THEN
+          IF TempSalesLine.FINDSET THEN
             REPEAT
               IF PurchOrderHeader."No." <> TempSalesLine."Purchase Order No." THEN BEGIN
                 PurchOrderHeader.GET(PurchOrderHeader."Document Type"::Order,TempSalesLine."Purchase Order No.");
@@ -1448,8 +1449,7 @@ OBJECT Codeunit 80 Sales-Post
                 END;
               END;
             UNTIL TempSalesLine.NEXT = 0;
-          END;
-        END;
+
         EXIT(DropShipment);
       END;
     END;
@@ -1735,23 +1735,14 @@ OBJECT Codeunit 80 Sales-Post
       InvoicePostBuffer.SetAmounts(
         TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY,SalesLine."VAT Difference",TotalVATBase,TotalVATBaseACY);
 
-      IF (SalesLine.Type = SalesLine.Type::"G/L Account") OR (SalesLine.Type = SalesLine.Type::"Fixed Asset") THEN BEGIN
-        SalesAccount := SalesLine."No.";
-        InvoicePostBuffer.SetAccount(
-          DefaultGLAccount(SalesLine."Deferral Code",AmtToDefer,SalesAccount,DeferralAccount),
-          TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY)
-      END ELSE
-        IF SalesLine.IsCreditDocType THEN BEGIN
-          SalesAccount := GenPostingSetup.GetSalesCrMemoAccount;
-          InvoicePostBuffer.SetAccount(
-            DefaultGLAccount(SalesLine."Deferral Code",AmtToDefer,SalesAccount,DeferralAccount),
-            TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY);
-        END ELSE BEGIN
+      IF (SalesLine.Type = SalesLine.Type::"G/L Account") OR (SalesLine.Type = SalesLine.Type::"Fixed Asset") THEN
+        SalesAccount := SalesLine."No."
+      ELSE
+        IF SalesLine.IsCreditDocType THEN
+          SalesAccount := GenPostingSetup.GetSalesCrMemoAccount
+        ELSE
           SalesAccount := GenPostingSetup.GetSalesAccount;
-          InvoicePostBuffer.SetAccount(
-            DefaultGLAccount(SalesLine."Deferral Code",AmtToDefer,SalesAccount,DeferralAccount),
-            TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY);
-        END;
+      InvoicePostBuffer.SetAccount(SalesAccount,TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY);
       InvoicePostBuffer."Deferral Code" := SalesLine."Deferral Code";
       OnAfterFillInvoicePostBuffer(InvoicePostBuffer,SalesLine);
       UpdateInvoicePostBuffer(TempInvoicePostBuffer,InvoicePostBuffer,FALSE);
@@ -5173,8 +5164,8 @@ OBJECT Codeunit 80 Sales-Post
       WhseRcptLine@1005 : Record 7317;
     BEGIN
       ReturnRcptLine.InitFromSalesLine(ReturnRcptHeader,xSalesLine);
-      ReturnRcptLine."Quantity Invoiced" := ABS(RemQtyToBeInvoiced);
-      ReturnRcptLine."Qty. Invoiced (Base)" := ABS(RemQtyToBeInvoicedBase);
+      ReturnRcptLine."Quantity Invoiced" := RemQtyToBeInvoiced;
+      ReturnRcptLine."Qty. Invoiced (Base)" := RemQtyToBeInvoicedBase;
       ReturnRcptLine."Return Qty. Rcd. Not Invd." := ReturnRcptLine.Quantity - ReturnRcptLine."Quantity Invoiced";
 
       IF (SalesLine.Type = SalesLine.Type::Item) AND (SalesLine."Return Qty. to Receive" <> 0) THEN BEGIN
@@ -5921,22 +5912,18 @@ OBJECT Codeunit 80 Sales-Post
           TempDeferralLine.SETRANGE("Document No.",SalesLine."Document No.");
           TempDeferralLine.SETRANGE("Line No.",SalesLine."Line No.");
 
-          // The remaining amounts only need to be adjusted into the deferral account and are always reversed
+          // Remainder\Initial deferral pair
+          DeferralPostBuffer[1].PrepareSales(SalesLine,GenJnlLineDocNo);
+          DeferralPostBuffer[1]."Posting Date" := SalesHeader."Posting Date";
+          DeferralPostBuffer[1].Description := SalesHeader."Posting Description";
+          DeferralPostBuffer[1]."Period Description" := DeferralTemplate."Period Description";
+          DeferralPostBuffer[1]."Deferral Line No." := InvDefLineNo;
+          DeferralPostBuffer[1].PrepareInitialPair(
+            InvoicePostBuffer,RemainAmtToDefer,RemainAmtToDeferACY,SalesAccount,DeferralAccount);
+          UpdDeferralPostBuffer(InvoicePostBuffer);
           IF (RemainAmtToDefer <> 0) OR (RemainAmtToDeferACY <> 0) THEN BEGIN
-            DeferralPostBuffer[1].PrepareSales(SalesLine,GenJnlLineDocNo);
-            DeferralPostBuffer[1]."Amount (LCY)" := RemainAmtToDefer;
-            DeferralPostBuffer[1].Amount := RemainAmtToDeferACY;
-            DeferralPostBuffer[1]."Sales/Purch Amount (LCY)" := 0;
-            DeferralPostBuffer[1]."Sales/Purch Amount" := 0;
-            DeferralPostBuffer[1].ReverseAmounts;
-            DeferralPostBuffer[1]."G/L Account" := SalesAccount;
-            DeferralPostBuffer[1]."Deferral Account" := DeferralAccount;
-            // Remainder always goes to the Posting Date
-            DeferralPostBuffer[1]."Posting Date" := SalesHeader."Posting Date";
-            DeferralPostBuffer[1].Description := SalesHeader."Posting Description";
-            DeferralPostBuffer[1]."Period Description" := DeferralTemplate."Period Description";
-            DeferralPostBuffer[1]."Deferral Line No." := InvDefLineNo;
-            DeferralPostBuffer[1]."Partial Deferral" := TRUE;
+            DeferralPostBuffer[1].PrepareRemainderSales(
+              SalesLine,RemainAmtToDefer,RemainAmtToDeferACY,SalesAccount,DeferralAccount);
             UpdDeferralPostBuffer(InvoicePostBuffer);
           END;
 
@@ -6031,14 +6018,6 @@ OBJECT Codeunit 80 Sales-Post
       SalesHeader.TESTFIELD("Document Date");
 
       OnAfterCheckMandatoryFields(SalesHeader);
-    END;
-
-    LOCAL PROCEDURE DefaultGLAccount@129(DeferralCode@1000 : Code[10];AmtToDefer@1001 : Decimal;GLAccNo@1002 : Code[20];DeferralAccNo@1003 : Code[20]) : Code[20];
-    BEGIN
-      IF (DeferralCode <> '') AND (AmtToDefer = 0) THEN
-        EXIT(DeferralAccNo);
-
-      EXIT(GLAccNo);
     END;
 
     LOCAL PROCEDURE IsCombinedDeferralZero@130() : Boolean;

@@ -2,9 +2,9 @@ OBJECT Table 7505 Item Attribute Value Mapping
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -49,6 +49,7 @@ OBJECT Table 7505 Item Attribute Value Mapping
   KEYS
   {
     {    ;Table ID,No.,Item Attribute ID          ;Clustered=Yes }
+    {    ;Item Attribute ID,Item Attribute Value ID }
   }
   FIELDGROUPS
   {

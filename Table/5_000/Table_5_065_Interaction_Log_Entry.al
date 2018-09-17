@@ -2,9 +2,9 @@ OBJECT Table 5065 Interaction Log Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -69,6 +69,7 @@ OBJECT Table 5065 Interaction Log Entry
                                                             END;
 
                                                    TestTableRelation=No;
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Bruger-id;
                                                               ENU=User ID] }
     { 12  ;   ;Interaction Group Code;Code10      ;TableRelation="Interaction Group";

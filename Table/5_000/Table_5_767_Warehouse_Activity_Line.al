@@ -2,9 +2,9 @@ OBJECT Table 5767 Warehouse Activity Line
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -1518,6 +1518,7 @@ OBJECT Table 5767 Warehouse Activity Line
     PROCEDURE TransferFromPickWkshLine@29(WhseWkshLine@1010 : Record 7326);
     VAR
       WhseShptLine@1000 : Record 7321;
+      AssembleToOrderLink@1002 : Record 904;
     BEGIN
       "Activity Type" := "Activity Type"::Pick;
       "Source Type" := WhseWkshLine."Source Type";
@@ -1542,9 +1543,17 @@ OBJECT Table 5767 Warehouse Activity Line
       "Whse. Document No." := WhseWkshLine."Whse. Document No.";
       "Whse. Document Line No." := WhseWkshLine."Whse. Document Line No.";
 
-      IF "Whse. Document Type" = "Whse. Document Type"::Shipment THEN BEGIN
-        WhseShptLine.GET("Whse. Document No.","Whse. Document Line No.");
-        "Assemble to Order" := WhseShptLine."Assemble to Order";
+      CASE "Whse. Document Type" OF
+        "Whse. Document Type"::Shipment:
+          BEGIN
+            WhseShptLine.GET("Whse. Document No.","Whse. Document Line No.");
+            "Assemble to Order" := WhseShptLine."Assemble to Order";
+          END;
+        "Whse. Document Type"::Assembly:
+          BEGIN
+            "Assemble to Order" := AssembleToOrderLink.GET("Source Subtype","Source No.");
+            "ATO Component" := TRUE;
+          END;
       END;
     END;
 

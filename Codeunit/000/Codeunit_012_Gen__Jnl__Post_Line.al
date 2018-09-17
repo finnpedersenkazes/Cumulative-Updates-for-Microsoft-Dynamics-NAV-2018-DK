@@ -2,9 +2,9 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -5279,14 +5279,16 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
               InsertGLEntry(GenJournalLine,GLEntry,TRUE);
             END;
 
-            InitGLEntry(GenJournalLine,GLEntry,
-              DeferralPostBuffer."Deferral Account",
-              -DeferralPostBuffer."Amount (LCY)",
-              -DeferralPostBuffer.Amount,
-              TRUE,TRUE);
-            GLEntry."Posting Date" := PostDate;
-            GLEntry.Description := DeferralPostBuffer.Description;
-            InsertGLEntry(GenJournalLine,GLEntry,TRUE);
+            IF DeferralPostBuffer.Amount <> 0 THEN BEGIN
+              InitGLEntry(GenJournalLine,GLEntry,
+                DeferralPostBuffer."Deferral Account",
+                -DeferralPostBuffer."Amount (LCY)",
+                -DeferralPostBuffer.Amount,
+                TRUE,TRUE);
+              GLEntry."Posting Date" := PostDate;
+              GLEntry.Description := DeferralPostBuffer.Description;
+              InsertGLEntry(GenJournalLine,GLEntry,TRUE);
+            END;
           UNTIL DeferralPostBuffer.NEXT = 0;
           DeferralPostBuffer.DELETEALL;
         END;

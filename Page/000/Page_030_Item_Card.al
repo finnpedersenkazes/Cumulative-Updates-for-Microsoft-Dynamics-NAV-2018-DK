@@ -2,9 +2,9 @@ OBJECT Page 30 Item Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -1293,7 +1293,6 @@ OBJECT Page 30 Item Card
                            ENU=Specifies if the item card represents a physical item (Inventory) or a service (Service).];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=Type;
-                Visible=IsFoundationEnabled;
                 OnValidate=BEGIN
                              EnableControls;
                            END;

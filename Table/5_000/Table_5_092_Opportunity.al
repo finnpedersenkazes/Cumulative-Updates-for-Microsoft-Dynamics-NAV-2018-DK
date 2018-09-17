@@ -2,9 +2,9 @@ OBJECT Table 5092 Opportunity
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -515,7 +515,7 @@ OBJECT Table 5092 Opportunity
       Text025@1023 : TextConst 'DAN=Den ansl†ede ultimodato skal v‘re efter denne ‘ndring;ENU=The Estimated closing date has to be later than this change';
       ActivateFirstStageQst@1021 : TextConst 'DAN=Vil du aktivere f›rste fase for denne salgsmulighed?;ENU=Would you like to activate first stage for this opportunity?';
       SalesCycleNotFoundErr@1019 : TextConst 'DAN=Salgsprocesfase blev ikke fundet.;ENU=Sales Cycle Stage not found.';
-      UpdateSalesQuoteWithCustTemplateQst@1006 : TextConst 'DAN=Do you want to update the sales quote with a customer template?;ENU=Do you want to update the sales quote with a customer template?';
+      UpdateSalesQuoteWithCustTemplateQst@1006 : TextConst 'DAN=Skal salgstilbuddet opdateres med en debitorskabelon?;ENU=Do you want to update the sales quote with a customer template?';
 
     [External]
     PROCEDURE CreateFromInteractionLogEntry@21(InteractionLogEntry@1000 : Record 5065);

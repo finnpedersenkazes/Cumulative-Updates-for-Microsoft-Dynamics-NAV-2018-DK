@@ -2,9 +2,9 @@ OBJECT Page 20 General Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -458,6 +458,12 @@ OBJECT Page 20 General Ledger Entries
                 ApplicationArea=#Suite;
                 SourceExpr="Dimension Set ID";
                 Visible=FALSE }
+
+    { 29  ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver postens eksterne bilagsnummer, f.eks. en kreditors fakturanummer.;
+                           ENU=Specifies the entry's external document number, such as a vendor's invoice number.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="External Document No." }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

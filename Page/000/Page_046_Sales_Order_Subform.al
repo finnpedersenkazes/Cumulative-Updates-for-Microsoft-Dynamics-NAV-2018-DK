@@ -2,9 +2,9 @@ OBJECT Page 46 Sales Order Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -848,7 +848,10 @@ OBJECT Page 46 Sales Order Subform
                 SourceExpr="Allow Invoice Disc.";
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             RedistributeTotalsOnAfterValidate;
+                             CurrPage.SAVERECORD;
+                             AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             ValidateInvoiceDiscountAmount;
                            END;
                             }
 
@@ -1300,7 +1303,7 @@ OBJECT Page 46 Sales Order Subform
                 SourceExpr=InvoiceDiscountPct;
                 Editable=InvDiscAmountEditable;
                 OnValidate=BEGIN
-                             InvoiceDiscountAmount := ROUND(TotalSalesLine."Line Amount" * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
                              ValidateInvoiceDiscountAmount;
                            END;
                             }
@@ -1365,6 +1368,7 @@ OBJECT Page 46 Sales Order Subform
       SalesCalcDiscountByType@1008 : Codeunit 56;
       DocumentTotals@1007 : Codeunit 57;
       VATAmount@1005 : Decimal;
+      AmountWithDiscountAllowed@1026 : Decimal;
       ShortcutDimCode@1003 : ARRAY [8] OF Code[20];
       Text001@1004 : TextConst 'DAN=Funktionen Udfold stykliste kan ikke anvendes, da der er faktureret en forudbetaling af salgsordren.;ENU=You cannot use the Explode BOM function because a prepayment of the sales order has been invoiced.';
       LocationCodeMandatory@1017 : Boolean;
@@ -1662,6 +1666,7 @@ OBJECT Page 46 Sales Order Subform
           CalcInvDisc;
 
       DocumentTotals.CalculateSalesTotals(TotalSalesLine,VATAmount,Rec);
+      AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
       InvoiceDiscountAmount := TotalSalesLine."Inv. Discount Amount";
       InvoiceDiscountPct := SalesCalcDiscountByType.GetCustInvoiceDiscountPct(Rec);
     END;

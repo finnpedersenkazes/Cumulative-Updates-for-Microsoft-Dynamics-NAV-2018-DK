@@ -2,9 +2,9 @@ OBJECT Page 490 Acc. Schedule Overview
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -1009,6 +1009,7 @@ OBJECT Page 490 Acc. Schedule Overview
       AccSchedManagement.CopyColumnsToTemp(CurrentColumnName,TempColumnLayout);
       AccSchedManagement.SetColumnName(CurrentColumnName,TempColumnLayout);
       AccSchedManagement.CheckAnalysisView(CurrentSchedName,CurrentColumnName,TRUE);
+      ColumnOffset := 0;
       UpdateColumnCaptions;
       CurrPage.UPDATE(FALSE);
     END;

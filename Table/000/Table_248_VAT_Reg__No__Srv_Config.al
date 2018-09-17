@@ -2,9 +2,9 @@ OBJECT Table 248 VAT Reg. No. Srv Config
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -35,8 +35,8 @@ OBJECT Table 248 VAT Reg. No. Srv Config
   CODE
   {
     VAR
-      VATRegNoVIESSettingIsNotEnabledErr@1000 : TextConst 'DAN=VAT Registration Service (VIES) Setting is not enabled.;ENU=VAT Registration Service (VIES) Setting is not enabled.';
-      CannotInsertMultipleSettingsErr@1001 : TextConst 'DAN=You cannot insert multiple settings.;ENU=You cannot insert multiple settings.';
+      VATRegNoVIESSettingIsNotEnabledErr@1000 : TextConst 'DAN=Indstilling af momsregistreringstjenesten er ikke aktiveret.;ENU=VAT Registration Service (VIES) Setting is not enabled.';
+      CannotInsertMultipleSettingsErr@1001 : TextConst 'DAN=Du kan ikke inds‘tte flere indstillinger.;ENU=You cannot insert multiple settings.';
 
     [External]
     PROCEDURE VATRegNoSrvIsEnabled@43() : Boolean;

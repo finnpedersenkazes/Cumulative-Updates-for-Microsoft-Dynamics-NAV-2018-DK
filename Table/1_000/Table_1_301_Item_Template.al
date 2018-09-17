@@ -2,9 +2,9 @@ OBJECT Table 1301 Item Template
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -276,6 +276,7 @@ OBJECT Table 1301 Item Template
           ConfigTemplateManagement.UpdateRecord(ConfigTemplateHeader,ItemRecRef);
           DimensionsTemplate.InsertDimensionsFromTemplates(ConfigTemplateHeader,Item."No.",DATABASE::Item);
           ItemRecRef.SETTABLE(Item);
+          Item.FIND;
         END;
       END;
     END;
@@ -300,8 +301,10 @@ OBJECT Table 1301 Item Template
           IF UnitOfMeasure.FINDFIRST THEN;
         END;
         Item.VALIDATE("Base Unit of Measure",UnitOfMeasure.Code);
+        Item.MODIFY(TRUE);
       END;
       DimensionsTemplate.InsertDimensionsFromTemplates(ConfigTemplateHeader,Item."No.",DATABASE::Item);
+      Item.FIND;
     END;
 
     [External]

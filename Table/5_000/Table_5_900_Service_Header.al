@@ -2,9 +2,9 @@ OBJECT Table 5900 Service Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -2135,6 +2135,7 @@ OBJECT Table 5900 Service Header
                                                                   ERROR(Text060,"Assigned User ID",UserSetupMgt.GetServiceFilter2("Assigned User ID"));
                                                               END;
 
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
     { 9001;   ;Quote No.           ;Code20        ;CaptionML=[DAN=Tilbudsnr.;

@@ -2,9 +2,9 @@ OBJECT Codeunit 703 Find Record Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -57,6 +57,9 @@ OBJECT Codeunit 703 Find Record Management
       // SearchFieldNo[3] - "Base Unit of Measure" (used for items)
       Result := '';
       IF SearchText = '' THEN
+        EXIT(0);
+
+      IF NOT (Type IN [Type::" "..Type::"Charge (Item)"]) THEN
         EXIT(0);
 
       GetRecRefAndFieldsNoByType(RecRef,Type,SearchFieldNo);

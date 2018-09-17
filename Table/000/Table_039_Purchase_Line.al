@@ -2,9 +2,9 @@ OBJECT Table 39 Purchase Line
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -369,6 +369,7 @@ OBJECT Table 39 Purchase Line
                                                                 IF JobTaskIsSet THEN BEGIN
                                                                   CreateTempJobJnlLine(TRUE);
                                                                   UpdateJobPrices;
+                                                                  UpdateDimensionsFromJobTask;
                                                                 END;
 
                                                                 PostingSetupMgt.CheckGenPostingSetupPurchAccount("Gen. Bus. Posting Group","Gen. Prod. Posting Group");
@@ -751,6 +752,7 @@ OBJECT Table 39 Purchase Line
                                                                       GLSetup."Unit-Amount Rounding Precision");
                                                                 END;
 
+                                                                "Indirect Cost %" := 0;
                                                                 IF ("Direct Unit Cost" <> 0) AND
                                                                    ("Direct Unit Cost" <> ("Line Discount Amount" / Quantity))
                                                                 THEN BEGIN
@@ -758,12 +760,9 @@ OBJECT Table 39 Purchase Line
                                                                     ROUND(
                                                                       (UnitCostCurrency - "Direct Unit Cost" + "Line Discount Amount" / Quantity) /
                                                                       ("Direct Unit Cost" - "Line Discount Amount" / Quantity) * 100,0.00001);
-                                                                  IF IndirectCostPercentCheck(IndirectCostPercent) THEN
-                                                                    "Indirect Cost %" := IndirectCostPercent
-                                                                  ELSE
-                                                                    ERROR(CannotBeNegativeErr,FIELDCAPTION("Indirect Cost %"));
-                                                                END ELSE
-                                                                  "Indirect Cost %" := 0;
+                                                                  IF IndirectCostPercent >= 0 THEN
+                                                                    "Indirect Cost %" := IndirectCostPercent;
+                                                                END;
 
                                                                 UpdateSalesCost;
 
@@ -1352,9 +1351,15 @@ OBJECT Table 39 Purchase Line
                                                                   PurchLine2.TESTFIELD("No.","No.");
                                                                   PurchLine2.TESTFIELD("Pay-to Vendor No.","Pay-to Vendor No.");
                                                                   PurchLine2.TESTFIELD("Buy-from Vendor No.","Buy-from Vendor No.");
-                                                                  VALIDATE("Variant Code",PurchLine2."Variant Code");
-                                                                  VALIDATE("Location Code",PurchLine2."Location Code");
-                                                                  VALIDATE("Unit of Measure Code",PurchLine2."Unit of Measure Code");
+                                                                  IF "Drop Shipment" THEN BEGIN
+                                                                    PurchLine2.TESTFIELD("Variant Code","Variant Code");
+                                                                    PurchLine2.TESTFIELD("Location Code","Location Code");
+                                                                    PurchLine2.TESTFIELD("Unit of Measure Code","Unit of Measure Code");
+                                                                  END ELSE BEGIN
+                                                                    VALIDATE("Variant Code",PurchLine2."Variant Code");
+                                                                    VALIDATE("Location Code",PurchLine2."Location Code");
+                                                                    VALIDATE("Unit of Measure Code",PurchLine2."Unit of Measure Code");
+                                                                  END;
                                                                   VALIDATE("Direct Unit Cost",PurchLine2."Direct Unit Cost");
                                                                   VALIDATE("Line Discount %",PurchLine2."Line Discount %");
                                                                 END;
@@ -2271,7 +2276,7 @@ OBJECT Table 39 Purchase Line
 
                                                                 ReturnedCrossRef.INIT;
                                                                 IF "Cross-Reference No." <> '' THEN BEGIN
-                                                                  DistIntegration.ICRLookupPurchaseItem(Rec,ReturnedCrossRef);
+                                                                  DistIntegration.ICRLookupPurchaseItem(Rec,ReturnedCrossRef,CurrFieldNo <> 0);
                                                                   VALIDATE("No.",ReturnedCrossRef."Item No.");
                                                                   SetVendorItemNo;
                                                                   IF ReturnedCrossRef."Variant Code" <> '' THEN
@@ -2859,7 +2864,6 @@ OBJECT Table 39 Purchase Line
       PurchSetupRead@1096 : Boolean;
       CannotFindDescErr@1035 : TextConst '@@@="%1 = Type caption %2 = Description";DAN=Kan ikke finde %1 med beskrivelsen %2.\\S›rg for at bruge den korrekte type.;ENU=Cannot find %1 with Description %2.\\Make sure to use the correct type.';
       CommentLbl@1024 : TextConst 'DAN=Bem‘rkning;ENU=Comment';
-      CannotBeNegativeErr@1036 : TextConst '@@@=%1 - Field Caption;DAN=Feltet %1 kan ikke v‘re negativt p† indk›bslinjen.;ENU=The %1 field cannot be negative on the purchase line.';
 
     [External]
     PROCEDURE InitOutstanding@16();
@@ -5120,13 +5124,23 @@ OBJECT Table 39 Purchase Line
 
     LOCAL PROCEDURE UpdateDimensionsFromJobTask@60();
     VAR
+      SourceCodeSetup@1003 : Record 242;
       DimSetArrID@1000 : ARRAY [10] OF Integer;
       DimValue1@1001 : Code[20];
       DimValue2@1002 : Code[20];
     BEGIN
+      SourceCodeSetup.GET;
       DimSetArrID[1] := "Dimension Set ID";
-      DimSetArrID[2] := DimMgt.CreateDimSetFromJobTaskDim("Job No.","Job Task No.",DimValue1,DimValue2);
-      "Dimension Set ID" := DimMgt.GetCombinedDimensionSetID(DimSetArrID,DimValue1,DimValue2);
+      DimSetArrID[2] :=
+        DimMgt.CreateDimSetFromJobTaskDim("Job No.",
+          "Job Task No.",DimValue1,DimValue2);
+      DimMgt.CreateDimForPurchLineWithHigherPriorities(
+        Rec,CurrFieldNo,DimSetArrID[3],DimValue1,DimValue2,SourceCodeSetup.Purchases,DATABASE::Job);
+
+      "Dimension Set ID" :=
+        DimMgt.GetCombinedDimensionSetID(
+          DimSetArrID,DimValue1,DimValue2);
+
       "Shortcut Dimension 1 Code" := DimValue1;
       "Shortcut Dimension 2 Code" := DimValue2;
     END;
@@ -5480,17 +5494,6 @@ OBJECT Table 39 Purchase Line
     PROCEDURE AssignedItemCharge@119() : Boolean;
     BEGIN
       EXIT((Type = Type::"Charge (Item)") AND ("No." <> '') AND ("Qty. to Assign" < Quantity));
-    END;
-
-    LOCAL PROCEDURE IndirectCostPercentCheck@87(IndirectCostPercent@1000 : Decimal) : Boolean;
-    BEGIN
-      EXIT(
-        (IndirectCostPercent >= 0) AND
-        ("Document Type" IN
-         ["Document Type"::Quote,"Document Type"::Order,"Document Type"::Invoice,"Document Type"::"Blanket Order"]) OR
-        (IndirectCostPercent <= 0) AND
-        ("Document Type" IN ["Document Type"::"Credit Memo","Document Type"::"Return Order"])
-        );
     END;
 
     BEGIN

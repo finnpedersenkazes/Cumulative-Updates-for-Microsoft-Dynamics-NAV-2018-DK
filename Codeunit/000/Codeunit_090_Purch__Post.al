@@ -2,9 +2,9 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -371,6 +371,7 @@ OBJECT Codeunit 90 Purch.-Post
         TempRcpt := Receive;
         TempReturn := Ship;
         CODEUNIT.RUN(CODEUNIT::"Purch.-Calc.Discount",PurchLine);
+        RefreshTempLines(PurchHeader);
         GET("Document Type","No.");
         Invoice := TempInvoice;
         Receive := TempRcpt;
@@ -1669,10 +1670,11 @@ OBJECT Codeunit 90 Purch.-Post
       WITH PurchHeader DO BEGIN
         ResetTempLines(TempPurchLine);
         TempPurchLine.SETFILTER("Sales Order Line No.",'<>0');
-        IF NOT TempPurchLine.ISEMPTY THEN BEGIN
-          DropShipment := TRUE;
-          IF Receive THEN BEGIN
-            TempPurchLine.FINDSET;
+        DropShipment := NOT TempPurchLine.ISEMPTY;
+
+        TempPurchLine.SETFILTER("Qty. to Receive",'<>0');
+        IF DropShipment AND Receive THEN
+          IF TempPurchLine.FINDSET THEN
             REPEAT
               IF SalesOrderHeader."No." <> TempPurchLine."Sales Order No." THEN BEGIN
                 SalesOrderHeader.GET(SalesOrderHeader."Document Type"::Order,TempPurchLine."Sales Order No.");
@@ -1687,8 +1689,7 @@ OBJECT Codeunit 90 Purch.-Post
                 END;
               END;
             UNTIL TempPurchLine.NEXT = 0;
-          END;
-        END;
+
         EXIT(DropShipment);
       END;
     END;
@@ -2012,23 +2013,14 @@ OBJECT Codeunit 90 Purch.-Post
       IF PurchLine."VAT Calculation Type" = PurchLine."VAT Calculation Type"::"Sales Tax" THEN
         InvoicePostBuffer.SetSalesTaxForPurchLine(PurchLine);
 
-      IF (PurchLine.Type = PurchLine.Type::"G/L Account") OR (PurchLine.Type = PurchLine.Type::"Fixed Asset") THEN BEGIN
-        PurchAccount := PurchLine."No.";
-        InvoicePostBuffer.SetAccount(
-          DefaultGLAccount(PurchLine."Deferral Code",AmtToDefer,PurchAccount,DeferralAccount),
-          TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY)
-      END ELSE
-        IF PurchLine.IsCreditDocType THEN BEGIN
-          PurchAccount := GenPostingSetup.GetPurchCrMemoAccount;
-          InvoicePostBuffer.SetAccount(
-            DefaultGLAccount(PurchLine."Deferral Code",AmtToDefer,PurchAccount,DeferralAccount),
-            TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY);
-        END ELSE BEGIN
+      IF (PurchLine.Type = PurchLine.Type::"G/L Account") OR (PurchLine.Type = PurchLine.Type::"Fixed Asset") THEN
+        PurchAccount := PurchLine."No."
+      ELSE
+        IF PurchLine.IsCreditDocType THEN
+          PurchAccount := GenPostingSetup.GetPurchCrMemoAccount
+        ELSE
           PurchAccount := GenPostingSetup.GetPurchAccount;
-          InvoicePostBuffer.SetAccount(
-            DefaultGLAccount(PurchLine."Deferral Code",AmtToDefer,PurchAccount,DeferralAccount),
-            TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY);
-        END;
+      InvoicePostBuffer.SetAccount(PurchAccount,TotalVAT,TotalVATACY,TotalAmount,TotalAmountACY);
       InvoicePostBuffer."Deferral Code" := PurchLine."Deferral Code";
       OnAfterFillInvoicePostBuffer(InvoicePostBuffer,PurchLine);
       UpdateInvoicePostBuffer(TempInvoicePostBuffer,InvoicePostBuffer);
@@ -4418,11 +4410,8 @@ OBJECT Codeunit 90 Purch.-Post
           END;
           ItemJournalLine."Source Type" := ItemJournalLine."Source Type"::Customer;
           ItemJournalLine."Discount Amount" := 0;
-          IF "Quantity Received" > 0 THEN
-            GetAppliedOutboundItemLedgEntryNo(ItemJournalLine)
-          ELSE
-            IF "Quantity Received" < 0 THEN
-              GetAppliedInboundItemLedgEntryNo(ItemJournalLine);
+
+          GetAppliedItemLedgEntryNo(ItemJournalLine,"Quantity Received");
 
           IF QtyToBeReceived <> 0 THEN
             CopyJobConsumptionReservation(
@@ -4463,6 +4452,31 @@ OBJECT Codeunit 90 Purch.-Post
 
           NextReservationEntryNo := NextReservationEntryNo + 1;
         UNTIL TempReservEntryPurchase.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE GetAppliedItemLedgEntryNo@226(VAR ItemJournalLine@1000 : Record 83;QtyReceived@1003 : Decimal);
+    VAR
+      Item@1001 : Record 27;
+      ItemLedgerEntry@1002 : Record 32;
+    BEGIN
+      Item.GET(ItemJournalLine."Item No.");
+      IF Item.Type = Item.Type::Inventory THEN BEGIN
+        IF QtyReceived > 0 THEN
+          GetAppliedOutboundItemLedgEntryNo(ItemJournalLine)
+        ELSE
+          IF QtyReceived < 0 THEN
+            GetAppliedInboundItemLedgEntryNo(ItemJournalLine);
+      END ELSE
+        IF ItemJournalLine."Item Shpt. Entry No." > 0 THEN BEGIN
+          ItemLedgerEntry.GET(ItemJournalLine."Item Shpt. Entry No.");
+          ItemLedgerEntry.SETRANGE("Document Type",ItemLedgerEntry."Document Type");
+          ItemLedgerEntry.SETRANGE("Document No.",ItemLedgerEntry."Document No.");
+          ItemLedgerEntry.SETRANGE("Document Line No.",ItemLedgerEntry."Document Line No.");
+          ItemLedgerEntry.SETRANGE("Entry Type",ItemLedgerEntry."Entry Type"::"Negative Adjmt.");
+          ItemLedgerEntry.SETRANGE("Item No.",ItemLedgerEntry."Item No.");
+          IF ItemLedgerEntry.FINDFIRST THEN
+            ItemJournalLine."Item Shpt. Entry No." := ItemLedgerEntry."Entry No."
+        END;
     END;
 
     LOCAL PROCEDURE GetAppliedOutboundItemLedgEntryNo@80(VAR ItemJnlLine@1000 : Record 83);
@@ -4626,8 +4640,8 @@ OBJECT Codeunit 90 Purch.-Post
     BEGIN
       IF PurchLine."Qty. per Unit of Measure" = 0 THEN
         IF (PurchLine.Type = PurchLine.Type::Item) AND
-           (PurchLine."Unit of Measure" <> '') AND
-           ItemUnitOfMeasure.GET(PurchLine."No.",PurchLine."Unit of Measure")
+           (PurchLine."Unit of Measure Code" <> '') AND
+           ItemUnitOfMeasure.GET(PurchLine."No.",PurchLine."Unit of Measure Code")
         THEN
           PurchLine."Qty. per Unit of Measure" := ItemUnitOfMeasure."Qty. per Unit of Measure"
         ELSE
@@ -4963,8 +4977,8 @@ OBJECT Codeunit 90 Purch.-Post
       WhseShptLine@1003 : Record 7321;
     BEGIN
       ReturnShptLine.InitFromPurchLine(ReturnShptHeader,xPurchLine);
-      ReturnShptLine."Quantity Invoiced" := ABS(RemQtyToBeInvoiced);
-      ReturnShptLine."Qty. Invoiced (Base)" := ABS(RemQtyToBeInvoicedBase);
+      ReturnShptLine."Quantity Invoiced" := -RemQtyToBeInvoiced;
+      ReturnShptLine."Qty. Invoiced (Base)" := -RemQtyToBeInvoicedBase;
       ReturnShptLine."Return Qty. Shipped Not Invd." := ReturnShptLine.Quantity - ReturnShptLine."Quantity Invoiced";
 
       IF (PurchLine.Type = PurchLine.Type::Item) AND (PurchLine."Return Qty. to Ship" <> 0) THEN BEGIN
@@ -5443,22 +5457,18 @@ OBJECT Codeunit 90 Purch.-Post
             TempDeferralLine.SETRANGE("Document No.",PurchLine."Document No.");
             TempDeferralLine.SETRANGE("Line No.",PurchLine."Line No.");
 
-            // The remaining amounts only need to be adjusted into the deferral account and are always reversed
+            // Remainder\Initial deferral pair
+            DeferralPostBuffer[1].PreparePurch(PurchLine,GenJnlLineDocNo);
+            DeferralPostBuffer[1]."Posting Date" := PurchHeader."Posting Date";
+            DeferralPostBuffer[1].Description := PurchHeader."Posting Description";
+            DeferralPostBuffer[1]."Period Description" := DeferralTemplate."Period Description";
+            DeferralPostBuffer[1]."Deferral Line No." := InvDefLineNo;
+            DeferralPostBuffer[1].PrepareInitialPair(
+              InvoicePostBuffer,RemainAmtToDefer,RemainAmtToDeferACY,PurchAccount,DeferralAccount);
+            UpdDeferralPostBuffer(InvoicePostBuffer);
             IF (RemainAmtToDefer <> 0) OR (RemainAmtToDeferACY <> 0) THEN BEGIN
-              DeferralPostBuffer[1].PreparePurch(PurchLine,GenJnlLineDocNo);
-              DeferralPostBuffer[1]."Amount (LCY)" := -RemainAmtToDefer;
-              DeferralPostBuffer[1].Amount := -RemainAmtToDeferACY;
-              DeferralPostBuffer[1]."Sales/Purch Amount (LCY)" := 0;
-              DeferralPostBuffer[1]."Sales/Purch Amount" := 0;
-              // DeferralPostBuffer[1].ReverseAmounts;
-              DeferralPostBuffer[1]."G/L Account" := PurchAccount;
-              DeferralPostBuffer[1]."Deferral Account" := DeferralAccount;
-              // Remainder always goes to the Posting Date
-              DeferralPostBuffer[1]."Posting Date" := PurchHeader."Posting Date";
-              DeferralPostBuffer[1].Description := PurchHeader."Posting Description";
-              DeferralPostBuffer[1]."Period Description" := DeferralTemplate."Period Description";
-              DeferralPostBuffer[1]."Deferral Line No." := InvDefLineNo;
-              DeferralPostBuffer[1]."Partial Deferral" := TRUE;
+              DeferralPostBuffer[1].PrepareRemainderPurchase(
+                PurchLine,RemainAmtToDefer,RemainAmtToDeferACY,PurchAccount,DeferralAccount);
               UpdDeferralPostBuffer(InvoicePostBuffer);
             END;
 
@@ -5549,14 +5559,6 @@ OBJECT Codeunit 90 Purch.-Post
         AmtToDeferACY := 0;
         DeferralAccount := '';
       END;
-    END;
-
-    LOCAL PROCEDURE DefaultGLAccount@129(DeferralCode@1000 : Code[10];AmtToDefer@1001 : Decimal;GLAccNo@1002 : Code[20];DeferralAccNo@1003 : Code[20]) : Code[20];
-    BEGIN
-      IF (DeferralCode <> '') AND (AmtToDefer = 0) THEN
-        EXIT(DeferralAccNo);
-
-      EXIT(GLAccNo);
     END;
 
     LOCAL PROCEDURE IsCombinedDeferralZero@130() : Boolean;

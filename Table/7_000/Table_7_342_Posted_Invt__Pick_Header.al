@@ -2,9 +2,9 @@ OBJECT Table 7342 Posted Invt. Pick Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -43,6 +43,7 @@ OBJECT Table 7342 Posted Invt. Pick Header
                                                               ENU=Location Code];
                                                    NotBlank=Yes }
     { 4   ;   ;Assigned User ID    ;Code50        ;TableRelation="Warehouse Employee" WHERE (Location Code=FIELD(Location Code));
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
     { 5   ;   ;Assignment Date     ;Date          ;CaptionML=[DAN=Tildelt den;

@@ -2,9 +2,9 @@ OBJECT Table 1170 User Task
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -43,6 +43,7 @@ OBJECT Table 1170 User Task
     { 2   ;   ;Title               ;Text250       ;CaptionML=[DAN=Emne;
                                                               ENU=Subject] }
     { 3   ;   ;Created By          ;GUID          ;TableRelation=User."User Security ID" WHERE (License Type=CONST(Full User));
+                                                   DataClassification=EndUserPseudonymousIdentifiers;
                                                    CaptionML=[DAN=Oprettet af;
                                                               ENU=Created By];
                                                    Editable=No }
@@ -66,6 +67,7 @@ OBJECT Table 1170 User Task
                                                                 END;
                                                               END;
 
+                                                   DataClassification=EndUserPseudonymousIdentifiers;
                                                    CaptionML=[DAN=Afsluttet af;
                                                               ENU=Completed By] }
     { 8   ;   ;Completed DateTime  ;DateTime      ;OnValidate=BEGIN

@@ -1,0 +1,137 @@
+OBJECT Table 482 Reclas. Dimension Set Buffer
+{
+  OBJECT-PROPERTIES
+  {
+    Date=22-02-18;
+    Time=12:00:00;
+    Version List=NAVW111.00.00.20783;
+  }
+  PROPERTIES
+  {
+    CaptionML=[DAN=Ompost. dimensionsgruppebuffer;
+               ENU=Reclas. Dimension Set Buffer];
+    LookupPageID=Page479;
+    DrillDownPageID=Page479;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Dimension Code      ;Code20        ;TableRelation=Dimension;
+                                                   OnValidate=BEGIN
+                                                                IF "Dimension Code" <> xRec."Dimension Code" THEN BEGIN
+                                                                  "Dimension Value Code" := '';
+                                                                  "Dimension Value ID" := 0;
+                                                                  "New Dimension Value Code" := '';
+                                                                  "New Dimension Value ID" := 0;
+                                                                END;
+                                                              END;
+
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Dimensionskode;
+                                                              ENU=Dimension Code];
+                                                   NotBlank=Yes }
+    { 2   ;   ;Dimension Value Code;Code20        ;TableRelation="Dimension Value".Code WHERE (Dimension Code=FIELD(Dimension Code));
+                                                   OnValidate=BEGIN
+                                                                "Dimension Value ID" := GetDimValID("Dimension Code","Dimension Value Code");
+                                                              END;
+
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Dimensionsv‘rdikode;
+                                                              ENU=Dimension Value Code] }
+    { 3   ;   ;Dimension Value ID  ;Integer       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Dimensionsv‘rdi-id;
+                                                              ENU=Dimension Value ID] }
+    { 4   ;   ;New Dimension Value Code;Code20    ;TableRelation="Dimension Value".Code WHERE (Dimension Code=FIELD(Dimension Code));
+                                                   OnValidate=BEGIN
+                                                                "New Dimension Value ID" := GetDimValID("Dimension Code","New Dimension Value Code");
+                                                              END;
+
+                                                   DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Ny dimensionsv‘rdikode;
+                                                              ENU=New Dimension Value Code] }
+    { 5   ;   ;New Dimension Value ID;Integer     ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Nyt dimensionsv‘rdi-id;
+                                                              ENU=New Dimension Value ID] }
+    { 6   ;   ;Dimension Name      ;Text30        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup(Dimension.Name WHERE (Code=FIELD(Dimension Code)));
+                                                   CaptionML=[DAN=Dimensionsnavn;
+                                                              ENU=Dimension Name];
+                                                   Editable=No }
+    { 7   ;   ;Dimension Value Name;Text50        ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Dimension Value".Name WHERE (Dimension Code=FIELD(Dimension Code),
+                                                                                                    Code=FIELD(Dimension Value Code)));
+                                                   CaptionML=[DAN=Dimensionsv‘rdinavn;
+                                                              ENU=Dimension Value Name];
+                                                   Editable=No }
+    { 8   ;   ;New Dimension Value Name;Text50    ;FieldClass=FlowField;
+                                                   CalcFormula=Lookup("Dimension Value".Name WHERE (Dimension Code=FIELD(Dimension Code),
+                                                                                                    Code=FIELD(New Dimension Value Code)));
+                                                   CaptionML=[DAN=Nyt dimensionsv‘rdinavn;
+                                                              ENU=New Dimension Value Name];
+                                                   Editable=No }
+  }
+  KEYS
+  {
+    {    ;Dimension Code                          ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+
+    [External]
+    PROCEDURE GetDimSetID@5(VAR ReclasDimSetBuf@1000 : Record 482) : Integer;
+    BEGIN
+      EXIT(GetDimSetID2(ReclasDimSetBuf,FALSE));
+    END;
+
+    [External]
+    PROCEDURE GetNewDimSetID@7(VAR ReclasDimSetBuf@1000 : Record 482) : Integer;
+    BEGIN
+      EXIT(GetDimSetID2(ReclasDimSetBuf,TRUE));
+    END;
+
+    LOCAL PROCEDURE GetDimSetID2@1(VAR ReclasDimSetBuf@1000 : Record 482;NewVal@1003 : Boolean) : Integer;
+    VAR
+      TempDimSetEntry@1002 : TEMPORARY Record 480;
+      DimMgt@1001 : Codeunit 408;
+    BEGIN
+      ReclasDimSetBuf.RESET;
+      ReclasDimSetBuf.SETFILTER("Dimension Code",'<>%1','');
+      IF NewVal THEN
+        ReclasDimSetBuf.SETFILTER("New Dimension Value Code",'<>%1','')
+      ELSE
+        ReclasDimSetBuf.SETFILTER("Dimension Value Code",'<>%1','');
+      IF NOT ReclasDimSetBuf.FINDSET THEN
+        EXIT(0);
+      REPEAT
+        TempDimSetEntry."Dimension Set ID" := 0;
+        TempDimSetEntry."Dimension Code" := ReclasDimSetBuf."Dimension Code";
+        IF NewVal THEN BEGIN
+          TempDimSetEntry."Dimension Value Code" := ReclasDimSetBuf."New Dimension Value Code";
+          TempDimSetEntry."Dimension Value ID" := ReclasDimSetBuf."New Dimension Value ID";
+        END ELSE BEGIN
+          TempDimSetEntry."Dimension Value Code" := ReclasDimSetBuf."Dimension Value Code";
+          TempDimSetEntry."Dimension Value ID" := ReclasDimSetBuf."Dimension Value ID";
+        END;
+        TempDimSetEntry.INSERT;
+      UNTIL ReclasDimSetBuf.NEXT = 0;
+      EXIT(DimMgt.GetDimensionSetID(TempDimSetEntry));
+    END;
+
+    LOCAL PROCEDURE GetDimValID@2(DimCode@1000 : Code[20];DimValCode@1001 : Code[20]) : Integer;
+    VAR
+      DimVal@1002 : Record 349;
+    BEGIN
+      IF DimValCode = '' THEN
+        EXIT(0);
+
+      DimVal.GET(DimCode,DimValCode);
+      EXIT(DimVal."Dimension Value ID");
+    END;
+
+    BEGIN
+    END.
+  }
+}
+

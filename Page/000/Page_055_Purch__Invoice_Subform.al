@@ -2,9 +2,9 @@ OBJECT Page 55 Purch. Invoice Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -542,7 +542,10 @@ OBJECT Page 55 Purch. Invoice Subform
                 SourceExpr="Allow Invoice Disc.";
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             RedistributeTotalsOnAfterValidate;
+                             CurrPage.SAVERECORD;
+                             AmountWithDiscountAllowed := DocumentTotals.CalcTotalPurchAmountOnlyDiscountAllowed(Rec);
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             ValidateInvoiceDiscountAmount;
                            END;
                             }
 
@@ -922,7 +925,7 @@ OBJECT Page 55 Purch. Invoice Subform
                 SourceExpr=InvoiceDiscountPct;
                 Editable=InvDiscAmountEditable;
                 OnValidate=BEGIN
-                             InvoiceDiscountAmount := ROUND(TotalPurchaseLine."Line Amount" * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
                              ValidateInvoiceDiscountAmount;
                            END;
                             }
@@ -986,6 +989,7 @@ OBJECT Page 55 Purch. Invoice Subform
       DocumentTotals@1009 : Codeunit 57;
       ShortcutDimCode@1003 : ARRAY [8] OF Code[20];
       VATAmount@1017 : Decimal;
+      AmountWithDiscountAllowed@1015 : Decimal;
       IsFoundation@1005 : Boolean;
       InvDiscAmountEditable@1016 : Boolean;
       IsCommentLine@1019 : Boolean;
@@ -1114,6 +1118,7 @@ OBJECT Page 55 Purch. Invoice Subform
           CalcInvDisc;
 
       DocumentTotals.CalculatePurchaseTotals(TotalPurchaseLine,VATAmount,Rec);
+      AmountWithDiscountAllowed := DocumentTotals.CalcTotalPurchAmountOnlyDiscountAllowed(Rec);
       InvoiceDiscountAmount := TotalPurchaseLine."Inv. Discount Amount";
       InvoiceDiscountPct := PurchCalcDiscByType.GetVendInvoiceDiscountPct(Rec);
     END;

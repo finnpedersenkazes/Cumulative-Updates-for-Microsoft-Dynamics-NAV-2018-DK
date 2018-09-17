@@ -2,9 +2,9 @@ OBJECT Table 21 Cust. Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -417,6 +417,7 @@ OBJECT Table 21 Cust. Ledger Entry
     {    ;Customer No.,Applies-to ID,Open,Positive,Due Date }
     {    ;Document Type,Posting Date              ;SumIndexFields=Sales (LCY) }
     {    ;Document Type,Customer No.,Open          }
+    {    ;Customer Posting Group                   }
   }
   FIELDGROUPS
   {
@@ -473,6 +474,7 @@ OBJECT Table 21 Cust. Ledger Entry
       DtldCustLedgEntry.COPYFILTER("Currency Code",CustLedgEntry."Currency Code");
       DtldCustLedgEntry.COPYFILTER("Initial Entry Global Dim. 1",CustLedgEntry."Global Dimension 1 Code");
       DtldCustLedgEntry.COPYFILTER("Initial Entry Global Dim. 2",CustLedgEntry."Global Dimension 2 Code");
+      DtldCustLedgEntry.COPYFILTER("Initial Entry Due Date",CustLedgEntry."Due Date");
       CustLedgEntry.SETCURRENTKEY("Customer No.","Posting Date");
       CustLedgEntry.SETRANGE(Open,TRUE);
       PAGE.RUN(0,CustLedgEntry);

@@ -2,9 +2,9 @@ OBJECT Page 6510 Item Tracking Lines
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -940,7 +940,7 @@ OBJECT Page 6510 Item Tracking Lines
       WarrantyDateEditable@19022604 : Boolean INDATASET;
       ExcludePostedEntries@1007 : Boolean;
       ProdOrderLineHandling@1052 : Boolean;
-      DifferentExpDateMsg@1042 : TextConst '@@@="%1 = Lot no., %2 = Item expiration date (Example: A tracking specification exists for lot number ''L001'' and expiration date 25.01.2019.)";DAN=A tracking specification exists for lot number %1 and expiration date %2. All items with this lot number must have the same expiration date.;ENU=A tracking specification exists for lot number %1 and expiration date %2. All items with this lot number must have the same expiration date.';
+      DifferentExpDateMsg@1042 : TextConst '@@@="%1 = Lot no., %2 = Item expiration date (Example: A tracking specification exists for lot number ''L001'' and expiration date 25.01.2019.)";DAN=Der findes en sporingsspecifikation for lotnummer %1 og udl›bsdato %2. Alle varer i dette lotnummer skal have den samme udl›bsdato.;ENU=A tracking specification exists for lot number %1 and expiration date %2. All items with this lot number must have the same expiration date.';
 
     [External]
     PROCEDURE SetFormRunMode@19(Mode@1000 : ',Reclass,Combined Ship/Rcpt,Drop Shipment');

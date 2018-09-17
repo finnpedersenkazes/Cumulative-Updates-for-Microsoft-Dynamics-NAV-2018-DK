@@ -2,9 +2,9 @@ OBJECT Page 41 Sales Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -905,8 +905,8 @@ OBJECT Page 41 Sales Quote
                 ApplicationArea=#Basic,#Suite;
                 SubPageLink=Document No.=FIELD(No.);
                 PagePartID=Page95;
-                Enabled=("Sell-to Customer No." <> '') OR ("Sell-to Customer Template Code" <> '');
-                Editable=("Sell-to Customer No." <> '') OR ("Sell-to Customer Template Code" <> '');
+                Enabled=("Sell-to Customer No." <> '') OR ("Sell-to Customer Template Code" <> '') OR ("Sell-to Contact No." <> '');
+                Editable=("Sell-to Customer No." <> '') OR ("Sell-to Customer Template Code" <> '') OR ("Sell-to Contact No." <> '');
                 UpdatePropagation=Both }
 
     { 1905885101;1;Group  ;
@@ -1476,7 +1476,7 @@ OBJECT Page 41 Sales Quote
       SalesCalcDiscByType@1008 : Codeunit 56;
       CustomerMgt@1032 : Codeunit 1302;
       ChangeExchangeRate@1002 : Page 511;
-      EnableBillToCustomerNo@19072970 : Boolean INDATASET;
+      EnableBillToCustomerNo@6785 : Boolean INDATASET;
       EnableSellToCustomerTemplateCode@1021 : Boolean;
       HasIncomingDocument@1010 : Boolean;
       DocNoVisible@1001 : Boolean;

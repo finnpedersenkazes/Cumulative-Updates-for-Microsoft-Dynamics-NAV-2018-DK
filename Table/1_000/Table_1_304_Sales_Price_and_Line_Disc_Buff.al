@@ -2,9 +2,9 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -80,6 +80,7 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                               END;
                                                             END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Kode;
                                                               ENU=Code];
                                                    NotBlank=Yes }
@@ -117,9 +118,11 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                   END;
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Salgskode;
                                                               ENU=Sales Code] }
     { 3   ;   ;Currency Code       ;Code10        ;TableRelation=Currency;
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Valutakode;
                                                               ENU=Currency Code] }
     { 4   ;   ;Starting Date       ;Date          ;OnValidate=BEGIN
@@ -127,24 +130,30 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                   ERROR(EndDateErr,FIELDCAPTION("Starting Date"),FIELDCAPTION("Ending Date"));
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Startdato;
                                                               ENU=Starting Date] }
-    { 5   ;   ;Line Discount %     ;Decimal       ;CaptionML=[DAN=Linjerabatpct.;
+    { 5   ;   ;Line Discount %     ;Decimal       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Linjerabatpct.;
                                                               ENU=Line Discount %];
                                                    MinValue=0;
                                                    MaxValue=100;
                                                    AutoFormatType=2 }
-    { 6   ;   ;Unit Price          ;Decimal       ;CaptionML=[DAN=Enhedspris;
+    { 6   ;   ;Unit Price          ;Decimal       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Enhedspris;
                                                               ENU=Unit Price];
                                                    MinValue=0;
                                                    AutoFormatType=2;
                                                    AutoFormatExpr="Currency Code" }
-    { 7   ;   ;Price Includes VAT  ;Boolean       ;CaptionML=[DAN=Salgspris inkl. moms;
+    { 7   ;   ;Price Includes VAT  ;Boolean       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Salgspris inkl. moms;
                                                               ENU=Price Includes VAT] }
     { 10  ;   ;Allow Invoice Disc. ;Boolean       ;InitValue=Yes;
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Tillad fakturarabat;
                                                               ENU=Allow Invoice Disc.] }
     { 11  ;   ;VAT Bus. Posting Gr. (Price);Code20;TableRelation="VAT Business Posting Group";
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Momsvirks.bogf.gruppe (pris);
                                                               ENU=VAT Bus. Posting Gr. (Price)] }
     { 13  ;   ;Sales Type          ;Option        ;OnValidate=BEGIN
@@ -174,18 +183,21 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                 UpdateValuesFromItem;
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Salgstype;
                                                               ENU=Sales Type];
                                                    OptionCaptionML=[DAN=Debitor,Debitorprisgruppe/Rabatgruppe,Alle debitorer,Kampagne;
                                                                     ENU=Customer,Customer Price/Disc. Group,All Customers,Campaign];
                                                    OptionString=Customer,Customer Price/Disc. Group,All Customers,Campaign }
-    { 14  ;   ;Minimum Quantity    ;Decimal       ;CaptionML=[DAN=Min. antal;
+    { 14  ;   ;Minimum Quantity    ;Decimal       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Min. antal;
                                                               ENU=Minimum Quantity];
                                                    MinValue=0 }
     { 15  ;   ;Ending Date         ;Date          ;OnValidate=BEGIN
                                                                 VALIDATE("Starting Date");
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Slutdato;
                                                               ENU=Ending Date] }
     { 21  ;   ;Type                ;Option        ;OnValidate=BEGIN
@@ -206,6 +218,7 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                 END;
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Type;
                                                               ENU=Type];
                                                    OptionCaptionML=[DAN=Vare,Varerabatgruppe;
@@ -226,21 +239,26 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                 VALIDATE(Type,Type);
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Linjetype;
                                                               ENU=Line Type];
                                                    OptionCaptionML=[DAN=" ,Salgslinjerabat,Salgspris";
                                                                     ENU=" ,Sales Line Discount,Sales Price"];
                                                    OptionString=[ ,Sales Line Discount,Sales Price] }
-    { 1301;   ;Loaded Item No.     ;Code20        ;CaptionML=[DAN=Indl‘st varenummer;
+    { 1301;   ;Loaded Item No.     ;Code20        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Indl‘st varenummer;
                                                               ENU=Loaded Item No.];
                                                    Editable=No }
-    { 1302;   ;Loaded Disc. Group  ;Code20        ;CaptionML=[DAN=Indl‘st rabatgruppe;
+    { 1302;   ;Loaded Disc. Group  ;Code20        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Indl‘st rabatgruppe;
                                                               ENU=Loaded Disc. Group];
                                                    Editable=No }
-    { 1303;   ;Loaded Customer No. ;Code20        ;CaptionML=[DAN=Indl‘st debitornummer;
+    { 1303;   ;Loaded Customer No. ;Code20        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Indl‘st debitornummer;
                                                               ENU=Loaded Customer No.];
                                                    Editable=No }
-    { 1304;   ;Loaded Price Group  ;Code20        ;CaptionML=[DAN=Indl‘st prisgruppe;
+    { 1304;   ;Loaded Price Group  ;Code20        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Indl‘st prisgruppe;
                                                               ENU=Loaded Price Group];
                                                    Editable=No }
     { 5400;   ;Unit of Measure Code;Code10        ;TableRelation=IF (Type=CONST(Item)) "Item Unit of Measure".Code WHERE (Item No.=FIELD(Code));
@@ -248,6 +266,7 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                 TESTFIELD(Type,Type::Item);
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Enhedskode;
                                                               ENU=Unit of Measure Code] }
     { 5700;   ;Variant Code        ;Code10        ;TableRelation=IF (Type=CONST(Item)) "Item Variant".Code WHERE (Item No.=FIELD(Code));
@@ -255,9 +274,11 @@ OBJECT Table 1304 Sales Price and Line Disc Buff
                                                                 TESTFIELD(Type,Type::Item);
                                                               END;
 
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Variantkode;
                                                               ENU=Variant Code] }
     { 7001;   ;Allow Line Disc.    ;Boolean       ;InitValue=Yes;
+                                                   DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Tillad linjerabat;
                                                               ENU=Allow Line Disc.] }
   }

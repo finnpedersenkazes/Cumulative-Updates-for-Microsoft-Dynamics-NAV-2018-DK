@@ -2,9 +2,9 @@ OBJECT Table 77 Report Selections
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -174,20 +174,21 @@ OBJECT Table 77 Report Selections
     [External]
     PROCEDURE FindPrintUsage@4(ReportUsage@1000 : Integer;CustNo@1002 : Code[20];VAR ReportSelections@1001 : Record 77);
     BEGIN
-      FilterPrintUsage(ReportUsage);
-      SETFILTER("Report ID",'<>0');
-
-      FindReportSelections(ReportSelections,CustNo);
-      ReportSelections.FINDSET;
+      FindPrintUsageInternal(ReportUsage,CustNo,ReportSelections,DATABASE::Customer);
     END;
 
     [External]
     PROCEDURE FindPrintUsageVendor@33(ReportUsage@1002 : Integer;VendorNo@1001 : Code[20];VAR ReportSelections@1000 : Record 77);
     BEGIN
+      FindPrintUsageInternal(ReportUsage,VendorNo,ReportSelections,DATABASE::Vendor);
+    END;
+
+    LOCAL PROCEDURE FindPrintUsageInternal@44(ReportUsage@1000 : Integer;AccountNo@1002 : Code[20];VAR ReportSelections@1001 : Record 77;TableNo@1003 : Integer);
+    BEGIN
       FilterPrintUsage(ReportUsage);
       SETFILTER("Report ID",'<>0');
 
-      FindReportSelectionsVendor(ReportSelections,VendorNo);
+      FindReportSelections(ReportSelections,AccountNo,TableNo);
       ReportSelections.FINDSET;
     END;
 
@@ -198,7 +199,7 @@ OBJECT Table 77 Report Selections
       SETFILTER("Report ID",'<>0');
       SETRANGE("Use for Email Attachment",TRUE);
 
-      FindReportSelections(ReportSelections,CustNo);
+      FindReportSelections(ReportSelections,CustNo,DATABASE::Customer);
       EXIT(ReportSelections.FINDSET);
     END;
 
@@ -209,7 +210,7 @@ OBJECT Table 77 Report Selections
       SETFILTER("Report ID",'<>0');
       SETRANGE("Use for Email Attachment",TRUE);
 
-      FindReportSelectionsVendor(ReportSelections,VendorNo);
+      FindReportSelections(ReportSelections,VendorNo,DATABASE::Vendor);
       EXIT(ReportSelections.FINDSET);
     END;
 
@@ -219,7 +220,7 @@ OBJECT Table 77 Report Selections
       FilterEmailBodyUsage(ReportUsage);
       SETFILTER("Report ID",'<>0');
 
-      FindReportSelections(ReportSelections,CustNo);
+      FindReportSelections(ReportSelections,CustNo,DATABASE::Customer);
       EXIT(ReportSelections.FINDSET);
     END;
 
@@ -229,69 +230,133 @@ OBJECT Table 77 Report Selections
       FilterEmailBodyUsage(ReportUsage);
       SETFILTER("Report ID",'<>0');
 
-      FindReportSelectionsVendor(ReportSelections,VendorNo);
+      FindReportSelections(ReportSelections,VendorNo,DATABASE::Vendor);
       EXIT(ReportSelections.FINDSET);
     END;
 
     [External]
-    PROCEDURE PrintWithCheck@6(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;CustNo@1002 : Code[20]);
+    PROCEDURE PrintWithCheck@6(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;CustomerNoFieldNo@1003 : Integer);
     BEGIN
-      PrintWithGUIYesNoWithCheck(ReportUsage,RecordVariant,TRUE,CustNo);
+      PrintWithGUIYesNoWithCheck(ReportUsage,RecordVariant,TRUE,CustomerNoFieldNo);
     END;
 
     [External]
-    PROCEDURE PrintWithGUIYesNoWithCheck@12(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;CustNo@1003 : Code[20]);
+    PROCEDURE PrintWithGUIYesNoWithCheck@12(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;CustomerNoFieldNo@1005 : Integer);
+    BEGIN
+      PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,CustomerNoFieldNo,TRUE,DATABASE::Customer);
+    END;
+
+    [External]
+    PROCEDURE PrintWithGUIYesNoWithCheckVendor@66(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;VendorNoFieldNo@1005 : Integer);
+    BEGIN
+      PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,VendorNoFieldNo,TRUE,DATABASE::Vendor);
+    END;
+
+    [External]
+    PROCEDURE Print@7(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;CustomerNoFieldNo@1003 : Integer);
+    BEGIN
+      PrintWithGUIYesNo(ReportUsage,RecordVariant,TRUE,CustomerNoFieldNo);
+    END;
+
+    [External]
+    PROCEDURE PrintWithGUIYesNo@8(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;CustomerNoFieldNo@1005 : Integer);
+    BEGIN
+      PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,CustomerNoFieldNo,FALSE,DATABASE::Customer);
+    END;
+
+    [External]
+    PROCEDURE PrintWithGUIYesNoVendor@32(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;VendorNoFieldNo@1005 : Integer);
+    BEGIN
+      PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,VendorNoFieldNo,FALSE,DATABASE::Vendor);
+    END;
+
+    LOCAL PROCEDURE PrintDocumentsWithCheckGUIYesNoCommon@65(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;AccountNoFieldNo@1005 : Integer;WithCheck@1009 : Boolean;TableNo@1008 : Integer);
     VAR
       TempReportSelections@1004 : TEMPORARY Record 77;
+      TempNameValueBuffer@1006 : TEMPORARY Record 823;
+      RecRef@1007 : RecordRef;
+      RecRefToPrint@1003 : RecordRef;
+      RecVarToPrint@1011 : Variant;
+      AccountNo@1010 : Code[20];
+      AccountNoFilter@1013 : Text;
     BEGIN
       OnBeforeSetReportLayout(RecordVariant);
-      FilterPrintUsage(ReportUsage);
-      FindReportSelections(TempReportSelections,CustNo);
-      IF NOT TempReportSelections.FINDSET THEN
-        FINDSET;
-      WITH TempReportSelections DO
+
+      RecRef.GETTABLE(RecordVariant);
+      GetUniqueAccountNos(TempNameValueBuffer,RecRef,AccountNoFieldNo);
+
+      IF TempNameValueBuffer.FINDSET THEN
         REPEAT
-          ReportLayoutSelection.SetTempLayoutSelected("Custom Report Layout Code");
-          TESTFIELD("Report ID");
-          REPORT.RUNMODAL("Report ID",IsGUI,FALSE,RecordVariant);
-        UNTIL NEXT = 0;
-      ReportLayoutSelection.SetTempLayoutSelected('');
+          AccountNo := COPYSTR(TempNameValueBuffer.Name,1,MAXSTRLEN(AccountNo));
+          SelectTempReportSelections(TempReportSelections,AccountNo,WithCheck,ReportUsage,TableNo);
+        UNTIL TempNameValueBuffer.NEXT = 0;
+
+      IF TempReportSelections.FINDSET THEN
+        REPEAT
+          IF TempReportSelections."Custom Report Layout Code" <> '' THEN BEGIN
+            ReportLayoutSelection.SetTempLayoutSelected(TempReportSelections."Custom Report Layout Code");
+            TempNameValueBuffer.FINDSET;
+            AccountNoFilter := GetAccountNoFilterForCustomReportLayout(TempReportSelections,TempNameValueBuffer,TableNo);
+            GetFilteredRecordRef(RecRefToPrint,RecRef,AccountNoFieldNo,AccountNoFilter);
+            RecVarToPrint := RecRefToPrint;
+            REPORT.RUNMODAL(TempReportSelections."Report ID",IsGUI,FALSE,RecVarToPrint);
+            ReportLayoutSelection.SetTempLayoutSelected('');
+          END ELSE
+            REPORT.RUNMODAL(TempReportSelections."Report ID",IsGUI,FALSE,RecordVariant);
+        UNTIL TempReportSelections.NEXT = 0;
     END;
 
-    [External]
-    PROCEDURE Print@7(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;CustNo@1002 : Code[20]);
-    BEGIN
-      PrintWithGUIYesNo(ReportUsage,RecordVariant,TRUE,CustNo);
-    END;
-
-    [External]
-    PROCEDURE PrintWithGUIYesNo@8(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;CustNo@1003 : Code[20]);
+    LOCAL PROCEDURE GetFilteredRecordRef@88(VAR RecRefToPrint@1000 : RecordRef;RecRefSource@1001 : RecordRef;AccountNoFieldNo@1002 : Integer;AccountNoFilter@1003 : Text);
     VAR
-      TempReportSelections@1004 : TEMPORARY Record 77;
+      AccountNoFieldRef@1004 : FieldRef;
+      CurrentFilterGroup@1005 : Integer;
     BEGIN
-      OnBeforeSetReportLayout(RecordVariant);
-      FindPrintUsage(ReportUsage,CustNo,TempReportSelections);
-      WITH TempReportSelections DO
-        REPEAT
-          ReportLayoutSelection.SetTempLayoutSelected("Custom Report Layout Code");
-          REPORT.RUNMODAL("Report ID",IsGUI,FALSE,RecordVariant);
-        UNTIL NEXT = 0;
-      ReportLayoutSelection.SetTempLayoutSelected('');
+      RecRefToPrint := RecRefSource.DUPLICATE;
+
+      IF (AccountNoFieldNo <> 0) AND (AccountNoFilter <> '') THEN BEGIN
+        CurrentFilterGroup := RecRefToPrint.FILTERGROUP;
+        RecRefToPrint.FILTERGROUP(10);
+        AccountNoFieldRef := RecRefToPrint.FIELD(AccountNoFieldNo);
+        AccountNoFieldRef.SETFILTER(AccountNoFilter);
+        RecRefToPrint.FILTERGROUP(CurrentFilterGroup);
+      END;
+
+      IF RecRefToPrint.FINDSET THEN;
     END;
 
-    [External]
-    PROCEDURE PrintWithGUIYesNoVendor@32(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;VendorNo@1000 : Code[20]);
+    LOCAL PROCEDURE GetAccountNoFilterForCustomReportLayout@72(VAR TempReportSelections@1000 : TEMPORARY Record 77;VAR TempNameValueBuffer@1001 : TEMPORARY Record 823;TableNo@1002 : Integer) : Text;
     VAR
-      TempReportSelections@1004 : TEMPORARY Record 77;
+      CustomReportSelection@1005 : Record 9657;
+      AccountNo@1003 : Code[20];
+      AccountNoFilter@1004 : Text;
     BEGIN
-      OnBeforeSetReportLayout(RecordVariant);
-      FindPrintUsageVendor(ReportUsage,VendorNo,TempReportSelections);
-      WITH TempReportSelections DO
-        REPEAT
-          ReportLayoutSelection.SetTempLayoutSelected("Custom Report Layout Code");
-          REPORT.RUNMODAL("Report ID",IsGUI,FALSE,RecordVariant);
-        UNTIL NEXT = 0;
-      ReportLayoutSelection.SetTempLayoutSelected('');
+      CustomReportSelection.SETRANGE("Source Type",TableNo);
+      CustomReportSelection.SETRANGE("Custom Report Layout Code",TempReportSelections."Custom Report Layout Code");
+      CustomReportSelection.SETRANGE("Report ID",TempReportSelections."Report ID");
+
+      AccountNoFilter := '';
+
+      TempNameValueBuffer.FINDSET;
+      REPEAT
+        AccountNo := COPYSTR(TempNameValueBuffer.Name,1,MAXSTRLEN(AccountNo));
+        CustomReportSelection.SETRANGE("Source No.",AccountNo);
+        IF NOT CustomReportSelection.ISEMPTY THEN
+          AccountNoFilter += AccountNo + '|';
+      UNTIL TempNameValueBuffer.NEXT = 0;
+
+      AccountNoFilter := DELCHR(AccountNoFilter,'>','|');
+      EXIT(AccountNoFilter);
+    END;
+
+    LOCAL PROCEDURE SelectTempReportSelections@73(VAR TempReportSelections@1003 : TEMPORARY Record 77;AccountNo@1000 : Code[20];WithCheck@1001 : Boolean;ReportUsage@1002 : Option;TableNo@1004 : Integer);
+    BEGIN
+      IF WithCheck THEN BEGIN
+        FilterPrintUsage(ReportUsage);
+        FindReportSelections(TempReportSelections,AccountNo,TableNo);
+        IF NOT TempReportSelections.FINDSET THEN
+          FINDSET;
+      END ELSE
+        FindPrintUsageInternal(ReportUsage,AccountNo,TempReportSelections,TableNo);
     END;
 
     [Internal]
@@ -395,7 +460,8 @@ OBJECT Table 77 Report Selections
         END;
 
       IF NOT TempBodyReportSelections.ISEMPTY THEN BEGIN
-        EmailAddress := FindEmailAddressForEmailLayout(TempBodyReportSelections."Email Body Layout Code",CustNo,ReportUsage);
+        EmailAddress :=
+          FindEmailAddressForEmailLayout(TempBodyReportSelections."Email Body Layout Code",CustNo,ReportUsage,DATABASE::Customer);
         IF EmailAddress <> '' THEN
           EXIT(EmailAddress);
       END;
@@ -421,7 +487,7 @@ OBJECT Table 77 Report Selections
         SaveReportAsHTML(TempBodyReportSelections."Report ID",RecordVariant,TempBodyReportSelections."Email Body Layout Code");
 
       FoundVendorEmailAddress :=
-        FindEmailAddressForEmailLayoutVendor(TempBodyReportSelections."Email Body Layout Code",VendorNo,ReportUsage);
+        FindEmailAddressForEmailLayout(TempBodyReportSelections."Email Body Layout Code",VendorNo,ReportUsage,DATABASE::Vendor);
       IF FoundVendorEmailAddress <> '' THEN
         VendorEmailAddress := FoundVendorEmailAddress;
 
@@ -817,51 +883,25 @@ OBJECT Table 77 Report Selections
       COMMIT;
     END;
 
-    LOCAL PROCEDURE FindReportSelections@38(VAR ReportSelections@1000 : Record 77;CustNo@1001 : Code[20]) : Boolean;
+    LOCAL PROCEDURE FindReportSelections@38(VAR ReportSelections@1000 : Record 77;AccountNo@1001 : Code[20];TableNo@1003 : Integer) : Boolean;
     VAR
       Handled@1002 : Boolean;
     BEGIN
-      IF CopyCustomReportSectionToReportSelection(CustNo,ReportSelections) THEN
+      IF CopyCustomReportSectionToReportSelection(AccountNo,ReportSelections,TableNo) THEN
         EXIT(TRUE);
 
-      OnFindReportSelections(ReportSelections,Handled);
+      OnFindReportSelections(ReportSelections,Handled,Rec);
       IF Handled THEN
         EXIT(TRUE);
 
       EXIT(CopyReportSelectionToReportSelection(ReportSelections));
     END;
 
-    LOCAL PROCEDURE FindReportSelectionsVendor@36(VAR ReportSelections@1001 : Record 77;VendorNo@1000 : Code[20]) : Boolean;
-    VAR
-      Handled@1002 : Boolean;
-    BEGIN
-      IF CopyCustomReportSectionToReportSelectionVendor(VendorNo,ReportSelections) THEN
-        EXIT(TRUE);
-
-      OnFindReportSelections(ReportSelections,Handled);
-      IF Handled THEN
-        EXIT(TRUE);
-
-      EXIT(CopyReportSelectionToReportSelection(ReportSelections));
-    END;
-
-    LOCAL PROCEDURE CopyCustomReportSectionToReportSelection@21(CustNo@1002 : Code[20];VAR ToReportSelections@1001 : Record 77) : Boolean;
+    LOCAL PROCEDURE CopyCustomReportSectionToReportSelection@21(AccountNo@1002 : Code[20];VAR ToReportSelections@1001 : Record 77;TableNo@1003 : Integer) : Boolean;
     VAR
       CustomReportSelection@1000 : Record 9657;
     BEGIN
-      GetCustomReportSelectionByUsageFilter(CustomReportSelection,CustNo,GETFILTER(Usage));
-      CopyToReportSelection(ToReportSelections,CustomReportSelection);
-
-      IF NOT ToReportSelections.FINDSET THEN
-        EXIT(FALSE);
-      EXIT(TRUE);
-    END;
-
-    LOCAL PROCEDURE CopyCustomReportSectionToReportSelectionVendor@39(VendorNo@1001 : Code[20];VAR ToReportSelections@1000 : Record 77) : Boolean;
-    VAR
-      CustomReportSelection@1002 : Record 9657;
-    BEGIN
-      GetCustomReportSelectionByUsageFilterVendor(CustomReportSelection,VendorNo,GETFILTER(Usage));
+      GetCustomReportSelectionByUsageFilter(CustomReportSelection,AccountNo,GETFILTER(Usage),TableNo);
       CopyToReportSelection(ToReportSelections,CustomReportSelection);
 
       IF NOT ToReportSelections.FINDSET THEN
@@ -893,16 +933,16 @@ OBJECT Table 77 Report Selections
       IF FINDSET THEN
         REPEAT
           ToReportSelections := Rec;
-          ToReportSelections.INSERT;
+          IF ToReportSelections.INSERT THEN;
         UNTIL NEXT = 0;
 
       EXIT(ToReportSelections.FINDSET);
     END;
 
-    LOCAL PROCEDURE GetCustomReportSelection@23(VAR CustomReportSelection@1000 : Record 9657;CustNo@1001 : Code[20]) : Boolean;
+    LOCAL PROCEDURE GetCustomReportSelection@23(VAR CustomReportSelection@1000 : Record 9657;AccountNo@1001 : Code[20];TableNo@1002 : Integer) : Boolean;
     BEGIN
-      CustomReportSelection.SETRANGE("Source Type",DATABASE::Customer);
-      CustomReportSelection.SETFILTER("Source No.",CustNo);
+      CustomReportSelection.SETRANGE("Source Type",TableNo);
+      CustomReportSelection.SETFILTER("Source No.",AccountNo);
       IF CustomReportSelection.ISEMPTY THEN
         EXIT(FALSE);
 
@@ -910,39 +950,16 @@ OBJECT Table 77 Report Selections
       CustomReportSelection.SETFILTER("Use for Email Body",GETFILTER("Use for Email Body"));
     END;
 
-    LOCAL PROCEDURE GetCustomReportSelectionVendor@44(VAR CustomReportSelection@1001 : Record 9657;VendorNo@1000 : Code[20]) : Boolean;
-    BEGIN
-      CustomReportSelection.SETRANGE("Source Type",DATABASE::Vendor);
-      CustomReportSelection.SETFILTER("Source No.",VendorNo);
-      IF CustomReportSelection.ISEMPTY THEN
-        EXIT(FALSE);
-
-      CustomReportSelection.SETFILTER("Use for Email Attachment",GETFILTER("Use for Email Attachment"));
-      CustomReportSelection.SETFILTER("Use for Email Body",GETFILTER("Use for Email Body"));
-    END;
-
-    LOCAL PROCEDURE GetCustomReportSelectionByUsageFilter@24(VAR CustomReportSelection@1002 : Record 9657;CustNo@1001 : Code[20];ReportUsageFilter@1000 : Text) : Boolean;
+    LOCAL PROCEDURE GetCustomReportSelectionByUsageFilter@24(VAR CustomReportSelection@1002 : Record 9657;AccountNo@1001 : Code[20];ReportUsageFilter@1000 : Text;TableNo@1003 : Integer) : Boolean;
     BEGIN
       CustomReportSelection.SETFILTER(Usage,ReportUsageFilter);
-      EXIT(GetCustomReportSelection(CustomReportSelection,CustNo));
+      EXIT(GetCustomReportSelection(CustomReportSelection,AccountNo,TableNo));
     END;
 
-    LOCAL PROCEDURE GetCustomReportSelectionByUsageFilterVendor@41(VAR CustomReportSelection@1002 : Record 9657;VendorNo@1001 : Code[20];ReportUsageFilter@1000 : Text) : Boolean;
-    BEGIN
-      CustomReportSelection.SETFILTER(Usage,ReportUsageFilter);
-      EXIT(GetCustomReportSelectionVendor(CustomReportSelection,VendorNo));
-    END;
-
-    LOCAL PROCEDURE GetCustomReportSelectionByUsageOption@25(VAR CustomReportSelection@1002 : Record 9657;CustNo@1001 : Code[20];ReportUsage@1000 : Integer) : Boolean;
+    LOCAL PROCEDURE GetCustomReportSelectionByUsageOption@25(VAR CustomReportSelection@1002 : Record 9657;AccountNo@1001 : Code[20];ReportUsage@1000 : Integer;TableNo@1003 : Integer) : Boolean;
     BEGIN
       CustomReportSelection.SETRANGE(Usage,ReportUsage);
-      EXIT(GetCustomReportSelection(CustomReportSelection,CustNo));
-    END;
-
-    LOCAL PROCEDURE GetCustomReportSelectionByUsageOptionVendor@46(VAR CustomReportSelection@1002 : Record 9657;VendorNo@1001 : Code[20];ReportUsage@1000 : Integer) : Boolean;
-    BEGIN
-      CustomReportSelection.SETRANGE(Usage,ReportUsage);
-      EXIT(GetCustomReportSelectionVendor(CustomReportSelection,VendorNo));
+      EXIT(GetCustomReportSelection(CustomReportSelection,AccountNo,TableNo));
     END;
 
     LOCAL PROCEDURE GetNextEmailAddressFromCustomReportSelection@54(VAR CustomReportSelection@1001 : Record 9657;DefaultEmailAddress@1000 : Text;UsageValue@1002 : Option;SequenceText@1003 : Text) : Text;
@@ -957,6 +974,27 @@ OBJECT Table 77 Report Selections
             EXIT(CustomReportSelection."Send To Email");
       END;
       EXIT(DefaultEmailAddress);
+    END;
+
+    LOCAL PROCEDURE GetUniqueAccountNos@62(VAR TempNameValueBuffer@1001 : TEMPORARY Record 823;RecRef@1002 : RecordRef;AccountNoFieldNo@1004 : Integer);
+    VAR
+      TempCustomer@1003 : TEMPORARY Record 18;
+      AccountNoFieldRef@1005 : FieldRef;
+    BEGIN
+      IF AccountNoFieldNo <> 0 THEN BEGIN
+        AccountNoFieldRef := RecRef.FIELD(AccountNoFieldNo);
+        IF RecRef.FINDSET THEN
+          REPEAT
+            TempNameValueBuffer.ID += 1;
+            TempNameValueBuffer.Name := AccountNoFieldRef.VALUE;
+            TempCustomer."No." := AccountNoFieldRef.VALUE; // to avoid duplicate No. insertion into Name/Value buffer
+            IF TempCustomer.INSERT THEN
+              TempNameValueBuffer.INSERT;
+          UNTIL RecRef.NEXT = 0;
+      END ELSE BEGIN
+        TempNameValueBuffer.INIT;
+        TempNameValueBuffer.INSERT;
+      END;
     END;
 
     [External]
@@ -975,31 +1013,12 @@ OBJECT Table 77 Report Selections
         UNTIL NEXT = 0;
     END;
 
-    LOCAL PROCEDURE FindEmailAddressForEmailLayout@27(LayoutCode@1002 : Code[20];CustNo@1001 : Code[20];ReportUsage@1000 : Integer) : Text[200];
+    LOCAL PROCEDURE FindEmailAddressForEmailLayout@27(LayoutCode@1002 : Code[20];AccountNo@1001 : Code[20];ReportUsage@1000 : Integer;TableNo@1004 : Integer) : Text[200];
     VAR
       CustomReportSelection@1003 : Record 9657;
     BEGIN
       // Search for a potential email address from Custom Report Selections
-      GetCustomReportSelectionByUsageOption(CustomReportSelection,CustNo,ReportUsage);
-      CustomReportSelection.SETFILTER("Send To Email",'<>%1','');
-      CustomReportSelection.SETRANGE("Email Body Layout Code",LayoutCode);
-      IF CustomReportSelection.FINDFIRST THEN
-        EXIT(CustomReportSelection."Send To Email");
-
-      // Relax the filter and search for an email address
-      CustomReportSelection.SETFILTER("Use for Email Body",'');
-      CustomReportSelection.SETRANGE("Email Body Layout Code",'');
-      IF CustomReportSelection.FINDFIRST THEN
-        EXIT(CustomReportSelection."Send To Email");
-      EXIT('');
-    END;
-
-    LOCAL PROCEDURE FindEmailAddressForEmailLayoutVendor@43(LayoutCode@1002 : Code[20];VendorNo@1001 : Code[20];ReportUsage@1000 : Integer) : Text[200];
-    VAR
-      CustomReportSelection@1003 : Record 9657;
-    BEGIN
-      // Search for a potential email address from Custom Report Selections
-      GetCustomReportSelectionByUsageOptionVendor(CustomReportSelection,VendorNo,ReportUsage);
+      GetCustomReportSelectionByUsageOption(CustomReportSelection,AccountNo,ReportUsage,TableNo);
       CustomReportSelection.SETFILTER("Send To Email",'<>%1','');
       CustomReportSelection.SETRANGE("Email Body Layout Code",LayoutCode);
       IF CustomReportSelection.FINDFIRST THEN
@@ -1081,7 +1100,7 @@ OBJECT Table 77 Report Selections
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnFindReportSelections@63(VAR ReportSelections@1001 : Record 77;VAR Handled@1002 : Boolean);
+    LOCAL PROCEDURE OnFindReportSelections@63(VAR FilterReportSelections@1001 : Record 77;VAR IsHandled@1002 : Boolean;VAR ReturnReportSelections@1000 : Record 77);
     BEGIN
     END;
 

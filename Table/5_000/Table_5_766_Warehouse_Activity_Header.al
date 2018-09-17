@@ -2,9 +2,9 @@ OBJECT Table 5766 Warehouse Activity Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -49,6 +49,10 @@ OBJECT Table 5766 Warehouse Activity Header
                                                    OnValidate=VAR
                                                                 WMSManagement@1200 : Codeunit 7302;
                                                               BEGIN
+                                                                IF "Location Code" <> xRec."Location Code" THEN
+                                                                  IF LineExist THEN
+                                                                    ERROR(Text002,FIELDCAPTION("Location Code"));
+
                                                                 IF "Location Code" <> '' THEN
                                                                   IF NOT WMSManagement.LocationIsAllowed("Location Code") THEN
                                                                     ERROR(STRSUBSTNO(Text001,USERID) + STRSUBSTNO(' %1 %2.',FIELDCAPTION("Location Code"),"Location Code"));
@@ -79,6 +83,7 @@ OBJECT Table 5766 Warehouse Activity Header
                                                                 END;
                                                               END;
 
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
     { 5   ;   ;Assignment Date     ;Date          ;CaptionML=[DAN=Tildelt den;
@@ -662,7 +667,11 @@ OBJECT Table 5766 Warehouse Activity Header
       IF NOT WarehouseActivityLineLocal.FINDSET THEN
         EXIT;
       REPEAT
-        IF WarehouseActivityLineLocal."Action Type" = WarehouseActivityLineLocal."Action Type"::Take THEN BEGIN
+        IF (SortOrder = SortOrder::Bin) AND
+           (WarehouseActivityLineLocal."Action Type" = WarehouseActivityLineLocal."Action Type"::Take) OR
+           (SortOrder = SortOrder::Shelf) AND
+           (WarehouseActivityLineLocal."Action Type" = WarehouseActivityLineLocal."Action Type"::" ")
+        THEN BEGIN
           TempWarehouseActivityLine := WarehouseActivityLineLocal;
           TempWarehouseActivityLine.INSERT;
         END;

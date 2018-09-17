@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
   }
   PROPERTIES
   {
@@ -1051,7 +1051,7 @@ OBJECT Table 36 Sales Header
                                                    OnLookup=VAR
                                                               Contact@1001 : Record 5050;
                                                             BEGIN
-                                                              IF "Sell-to Customer No." = '' THEN
+                                                              IF ("Sell-to Customer No." = '') AND ("Document Type" <> "Document Type"::Quote) THEN
                                                                 EXIT;
 
                                                               LookupContact("Sell-to Customer No.","Sell-to Contact No.",Contact);
@@ -2087,6 +2087,7 @@ OBJECT Table 36 Sales Header
                                                                     RespCenter.TABLECAPTION,UserSetupMgt.GetSalesFilter2("Assigned User ID"));
                                                               END;
 
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
     { 13600;  ;EAN No.             ;Code13        ;OnValidate=BEGIN
@@ -2273,9 +2274,6 @@ OBJECT Table 36 Sales Header
       SelectCustomerTemplateQst@1008 : TextConst 'DAN=Vil du v‘lge debitorskabelonen?;ENU=Do you want to select the customer template?';
       ModifyCustomerAddressNotificationLbl@1062 : TextConst 'DAN=Opdater mailadressen;ENU=Update the address';
       DontShowAgainActionLbl@1064 : TextConst 'DAN=Vis ikke igen;ENU=Don''t show again';
-      DontShowAgainFunctionTok@1075 : TextConst 'DAN=SkjulMeddelelseForAktuelBruger;ENU=HideNotificationForCurrentUser';
-      UpdateAddressWithSellToAddressFunctionTok@1079 : TextConst 'DAN=Kopi‚rKundeadressefelterFraSalgsbilag;ENU=CopySellToCustomerAddressFieldsFromSalesDocument';
-      UpdateAddressWithBilltoAddressTok@1080 : TextConst 'DAN=Kopi‚rFaktureresTilKundeadressefelterFraSalgsbilag;ENU=CopyBillToCustomerAddressFieldsFromSalesDocument';
       ModifyCustomerAddressNotificationMsg@1063 : TextConst '@@@="%1=customer name";DAN=Den indtastede adresse for %1 er forskellig fra debitorens eksisterende adresse.;ENU=The address you entered for %1 is different from the customer''s existing address.';
       ValidVATNoMsg@1254 : TextConst 'DAN=CVR-nummeret er gyldigt.;ENU=The VAT registration number is valid.';
       InvalidVatRegNoMsg@1255 : TextConst 'DAN=CVR-nummeret er ikke gyldigt. Pr›v at angive nummeret igen.;ENU=The VAT registration number is not valid. Try entering the number again.';
@@ -3849,6 +3847,7 @@ OBJECT Table 36 Sales Header
       SalesLine.SETRANGE("Document Type","Document Type");
       SalesLine.SETRANGE("Document No.","No.");
       SalesLine.SETRANGE("Drop Shipment",FALSE);
+      SalesLine.SETRANGE(Type,SalesLine.Type::Item);
       Result := TRUE;
       IF SalesLine.FINDSET THEN
         REPEAT
@@ -4681,13 +4680,19 @@ OBJECT Table 36 Sales Header
     LOCAL PROCEDURE LookupContact@122(CustomerNo@1000 : Code[20];ContactNo@1003 : Code[20];VAR Contact@1001 : Record 5050);
     VAR
       ContactBusinessRelation@1002 : Record 5054;
+      FilterByContactCompany@1004 : Boolean;
     BEGIN
       IF ContactBusinessRelation.FindByRelation(ContactBusinessRelation."Link to Table"::Customer,CustomerNo) THEN
         Contact.SETRANGE("Company No.",ContactBusinessRelation."Contact No.")
       ELSE
-        Contact.SETRANGE("Company No.",'');
+        IF "Document Type" = "Document Type"::Quote THEN
+          FilterByContactCompany := TRUE
+        ELSE
+          Contact.SETRANGE("Company No.",'');
       IF ContactNo <> '' THEN
-        IF Contact.GET(ContactNo) THEN ;
+        IF Contact.GET(ContactNo) THEN
+          IF FilterByContactCompany THEN
+            Contact.SETRANGE("Company No.",Contact."Company No.");
     END;
 
     PROCEDURE SetAllowSelectNoSeries@100();
@@ -4739,7 +4744,8 @@ OBJECT Table 36 Sales Header
         IF HasBillToAddress AND HasDifferentBillToAddress(Customer) THEN
           ShowModifyAddressNotification(GetModifyBillToCustomerAddressNotificationId,
             ModifyCustomerAddressNotificationLbl,ModifyCustomerAddressNotificationMsg,
-            UpdateAddressWithBilltoAddressTok,"Bill-to Customer No.","Bill-to Name",FIELDNAME("Bill-to Customer No."));
+            'CopyBillToCustomerAddressFieldsFromSalesDocument',"Bill-to Customer No.",
+            "Bill-to Name",FIELDNAME("Bill-to Customer No."));
     END;
 
     LOCAL PROCEDURE ModifyCustomerAddress@150();
@@ -4751,7 +4757,8 @@ OBJECT Table 36 Sales Header
       IF Customer.GET("Sell-to Customer No.") AND HasSellToAddress AND HasDifferentSellToAddress(Customer) THEN
         ShowModifyAddressNotification(GetModifyCustomerAddressNotificationId,
           ModifyCustomerAddressNotificationLbl,ModifyCustomerAddressNotificationMsg,
-          UpdateAddressWithSellToAddressFunctionTok,"Sell-to Customer No.","Sell-to Customer Name",FIELDNAME("Sell-to Customer No."));
+          'CopySellToCustomerAddressFieldsFromSalesDocument',"Sell-to Customer No.",
+          "Sell-to Customer Name",FIELDNAME("Sell-to Customer No."));
     END;
 
     LOCAL PROCEDURE ShowModifyAddressNotification@157(NotificationID@1001 : GUID;NotificationLbl@1004 : Text;NotificationMsg@1005 : Text;NotificationFunctionTok@1006 : Text;CustomerNumber@1002 : Code[20];CustomerName@1003 : Text[50];CustomerNumberFieldName@1008 : Text);
@@ -4766,7 +4773,8 @@ OBJECT Table 36 Sales Header
       ModifyCustomerAddressNotification.ID := NotificationID;
       ModifyCustomerAddressNotification.MESSAGE := STRSUBSTNO(NotificationMsg,CustomerName);
       ModifyCustomerAddressNotification.ADDACTION(NotificationLbl,CODEUNIT::"Document Notifications",NotificationFunctionTok);
-      ModifyCustomerAddressNotification.ADDACTION(DontShowAgainActionLbl,CODEUNIT::"Document Notifications",DontShowAgainFunctionTok);
+      ModifyCustomerAddressNotification.ADDACTION(
+        DontShowAgainActionLbl,CODEUNIT::"Document Notifications",'HideNotificationForCurrentUser');
       ModifyCustomerAddressNotification.SCOPE := NOTIFICATIONSCOPE::LocalScope;
       ModifyCustomerAddressNotification.SETDATA(FIELDNAME("Document Type"),FORMAT("Document Type"));
       ModifyCustomerAddressNotification.SETDATA(FIELDNAME("No."),"No.");

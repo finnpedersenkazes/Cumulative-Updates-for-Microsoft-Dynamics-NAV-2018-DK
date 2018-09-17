@@ -2,9 +2,9 @@ OBJECT Table 2840 Native - Gen. Settings Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -13,44 +13,60 @@ OBJECT Table 2840 Native - Gen. Settings Buffer
   }
   FIELDS
   {
-    { 1   ;   ;Primary Key         ;Code10        ;CaptionML=[DAN=Prim‘r n›gle;
+    { 1   ;   ;Primary Key         ;Code10        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Prim‘r n›gle;
                                                               ENU=Primary Key] }
-    { 2   ;   ;Currency Symbol     ;Text10        ;CaptionML=[DAN=Valutasymbol;
+    { 2   ;   ;Currency Symbol     ;Text10        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Valutasymbol;
                                                               ENU=Currency Symbol] }
-    { 3   ;   ;Paypal Email Address;Text250       ;CaptionML=[DAN=PayPal-mailadresse;
+    { 3   ;   ;Paypal Email Address;Text250       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=PayPal-mailadresse;
                                                               ENU=Paypal Email Address] }
-    { 4   ;   ;Country/Region Code ;Code10        ;CaptionML=[DAN=Lande-/omr†dekode;
+    { 4   ;   ;Country/Region Code ;Code10        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Lande-/omr†dekode;
                                                               ENU=Country/Region Code] }
-    { 5   ;   ;Language Locale ID  ;Integer       ;CaptionML=[DAN=Id for landestandard;
+    { 5   ;   ;Language Locale ID  ;Integer       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Id for landestandard;
                                                               ENU=Language Locale ID] }
-    { 6   ;   ;Language Code       ;Text50        ;CaptionML=[DAN=Sprogkode;
+    { 6   ;   ;Language Code       ;Text50        ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Sprogkode;
                                                               ENU=Language Code] }
-    { 7   ;   ;Language Display Name;Text80       ;CaptionML=[DAN=Visningsnavn for sprog;
+    { 7   ;   ;Language Display Name;Text80       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Visningsnavn for sprog;
                                                               ENU=Language Display Name] }
-    { 50  ;   ;Default Tax ID      ;GUID          ;CaptionML=[DAN=Standardskatte-id;
+    { 50  ;   ;Default Tax ID      ;GUID          ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Standardskatte-id;
                                                               ENU=Default Tax ID];
                                                    Editable=No }
-    { 51  ;   ;Defauilt Tax Description;Text50    ;CaptionML=[DAN=Beskrivelse af standardskat;
+    { 51  ;   ;Defauilt Tax Description;Text50    ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Beskrivelse af standardskat;
                                                               ENU=Defauilt Tax Description];
                                                    Editable=No }
-    { 52  ;   ;Default Payment Terms ID;GUID      ;CaptionML=[DAN=Id for standardbetalingsbetingelser;
+    { 52  ;   ;Default Payment Terms ID;GUID      ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Id for standardbetalingsbetingelser;
                                                               ENU=Default Payment Terms ID];
                                                    Editable=No }
-    { 53  ;   ;Def. Pmt. Term Description;Text50  ;CaptionML=[DAN=Beskrivelse af vilk†r for udskudt betaling;
+    { 53  ;   ;Def. Pmt. Term Description;Text50  ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Beskrivelse af vilk†r for udskudt betaling;
                                                               ENU=Def. Pmt. Term Description];
                                                    Editable=No }
-    { 54  ;   ;Default Payment Method ID;GUID     ;CaptionML=[DAN=Id for standardbetalingsmetode;
+    { 54  ;   ;Default Payment Method ID;GUID     ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Id for standardbetalingsmetode;
                                                               ENU=Default Payment Method ID];
                                                    Editable=No }
-    { 55  ;   ;Def. Pmt. Method Description;Text50;CaptionML=[DAN=Beskrivelse af metode til udskudt betaling;
+    { 55  ;   ;Def. Pmt. Method Description;Text50;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Beskrivelse af metode til udskudt betaling;
                                                               ENU=Def. Pmt. Method Description];
                                                    Editable=No }
-    { 56  ;   ;Amount Rounding Precision;Decimal  ;CaptionML=[DAN=Pr‘cision ved afrunding af bel›b;
+    { 56  ;   ;Amount Rounding Precision;Decimal  ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Pr‘cision ved afrunding af bel›b;
                                                               ENU=Amount Rounding Precision];
                                                    Editable=No }
-    { 60  ;   ;EnableSync          ;Boolean       ;CaptionML=[DAN=EnableSync;
+    { 60  ;   ;EnableSync          ;Boolean       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=EnableSync;
                                                               ENU=EnableSync] }
-    { 61  ;   ;EnableSyncCoupons   ;Boolean       ;CaptionML=[DAN=EnableSyncCoupons;
+    { 61  ;   ;EnableSyncCoupons   ;Boolean       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=EnableSyncCoupons;
                                                               ENU=EnableSyncCoupons] }
   }
   KEYS

@@ -2,9 +2,9 @@ OBJECT Page 95 Sales Quote Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -589,7 +589,10 @@ OBJECT Page 95 Sales Quote Subform
                 SourceExpr="Allow Invoice Disc.";
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             RedistributeTotalsOnAfterValidate;
+                             CurrPage.SAVERECORD;
+                             AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             ValidateInvoiceDiscountAmount;
                            END;
                             }
 
@@ -818,7 +821,7 @@ OBJECT Page 95 Sales Quote Subform
                 SourceExpr=InvoiceDiscountPct;
                 Editable=InvDiscAmountEditable;
                 OnValidate=BEGIN
-                             InvoiceDiscountAmount := ROUND(TotalSalesLine."Line Amount" * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
+                             InvoiceDiscountAmount := ROUND(AmountWithDiscountAllowed * InvoiceDiscountPct / 100,Currency."Amount Rounding Precision");
                              ValidateInvoiceDiscountAmount;
                            END;
                             }
@@ -882,6 +885,7 @@ OBJECT Page 95 Sales Quote Subform
       SalesCalcDiscByType@1015 : Codeunit 56;
       DocumentTotals@1014 : Codeunit 57;
       VATAmount@1013 : Decimal;
+      AmountWithDiscountAllowed@1021 : Decimal;
       ShortcutDimCode@1003 : ARRAY [8] OF Code[20];
       IsCommentLine@1012 : Boolean;
       UnitofMeasureCodeIsChangeable@1008 : Boolean;
@@ -1091,6 +1095,7 @@ OBJECT Page 95 Sales Quote Subform
           CalcInvDisc;
 
       DocumentTotals.CalculateSalesTotals(TotalSalesLine,VATAmount,Rec);
+      AmountWithDiscountAllowed := DocumentTotals.CalcTotalSalesAmountOnlyDiscountAllowed(Rec);
       InvoiceDiscountAmount := TotalSalesLine."Inv. Discount Amount";
       InvoiceDiscountPct := SalesCalcDiscByType.GetCustInvoiceDiscountPct(Rec);
     END;

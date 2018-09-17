@@ -2,9 +2,9 @@ OBJECT Table 1303 Mini Vendor Template
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -300,6 +300,7 @@ OBJECT Table 1303 Mini Vendor Template
           ConfigTemplateManagement.UpdateRecord(ConfigTemplateHeader,VendorRecRef);
           DimensionsTemplate.InsertDimensionsFromTemplates(ConfigTemplateHeader,Vendor."No.",DATABASE::Vendor);
           VendorRecRef.SETTABLE(Vendor);
+          Vendor.FIND;
         END;
       END;
     END;
@@ -319,6 +320,7 @@ OBJECT Table 1303 Mini Vendor Template
       RecRef.SETTABLE(Vendor);
 
       DimensionsTemplate.InsertDimensionsFromTemplates(ConfigTemplateHeader,Vendor."No.",DATABASE::Vendor);
+      Vendor.FIND;
     END;
 
     [External]

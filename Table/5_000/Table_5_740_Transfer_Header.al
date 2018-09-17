@@ -2,9 +2,9 @@ OBJECT Table 5740 Transfer Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=22-02-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.20783;
   }
   PROPERTIES
   {
@@ -66,6 +66,7 @@ OBJECT Table 5740 Transfer Header
                                                                 Confirmed@1001 : Boolean;
                                                               BEGIN
                                                                 TestStatusOpen;
+
                                                                 IF ("Transfer-from Code" = "Transfer-to Code") AND
                                                                    ("Transfer-from Code" <> '')
                                                                 THEN
@@ -73,6 +74,10 @@ OBJECT Table 5740 Transfer Header
                                                                     Text001,
                                                                     FIELDCAPTION("Transfer-from Code"),FIELDCAPTION("Transfer-to Code"),
                                                                     TABLECAPTION,"No.");
+
+                                                                IF "Direct Transfer" THEN
+                                                                  VerifyNoOutboundWhseHandlingOnLocation("Transfer-from Code");
+
                                                                 IF xRec."Transfer-from Code" <> "Transfer-from Code" THEN BEGIN
                                                                   IF HideValidationDialog OR
                                                                      (xRec."Transfer-from Code" = '')
@@ -171,6 +176,7 @@ OBJECT Table 5740 Transfer Header
                                                                 Confirmed@1001 : Boolean;
                                                               BEGIN
                                                                 TestStatusOpen;
+
                                                                 IF ("Transfer-from Code" = "Transfer-to Code") AND
                                                                    ("Transfer-to Code" <> '')
                                                                 THEN
@@ -178,6 +184,10 @@ OBJECT Table 5740 Transfer Header
                                                                     Text001,
                                                                     FIELDCAPTION("Transfer-from Code"),FIELDCAPTION("Transfer-to Code"),
                                                                     TABLECAPTION,"No.");
+
+                                                                IF "Direct Transfer" THEN
+                                                                  VerifyNoInboundWhseHandlingOnLocation("Transfer-to Code");
+
                                                                 IF xRec."Transfer-to Code" <> "Transfer-to Code" THEN BEGIN
                                                                   IF HideValidationDialog OR (xRec."Transfer-to Code" = '') THEN
                                                                     Confirmed := TRUE
@@ -429,8 +439,12 @@ OBJECT Table 5740 Transfer Header
                                                    CaptionML=[DAN=Transaktionsspecifikation;
                                                               ENU=Transaction Specification] }
     { 70  ;   ;Direct Transfer     ;Boolean       ;OnValidate=BEGIN
-                                                                IF "Direct Transfer" THEN
+                                                                IF "Direct Transfer" THEN BEGIN
+                                                                  VerifyNoOutboundWhseHandlingOnLocation("Transfer-from Code");
+                                                                  VerifyNoInboundWhseHandlingOnLocation("Transfer-to Code");
                                                                   VALIDATE("In-Transit Code",'');
+                                                                END;
+
                                                                 IF NOT "Direct Transfer" AND HasTransferLines THEN
                                                                   VALIDATE("Direct Transfer",TRUE);
 
@@ -533,6 +547,7 @@ OBJECT Table 5740 Transfer Header
                                                    CaptionML=[DAN=Har sprunget over linjer;
                                                               ENU=Has Shipped Lines] }
     { 9000;   ;Assigned User ID    ;Code50        ;TableRelation="User Setup";
+                                                   DataClassification=EndUserIdentifiableInformation;
                                                    CaptionML=[DAN=Tildelt bruger-id;
                                                               ENU=Assigned User ID] }
   }
@@ -865,7 +880,11 @@ OBJECT Table 5740 Transfer Header
           TABLECAPTION,"No.");
 
       IF NOT "Direct Transfer" THEN
-        TESTFIELD("In-Transit Code");
+        TESTFIELD("In-Transit Code")
+      ELSE BEGIN
+        VerifyNoOutboundWhseHandlingOnLocation("Transfer-from Code");
+        VerifyNoInboundWhseHandlingOnLocation("Transfer-to Code");
+      END;
       TESTFIELD(Status,Status::Released);
       TESTFIELD("Posting Date");
     END;
@@ -898,6 +917,30 @@ OBJECT Table 5740 Transfer Header
       TransferLine.SETRANGE("Document No.","No.");
       TransferLine.SETFILTER("Item No.",'<>%1','');
       EXIT(NOT TransferLine.ISEMPTY);
+    END;
+
+    [External]
+    PROCEDURE VerifyNoOutboundWhseHandlingOnLocation@13(LocationCode@1000 : Code[10]);
+    VAR
+      Location@1001 : Record 14;
+    BEGIN
+      IF NOT Location.GET(LocationCode) THEN
+        EXIT;
+
+      Location.TESTFIELD("Require Pick",FALSE);
+      Location.TESTFIELD("Require Shipment",FALSE);
+    END;
+
+    [External]
+    PROCEDURE VerifyNoInboundWhseHandlingOnLocation@18(LocationCode@1000 : Code[10]);
+    VAR
+      Location@1001 : Record 14;
+    BEGIN
+      IF NOT Location.GET(LocationCode) THEN
+        EXIT;
+
+      Location.TESTFIELD("Require Put-away",FALSE);
+      Location.TESTFIELD("Require Receive",FALSE);
     END;
 
     BEGIN
