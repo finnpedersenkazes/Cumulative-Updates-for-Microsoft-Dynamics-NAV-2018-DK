@@ -2,9 +2,9 @@ OBJECT Table 5900 Service Header
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -2749,7 +2749,7 @@ OBJECT Table 5900 Service Header
       ServItemLine.RESET;
       ServItemLine.SETRANGE("Document Type","Document Type");
       ServItemLine.SETRANGE("Document No.","No.");
-      EXIT(ServItemLine.FINDFIRST);
+      EXIT(NOT ServItemLine.ISEMPTY);
     END;
 
     LOCAL PROCEDURE ServLineExists@11() : Boolean;
@@ -2757,7 +2757,7 @@ OBJECT Table 5900 Service Header
       ServLine.RESET;
       ServLine.SETRANGE("Document Type","Document Type");
       ServLine.SETRANGE("Document No.","No.");
-      EXIT(ServLine.FIND('-'));
+      EXIT(NOT ServLine.ISEMPTY);
     END;
 
     LOCAL PROCEDURE MessageIfServLinesExist@7(ChangedFieldName@1000 : Text[100]);

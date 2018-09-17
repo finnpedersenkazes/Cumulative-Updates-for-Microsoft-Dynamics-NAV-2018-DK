@@ -2,9 +2,9 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -100,6 +100,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
     LOCAL PROCEDURE CreateRelatedData@5(VAR RecRef@1014 : RecordRef;EntityTypeTableNo@1002 : Integer;EntityNo@1006 : Code[50];VAR PackageCode@1015 : Code[20];ActionType@1016 : 'Export a data subject''s data,Create a data privacy configuration package';GeneratePreview@1019 : Boolean;DataSensitivityOption@1020 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
     VAR
       ConfigPackage@1007 : Record 8623;
+      Field@1010 : Record 2000000041;
       TableRelationsMetadata@1017 : Record 2000000141;
       DataSensitivity@1003 : Record 2000000159;
       DataPrivacyListPage@1001 : Page 1181;
@@ -109,7 +110,6 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       ProcessingOrder@1012 : Integer;
       PackageName@1004 : Text[50];
       EntityKeyField@1000 : Integer;
-      FieldIndex@1009 : Integer;
     BEGIN
       PackageCode := GetPackageCode(EntityTypeTableNo,EntityNo,ActionType);
       PackageName :=
@@ -143,14 +143,15 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       CreatePackageTable(PackageCode,EntityTypeTableNo);
 
       LocalRecRef.OPEN(EntityTypeTableNo);
-      FOR FieldIndex := 1 TO LocalRecRef.FIELDCOUNT DO BEGIN
-        FieldRef := LocalRecRef.FIELDINDEX(FieldIndex);
-        IF IsInPrimaryKey(FieldRef) THEN BEGIN
-          ProcessingOrder += 1;
-          CreatePackageField(ConfigPackage.Code,EntityTypeTableNo,FieldRef.NUMBER,ProcessingOrder);
-          CreatePackageFilter(ConfigPackage.Code,EntityTypeTableNo,EntityKeyField,FORMAT(EntityNo));
-        END;
-      END;
+      IF TypeHelper.FindFields(EntityTypeTableNo,Field) THEN
+        REPEAT
+          FieldRef := LocalRecRef.FIELD(Field."No.");
+          IF IsInPrimaryKey(FieldRef) THEN BEGIN
+            ProcessingOrder += 1;
+            CreatePackageField(ConfigPackage.Code,EntityTypeTableNo,FieldRef.NUMBER,ProcessingOrder);
+            CreatePackageFilter(ConfigPackage.Code,EntityTypeTableNo,EntityKeyField,FORMAT(EntityNo));
+          END;
+        UNTIL Field.NEXT = 0;
       LocalRecRef.CLOSE;
 
       // This will handle the fields on the master table.
@@ -437,11 +438,11 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
     LOCAL PROCEDURE CreateRelatedDataFields@27(VAR TableRelationsMetadata@1000 : Record 2000000141;VAR ConfigPackage@1003 : Record 8623;EntityNo@1007 : Code[50];VAR LastTableID@1005 : Integer;DataSensitivityOption@1004 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
     VAR
       DataSensitivity@1002 : Record 2000000159;
+      Field@1011 : Record 2000000041;
       RecRef@1008 : RecordRef;
       FieldRef@1009 : FieldRef;
       ProcessingOrder@1006 : Integer;
       FilterCreated@1001 : Boolean;
-      FieldIndex@1010 : Integer;
       TableIDProcessed@1012 : Integer;
     BEGIN
       REPEAT
@@ -451,13 +452,14 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
         IF TableIDProcessed <> TableRelationsMetadata."Table ID" THEN BEGIN
           RecRef.OPEN(TableRelationsMetadata."Table ID");
           TableIDProcessed := TableRelationsMetadata."Table ID";
-          FOR FieldIndex := 1 TO RecRef.FIELDCOUNT DO BEGIN
-            FieldRef := RecRef.FIELDINDEX(FieldIndex);
-            IF IsInPrimaryKey(FieldRef) THEN BEGIN
-              ProcessingOrder += 1;
-              CreatePackageField(ConfigPackage.Code,TableRelationsMetadata."Table ID",FieldRef.NUMBER,ProcessingOrder);
-            END;
-          END;
+          IF TypeHelper.FindFields(RecRef.NUMBER,Field) THEN
+            REPEAT
+              FieldRef := RecRef.FIELD(Field."No.");
+              IF IsInPrimaryKey(FieldRef) THEN BEGIN
+                ProcessingOrder += 1;
+                CreatePackageField(ConfigPackage.Code,TableRelationsMetadata."Table ID",FieldRef.NUMBER,ProcessingOrder);
+              END;
+            UNTIL Field.NEXT = 0;
           RecRef.CLOSE;
         END;
 
@@ -534,7 +536,8 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
         DATABASE::"Service Invoice Header",
         DATABASE::"Service Cr.Memo Header",
         DATABASE::"Return Shipment Header",
-        DATABASE::"Return Receipt Header":
+        DATABASE::"Return Receipt Header",
+        DATABASE::"Interaction Log Entry":
           IF ContactPerson.GET(FORMAT(FieldValue,20)) THEN // FieldValue is the EntityNo for this method
             IF ContactCompany.GET(ContactPerson."Company No.") THEN
               FieldValue := FieldValue + ' | ' + ContactCompany."No.";

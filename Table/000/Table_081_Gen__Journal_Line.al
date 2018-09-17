@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -352,6 +352,7 @@ OBJECT Table 81 Gen. Journal Line
                                                                     "Bal. Tax Area Code" := '';
                                                                     "Bal. Tax Liable" := FALSE;
                                                                     "Bal. Tax Group Code" := '';
+                                                                    ClearCurrencyCode;
                                                                   END;
                                                                   EXIT;
                                                                 END;
@@ -463,7 +464,8 @@ OBJECT Table 81 Gen. Journal Line
                                                                 IF Amount <> xRec.Amount THEN BEGIN
                                                                   IF ("Applies-to Doc. No." <> '') OR ("Applies-to ID" <> '') THEN
                                                                     SetApplyToAmount;
-                                                                  PaymentToleranceMgt.PmtTolGenJnl(Rec);
+                                                                  IF (xRec.Amount <> 0) OR (xRec."Applies-to Doc. No." <> '') OR (xRec."Applies-to ID" <> '') THEN
+                                                                    PaymentToleranceMgt.PmtTolGenJnl(Rec);
                                                                 END;
 
                                                                 IF JobTaskIsSet THEN BEGIN
@@ -5020,7 +5022,9 @@ OBJECT Table 81 Gen. Journal Line
       IF ("Account Type" = "Account Type"::"Bank Account") AND ("Currency Code" = '') THEN
         "Currency Code" := Cust."Currency Code";
       ClearBalancePostingGroups;
-      IF (Cust."Bill-to Customer No." <> '') AND (Cust."Bill-to Customer No." <> "Bal. Account No.") THEN
+      IF (Cust."Bill-to Customer No." <> '') AND (Cust."Bill-to Customer No." <> "Bal. Account No.") AND
+         NOT HideValidationDialog
+      THEN
         IF NOT CONFIRM(Text014,FALSE,Cust.TABLECAPTION,Cust."No.",Cust.FIELDCAPTION("Bill-to Customer No."),
              Cust."Bill-to Customer No.")
         THEN
@@ -5177,10 +5181,12 @@ OBJECT Table 81 Gen. Journal Line
         "Salespers./Purch. Code" := '';
         "Payment Terms Code" := '';
       END;
-      IF BankAcc."Currency Code" = '' THEN BEGIN
+      IF BankAcc."Currency Code" = '' THEN
         IF "Account No." = '' THEN
-          "Currency Code" := '';
-      END ELSE
+          "Currency Code" := ''
+        ELSE
+          ClearCurrencyCode
+      ELSE
         IF SetCurrencyCode("Bal. Account Type","Bal. Account No.") THEN
           BankAcc.TESTFIELD("Currency Code","Currency Code")
         ELSE
@@ -5467,6 +5473,17 @@ OBJECT Table 81 Gen. Journal Line
               END;
           END;
         UNTIL NEXT <= 0;
+      END;
+    END;
+
+    LOCAL PROCEDURE ClearCurrencyCode@211();
+    VAR
+      BankAccount@1000 : Record 270;
+    BEGIN
+      IF (xRec."Bal. Account Type" = xRec."Bal. Account Type"::"Bank Account") AND (xRec."Bal. Account No." <> '') THEN BEGIN
+        BankAccount.GET(xRec."Bal. Account No.");
+        IF BankAccount."Currency Code" = "Currency Code" THEN
+          "Currency Code" := '';
       END;
     END;
 

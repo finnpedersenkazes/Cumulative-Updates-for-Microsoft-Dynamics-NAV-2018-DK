@@ -2,9 +2,9 @@ OBJECT Table 1512 Notification Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -71,6 +71,14 @@ OBJECT Table 1512 Notification Setup
         EXIT;
       NotificationManagement.CreateDefaultNotificationSetup(NotificationType);
       GET('',NotificationType)
+    END;
+
+    [External]
+    PROCEDURE GetNotificationSetupForUser@2(NotificationType@1000 : 'New Record,Approval,Overdue';RecipientUserID@1001 : Code[50]);
+    BEGIN
+      IF GET(RecipientUserID,NotificationType) THEN
+        EXIT;
+      GetNotificationSetup(NotificationType);
     END;
 
     BEGIN

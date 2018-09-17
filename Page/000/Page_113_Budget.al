@@ -2,9 +2,9 @@ OBJECT Page 113 Budget
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -826,7 +826,7 @@ OBJECT Page 113 Budget
             RecRef.GETTABLE(GLAccount);
             RecRef.SETTABLE(GLAccount);
             IF GLAccFilter <> '' THEN BEGIN
-              FieldRef := RecRef.FIELDINDEX(1);
+              FieldRef := RecRef.FIELD(GLAccount.FIELDNO("No."));
               FieldRef.SETFILTER(GLAccFilter);
             END;
             IF IncomeBalanceGLAccFilter <> IncomeBalanceGLAccFilter::" " THEN BEGIN

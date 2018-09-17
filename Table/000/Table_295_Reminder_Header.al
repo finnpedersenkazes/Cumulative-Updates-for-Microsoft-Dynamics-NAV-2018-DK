@@ -2,9 +2,9 @@ OBJECT Table 295 Reminder Header
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -175,7 +175,7 @@ OBJECT Table 295 Reminder Header
                                                               ENU=Currency Code] }
     { 13  ;   ;Contact             ;Text50        ;CaptionML=[DAN=Kontakt;
                                                               ENU=Contact] }
-    { 14  ;   ;Your Reference      ;Text30        ;CaptionML=[DAN=Reference;
+    { 14  ;   ;Your Reference      ;Text35        ;CaptionML=[DAN=Reference;
                                                               ENU=Your Reference] }
     { 15  ;   ;Shortcut Dimension 1 Code;Code20   ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
                                                    OnValidate=BEGIN

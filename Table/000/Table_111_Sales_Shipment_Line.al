@@ -2,9 +2,9 @@ OBJECT Table 111 Sales Shipment Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -227,6 +227,15 @@ OBJECT Table 111 Sales Shipment Line
                                                    Editable=No;
                                                    AutoFormatType=2;
                                                    AutoFormatExpr=GetCurrencyCode }
+    { 107 ;   ;IC Partner Ref. Type;Option        ;DataClassification=CustomerContent;
+                                                   CaptionML=[DAN=IC Partner Ref. Type;
+                                                              ENU=IC Partner Ref. Type];
+                                                   OptionCaptionML=[DAN=" ,G/L Account,Item,,,Charge (Item),Cross reference,Common Item No.";
+                                                                    ENU=" ,G/L Account,Item,,,Charge (Item),Cross reference,Common Item No."];
+                                                   OptionString=[ ,G/L Account,Item,,,Charge (Item),Cross reference,Common Item No.] }
+    { 108 ;   ;IC Partner Reference;Code20        ;DataClassification=CustomerContent;
+                                                   CaptionML=[DAN=IC Partner Reference;
+                                                              ENU=IC Partner Reference] }
     { 131 ;   ;Posting Date        ;Date          ;CaptionML=[DAN=Bogf›ringsdato;
                                                               ENU=Posting Date] }
     { 480 ;   ;Dimension Set ID    ;Integer       ;TableRelation="Dimension Set Entry";

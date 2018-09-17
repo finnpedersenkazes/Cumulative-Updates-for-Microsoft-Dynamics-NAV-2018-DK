@@ -2,9 +2,9 @@ OBJECT Codeunit 448 Job Queue Dispatcher
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -13,18 +13,16 @@ OBJECT Codeunit 448 Job Queue Dispatcher
     OnRun=BEGIN
             SELECTLATESTVERSION;
             GET(ID);
-            IF IsReadyToStart THEN
-              IF IsExpired(CURRENTDATETIME) THEN
-                DeleteTask
+            IF NOT IsReadyToStart THEN
+              EXIT;
+
+            IF IsExpired(CURRENTDATETIME) THEN
+              DeleteTask
+            ELSE
+              IF WaitForOthersWithSameCategory(Rec) THEN
+                Reschedule(Rec)
               ELSE
-                IF WaitForOthersWithSameCategory(Rec) THEN
-                  Reschedule(Rec)
-                ELSE BEGIN
-                  RefreshLocked;
-                  IF NOT IsReadyToStart THEN
-                    EXIT;
-                  HandleRequest(Rec);
-                END;
+                HandleRequest(Rec);
             COMMIT;
           END;
 
@@ -40,6 +38,10 @@ OBJECT Codeunit 448 Job Queue Dispatcher
       WasSuccess@1002 : Boolean;
       WasInactive@1001 : Boolean;
     BEGIN
+      JobQueueEntry.RefreshLocked;
+      IF NOT JobQueueEntry.IsReadyToStart THEN
+        EXIT;
+
       WITH JobQueueEntry DO BEGIN
         IF Status = Status::Ready THEN BEGIN
           Status := Status::"In Process";
@@ -70,15 +72,20 @@ OBJECT Codeunit 448 Job Queue Dispatcher
     LOCAL PROCEDURE WaitForOthersWithSameCategory@9(VAR CurrJobQueueEntry@1000 : Record 472) : Boolean;
     VAR
       JobQueueEntry@1001 : Record 472;
+      JobQueueCategory@1002 : Record 471;
     BEGIN
       IF CurrJobQueueEntry."Job Queue Category Code" = '' THEN
+        EXIT(FALSE);
+
+      // Use the Job Queue Category as a semaphore so only one checks at the time.
+      JobQueueCategory.LOCKTABLE;
+      IF NOT JobQueueCategory.GET(CurrJobQueueEntry."Job Queue Category Code") THEN
         EXIT(FALSE);
 
       WITH JobQueueEntry DO BEGIN
         SETFILTER(ID,'<>%1',CurrJobQueueEntry.ID);
         SETRANGE("Job Queue Category Code",CurrJobQueueEntry."Job Queue Category Code");
-        SETFILTER(Status,'%1|%2',Status::"In Process",Status::Ready);
-        SETFILTER("Earliest Start Date/Time",'<%1',CURRENTDATETIME + 500); // already started or imminent start
+        SETRANGE(Status,Status::"In Process");
         EXIT(NOT ISEMPTY);
       END;
     END;
@@ -86,6 +93,7 @@ OBJECT Codeunit 448 Job Queue Dispatcher
     LOCAL PROCEDURE Reschedule@15(VAR JobQueueEntry@1000 : Record 472);
     BEGIN
       WITH JobQueueEntry DO BEGIN
+        RefreshLocked;
         RANDOMIZE;
         CLEAR("System Task ID"); // to avoid canceling this task, which has already been executed
         "Earliest Start Date/Time" := CURRENTDATETIME + 2000 + RANDOM(5000);

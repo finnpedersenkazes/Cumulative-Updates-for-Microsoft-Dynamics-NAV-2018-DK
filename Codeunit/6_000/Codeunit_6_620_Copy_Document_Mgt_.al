@@ -2,9 +2,9 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -970,6 +970,8 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 
       IF MoveNegLines AND (ToSalesLine.Type <> ToSalesLine.Type::" ") THEN BEGIN
         ToSalesLine.VALIDATE(Quantity,-FromSalesLine.Quantity);
+        ToSalesLine.VALIDATE("Unit Price",FromSalesLine."Unit Price");
+        ToSalesLine.VALIDATE("Line Discount %",FromSalesLine."Line Discount %");
         ToSalesLine."Appl.-to Item Entry" := FromSalesLine."Appl.-to Item Entry";
         ToSalesLine."Appl.-from Item Entry" := FromSalesLine."Appl.-from Item Entry";
         ToSalesLine."Job No." := FromSalesLine."Job No.";
@@ -2153,7 +2155,6 @@ OBJECT Codeunit 6620 Copy Document Mgt.
     PROCEDURE CopySalesInvLinesToDoc@34(ToSalesHeader@1002 : Record 36;VAR FromSalesInvLine@1001 : Record 113;VAR LinesNotCopied@1020 : Integer;VAR MissingExCostRevLink@1019 : Boolean);
     VAR
       ItemLedgEntryBuf@1008 : TEMPORARY Record 32;
-      TempTrkgItemLedgEntry@1012 : TEMPORARY Record 32;
       FromSalesHeader@1006 : Record 36;
       FromSalesLine@1003 : Record 37;
       FromSalesLine2@1022 : Record 37;
@@ -2162,7 +2163,6 @@ OBJECT Codeunit 6620 Copy Document Mgt.
       FromSalesInvHeader@1005 : Record 112;
       TempItemTrkgEntry@1009 : TEMPORARY Record 337;
       TempDocSalesLine@1026 : TEMPORARY Record 37;
-      ItemTrackingMgt@1018 : Codeunit 6500;
       OldInvDocNo@1011 : Code[20];
       OldShptDocNo@1014 : Code[20];
       OldBufDocNo@1037 : Code[20];
@@ -2310,17 +2310,10 @@ OBJECT Codeunit 6620 Copy Document Mgt.
                 FromSalesInvLine."Document No." := OldInvDocNo;
                 FromSalesInvLine."Line No." := "Return Receipt Line No.";
                 FromSalesInvLine.GetItemLedgEntries(ItemLedgEntryBuf,TRUE);
-                IF IsCopyItemTrkg(ItemLedgEntryBuf,CopyItemTrkg,FillExactCostRevLink) THEN BEGIN
-                  IF MoveNegLines OR NOT ExactCostRevMandatory THEN
-                    ItemTrackingDocMgt.CopyItemLedgerEntriesToTemp(TempTrkgItemLedgEntry,ItemLedgEntryBuf)
-                  ELSE
-                    ItemTrackingDocMgt.CollectItemTrkgPerPostedDocLine(
-                      TempItemTrkgEntry,TempTrkgItemLedgEntry,FALSE,"Document No.","Line No.");
-
-                  ItemTrackingMgt.CopyItemLedgEntryTrkgToSalesLn(TempTrkgItemLedgEntry,ToSalesLine,
-                    FillExactCostRevLink AND ExactCostRevMandatory,MissingExCostRevLink,
-                    FromSalesHeader."Prices Including VAT",ToSalesHeader."Prices Including VAT",FALSE);
-                END;
+                IF IsCopyItemTrkg(ItemLedgEntryBuf,CopyItemTrkg,FillExactCostRevLink) THEN
+                  CopyItemLedgEntryTrackingToSalesLine(
+                    ItemLedgEntryBuf,TempItemTrkgEntry,FromSalesLineBuf,ToSalesLine,ToSalesHeader."Prices Including VAT",
+                    FromSalesHeader."Prices Including VAT",FillExactCostRevLink,MissingExCostRevLink);
               END;
             END;
           UNTIL NEXT = 0;
@@ -2600,6 +2593,26 @@ OBJECT Codeunit 6620 Copy Document Mgt.
       ReCalcSalesLine(FromSalesHeader,ToSalesHeader,TempSalesLineBuf);
       TempSalesLineBuf.INSERT;
       AddSalesDocLine(TempDocSalesLine,TempSalesLineBuf."Line No.",DocNo,FromSalesLine."Line No.");
+    END;
+
+    LOCAL PROCEDURE CopyItemLedgEntryTrackingToSalesLine@198(VAR TempItemLedgEntry@1002 : TEMPORARY Record 32;VAR TempReservationEntry@1011 : TEMPORARY Record 337;TempFromSalesLine@1007 : TEMPORARY Record 37;ToSalesLine@1000 : Record 37;ToSalesPricesInctVAT@1004 : Boolean;FromSalesPricesInctVAT@1005 : Boolean;FillExactCostRevLink@1006 : Boolean;VAR MissingExCostRevLink@1008 : Boolean);
+    VAR
+      TempTrkgItemLedgEntry@1010 : TEMPORARY Record 32;
+      AssemblyHeader@1001 : Record 900;
+      ItemTrackingMgt@1003 : Codeunit 6500;
+    BEGIN
+      IF MoveNegLines OR NOT ExactCostRevMandatory THEN
+        ItemTrackingDocMgt.CopyItemLedgerEntriesToTemp(TempTrkgItemLedgEntry,TempItemLedgEntry)
+      ELSE
+        ItemTrackingDocMgt.CollectItemTrkgPerPostedDocLine(
+          TempReservationEntry,TempTrkgItemLedgEntry,FALSE,TempFromSalesLine."Document No.",TempFromSalesLine."Line No.");
+
+      IF ToSalesLine.AsmToOrderExists(AssemblyHeader) THEN
+        SetTrackingOnAssemblyReservation(AssemblyHeader,TempItemLedgEntry)
+      ELSE
+        ItemTrackingMgt.CopyItemLedgEntryTrkgToSalesLn(
+          TempTrkgItemLedgEntry,ToSalesLine,FillExactCostRevLink AND ExactCostRevMandatory,MissingExCostRevLink,
+          FromSalesPricesInctVAT,ToSalesPricesInctVAT,FALSE);
     END;
 
     LOCAL PROCEDURE SplitPstdSalesLinesPerILE@35(ToSalesHeader@1011 : Record 36;FromSalesHeader@1017 : Record 36;VAR ItemLedgEntry@1003 : Record 32;VAR FromSalesLineBuf@1004 : Record 37;FromSalesLine@1001 : Record 37;VAR TempDocSalesLine@1008 : TEMPORARY Record 37;VAR NextLineNo@1006 : Integer;VAR CopyItemTrkg@1002 : Boolean;VAR MissingExCostRevLink@1005 : Boolean;FillExactCostRevLink@1000 : Boolean;FromShptOrRcpt@1016 : Boolean) : Boolean;
@@ -4470,6 +4483,7 @@ OBJECT Codeunit 6620 Copy Document Mgt.
           Quantity := QtyToAsmToOrder;
           "Quantity (Base)" := QtyToAsmToOrderBase;
         END;
+        "Bin Code" := TempFromAsmHeader."Bin Code";
         "Unit Cost" := TempFromAsmHeader."Unit Cost";
         RoundQty(Quantity);
         RoundQty("Quantity (Base)");
@@ -5816,6 +5830,64 @@ OBJECT Codeunit 6620 Copy Document Mgt.
       IF NOT TempDocPurchaseLine.FINDFIRST THEN
         EXIT('');
       EXIT(TempDocPurchaseLine."Document No.");
+    END;
+
+    LOCAL PROCEDURE SetTrackingOnAssemblyReservation@193(AssemblyHeader@1001 : Record 900;VAR TempItemLedgerEntry@1002 : TEMPORARY Record 32);
+    VAR
+      ReservationEntry@1000 : Record 337;
+      TempReservationEntry@1003 : TEMPORARY Record 337;
+      TempTrackingSpecification@1004 : TEMPORARY Record 336;
+      ItemTrackingCode@1009 : Record 6502;
+      ReservationEngineMgt@1007 : Codeunit 99000831;
+      QtyToAddAsBlank@1008 : Decimal;
+    BEGIN
+      TempItemLedgerEntry.SETFILTER("Lot No.",'<>%1','');
+      IF TempItemLedgerEntry.ISEMPTY THEN
+        EXIT;
+
+      ReservationEntry.SETRANGE("Source Type",DATABASE::"Assembly Header");
+      ReservationEntry.SETRANGE("Source Subtype",AssemblyHeader."Document Type");
+      ReservationEntry.SETRANGE("Source ID",AssemblyHeader."No.");
+      ReservationEntry.SETRANGE("Source Ref. No.",0);
+      ReservationEntry.SETRANGE("Reservation Status",ReservationEntry."Reservation Status"::Reservation);
+      IF ReservationEntry.FINDSET THEN
+        REPEAT
+          TempReservationEntry := ReservationEntry;
+          TempReservationEntry.INSERT;
+        UNTIL ReservationEntry.NEXT = 0;
+
+      IF TempItemLedgerEntry.FINDSET THEN
+        REPEAT
+          TempTrackingSpecification."Entry No." += 1;
+          TempTrackingSpecification."Item No." := TempItemLedgerEntry."Item No.";
+          TempTrackingSpecification."Location Code" := TempItemLedgerEntry."Location Code";
+          TempTrackingSpecification."Quantity (Base)" := TempItemLedgerEntry.Quantity;
+          TempTrackingSpecification."Serial No." := TempItemLedgerEntry."Serial No.";
+          TempTrackingSpecification."Lot No." := TempItemLedgerEntry."Lot No.";
+          TempTrackingSpecification."Warranty Date" := TempItemLedgerEntry."Warranty Date";
+          TempTrackingSpecification."Expiration Date" := TempItemLedgerEntry."Expiration Date";
+          TempTrackingSpecification.INSERT;
+        UNTIL TempItemLedgerEntry.NEXT = 0;
+
+      IF TempTrackingSpecification.FINDSET THEN
+        REPEAT
+          IF GetItemTrackingCode(ItemTrackingCode,TempTrackingSpecification."Item No.") THEN
+            ReservationEngineMgt.AddItemTrackingToTempRecSet(
+              TempReservationEntry,TempTrackingSpecification,TempTrackingSpecification."Quantity (Base)",QtyToAddAsBlank,
+              ItemTrackingCode."SN Specific Tracking",ItemTrackingCode."Lot Specific Tracking");
+        UNTIL TempTrackingSpecification.NEXT = 0;
+    END;
+
+    LOCAL PROCEDURE GetItemTrackingCode@195(VAR ItemTrackingCode@1000 : Record 6502;ItemNo@1001 : Code[20]) : Boolean;
+    BEGIN
+      IF NOT Item.GET(ItemNo) THEN
+        EXIT(FALSE);
+
+      IF Item."Item Tracking Code" = '' THEN
+        EXIT(FALSE);
+
+      ItemTrackingCode.GET(Item."Item Tracking Code");
+      EXIT(TRUE);
     END;
 
     [Integration]

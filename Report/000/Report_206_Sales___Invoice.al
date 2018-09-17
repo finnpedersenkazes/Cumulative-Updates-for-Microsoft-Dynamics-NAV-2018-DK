@@ -2,9 +2,9 @@ OBJECT Report 206 Sales - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -34,7 +34,9 @@ OBJECT Report 206 Sales - Invoice
                DataItemTableView=SORTING(No.);
                ReqFilterHeadingML=[DAN=Bogf›rt salgsfaktura;
                                    ENU=Posted Sales Invoice];
-               OnAfterGetRecord=BEGIN
+               OnAfterGetRecord=VAR
+                                  Handled@1000 : Boolean;
+                                BEGIN
                                   IF GLOBALLANGUAGE = Language.GetLanguageID("Language Code") THEN
                                     CurrReport.LANGUAGE := Language.GetLanguageID("Language Code")
                                   ELSE
@@ -63,6 +65,7 @@ OBJECT Report 206 Sales - Invoice
                                     END;
 
                                   OnAfterGetRecordSalesInvoiceHeader("Sales Invoice Header");
+                                  OnGetReferenceText("Sales Invoice Header",ReferenceText,Handled);
                                 END;
 
                ReqFilterFields=No.,Sell-to Customer No.,No. Printed }
@@ -1480,6 +1483,11 @@ OBJECT Report 206 Sales - Invoice
 
     [Integration(DEFAULT,TRUE)]
     PROCEDURE OnAfterGetRecordSalesInvoiceHeader@1213(SalesInvoiceHeader@1213 : Record 112);
+    BEGIN
+    END;
+
+    [Integration]
+    PROCEDURE OnGetReferenceText@1214(SalesInvoiceHeader@1000 : Record 112;VAR ReferenceText@1001 : Text[80];VAR Handled@1002 : Boolean);
     BEGIN
     END;
 

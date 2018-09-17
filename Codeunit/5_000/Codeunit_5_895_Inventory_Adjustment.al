@@ -2,9 +2,9 @@ OBJECT Codeunit 5895 Inventory Adjustment
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -1560,8 +1560,10 @@ OBJECT Codeunit 5895 Inventory Adjustment
               UpDateWindow(WindowAdjmtLevel,"Item No.",Text010,0,0,0);
 
               InvtAdjmtEntryOrder := SourceInvtAdjmtEntryOrder;
-              CalcInventoryAdjmtOrder.Calculate(SourceInvtAdjmtEntryOrder,TempInvtAdjmtBuf);
-              PostOutputAdjmtBuf(TempAvgCostAdjmtEntryPoint);
+              IF NOT Item."Inventory Value Zero" THEN BEGIN
+                CalcInventoryAdjmtOrder.Calculate(SourceInvtAdjmtEntryOrder,TempInvtAdjmtBuf);
+                PostOutputAdjmtBuf(TempAvgCostAdjmtEntryPoint);
+              END;
 
               IF NOT "Completely Invoiced" THEN BEGIN
                 InvtAdjmtEntryOrder.GetCostsFromItem(1);

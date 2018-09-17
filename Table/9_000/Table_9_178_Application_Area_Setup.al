@@ -2,9 +2,9 @@ OBJECT Table 9178 Application Area Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -113,48 +113,50 @@ OBJECT Table 9178 Application Area Setup
     [Internal]
     PROCEDURE GetApplicationAreaSetup@66() ApplicationAreas : Text;
     VAR
+      Field@1001 : Record 2000000041;
       ApplicationAreaSetup@1003 : Record 9178;
+      TypeHelper@1006 : Codeunit 10;
       RecRef@1002 : RecordRef;
       FieldRef@1005 : FieldRef;
-      FieldIndex@1004 : Integer;
+      Separator@1000 : Text;
     BEGIN
       IF NOT GetApplicationAreaSetupRec(ApplicationAreaSetup) THEN
         EXIT(ApplicationAreas);
 
       RecRef.GETTABLE(ApplicationAreaSetup);
 
-      FOR FieldIndex := 1 TO RecRef.FIELDCOUNT DO BEGIN
-        FieldRef := RecRef.FIELDINDEX(FieldIndex);
-        IF NOT IsInPrimaryKey(FieldRef) THEN
-          IF FieldRef.VALUE THEN
-            IF ApplicationAreas = '' THEN
-              ApplicationAreas := '#' + DELCHR(FieldRef.NAME)
-            ELSE
-              ApplicationAreas := ApplicationAreas + ',#' + DELCHR(FieldRef.NAME);
-      END;
+      IF TypeHelper.FindFields(RecRef.NUMBER,Field) THEN
+        REPEAT
+          FieldRef := RecRef.FIELD(Field."No.");
+          IF NOT IsInPrimaryKey(FieldRef) THEN
+            IF FieldRef.VALUE THEN BEGIN
+              ApplicationAreas += Separator + '#' + DELCHR(FieldRef.NAME);
+              Separator := ',';
+            END;
+        UNTIL Field.NEXT = 0;
     END;
 
     [Internal]
     PROCEDURE GetApplicationAreaBuffer@2(VAR TempApplicationAreaBuffer@1000 : TEMPORARY Record 9179);
     VAR
+      Field@1001 : Record 2000000041;
       ApplicationAreaSetup@1003 : Record 9178;
+      TypeHelper@1006 : Codeunit 10;
       RecRef@1002 : RecordRef;
       FieldRef@1005 : FieldRef;
-      FieldIndex@1004 : Integer;
     BEGIN
       GetApplicationAreaSetupRec(ApplicationAreaSetup);
       RecRef.GETTABLE(ApplicationAreaSetup);
 
-      FOR FieldIndex := GetFirstPublicAppAreaFieldIndex TO RecRef.FIELDCOUNT DO BEGIN
-        FieldRef := RecRef.FIELDINDEX(FieldIndex);
-        IF NOT IsInPrimaryKey(FieldRef) THEN BEGIN
-          TempApplicationAreaBuffer.INIT;
+      Field.SETFILTER("No.",'%1..',GetFirstPublicAppAreaFieldNo);
+      IF TypeHelper.FindFields(RecRef.NUMBER,Field) THEN
+        REPEAT
+          FieldRef := RecRef.FIELD(Field."No.");
           TempApplicationAreaBuffer."Field No." := FieldRef.NUMBER;
           TempApplicationAreaBuffer."Application Area" := FieldRef.CAPTION;
           TempApplicationAreaBuffer.Selected := FieldRef.VALUE;
           TempApplicationAreaBuffer.INSERT(TRUE);
-        END;
-      END;
+        UNTIL Field.NEXT = 0;
     END;
 
     [External]
@@ -438,20 +440,29 @@ OBJECT Table 9178 Application Area Setup
 
     LOCAL PROCEDURE SelectedAppAreaCount@25(ApplicationAreaSetup@1000 : Record 9178) : Integer;
     VAR
+      Field@1005 : Record 2000000041;
+      TypeHelper@1006 : Codeunit 10;
       RecRef@1003 : RecordRef;
       FieldRef@1002 : FieldRef;
-      FieldIndex@1001 : Integer;
       Count@1004 : Integer;
     BEGIN
       RecRef.GETTABLE(ApplicationAreaSetup);
 
-      FOR FieldIndex := GetFirstPublicAppAreaFieldIndex TO RecRef.FIELDCOUNT DO BEGIN
-        FieldRef := RecRef.FIELDINDEX(FieldIndex);
-        IF NOT IsInPrimaryKey(FieldRef) THEN
+      Field.SETFILTER("No.",'%1..',GetFirstPublicAppAreaFieldNo);
+      IF TypeHelper.FindFields(RecRef.NUMBER,Field) THEN
+        REPEAT
+          FieldRef := RecRef.FIELD(Field."No.");
           IF FieldRef.VALUE THEN
             Count += 1;
-      END;
+        UNTIL Field.NEXT = 0;
       EXIT(Count);
+    END;
+
+    PROCEDURE GetFirstPublicAppAreaFieldNo@42() : Integer;
+    VAR
+      ApplicationAreaSetup@1002 : Record 9178;
+    BEGIN
+      EXIT(ApplicationAreaSetup.FIELDNO(Basic));
     END;
 
     LOCAL PROCEDURE SaveApplicationArea@5(VAR TempApplicationAreaBuffer@1000 : TEMPORARY Record 9179;ApplicationAreaSetup@1006 : Record 9178;NoApplicationAreasExist@1007 : Boolean);

@@ -2,9 +2,9 @@ OBJECT Table 99000829 Planning Component
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -142,7 +142,7 @@ OBJECT Table 99000829 Planning Component
                                                                   PlanningRtngLine.SETRANGE("Routing Link Code","Routing Link Code");
                                                                   IF PlanningRtngLine.FINDFIRST THEN BEGIN
                                                                     "Due Date" := PlanningRtngLine."Starting Date";
-                                                                    "Due Time" := ReqLine."Starting Time";
+                                                                    "Due Time" := PlanningRtngLine."Starting Time";
                                                                   END;
                                                                 END;
                                                                 IF FORMAT("Lead-Time Offset") <> '' THEN BEGIN

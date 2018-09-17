@@ -2,9 +2,9 @@ OBJECT Page 7138 Purchase Budget Overview
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -710,7 +710,7 @@ OBJECT Page 7138 Purchase Budget Overview
             RecRef.GETTABLE(Item);
             RecRef.SETTABLE(Item);
             IF ItemFilter <> '' THEN BEGIN
-              FieldRef := RecRef.FIELDINDEX(1);
+              FieldRef := RecRef.FIELD(Item.FIELDNO("No."));
               FieldRef.SETFILTER(ItemFilter);
             END;
             MatrixMgt.GenerateMatrixData(
@@ -744,7 +744,7 @@ OBJECT Page 7138 Purchase Budget Overview
             RecRef.GETTABLE(Vendor);
             RecRef.SETTABLE(Vendor);
             IF SourceNoFilter <> '' THEN BEGIN
-              FieldRef := RecRef.FIELDINDEX(1);
+              FieldRef := RecRef.FIELD(Vendor.FIELDNO("No."));
               FieldRef.SETFILTER(SourceNoFilter);
             END;
             MatrixMgt.GenerateMatrixData(

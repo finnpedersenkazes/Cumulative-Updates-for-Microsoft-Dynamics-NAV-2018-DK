@@ -2,9 +2,9 @@ OBJECT Page 1170 User Task List
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -31,9 +31,9 @@ OBJECT Page 1170 User Task List
                       ActionContainerType=NewDocumentItems }
       { 14      ;1   ;Action    ;
                       Name=Mark Complete;
-                      CaptionML=[DAN=Mark as Completed;
+                      CaptionML=[DAN=Mark‚r som fuldf›rt;
                                  ENU=Mark as Completed];
-                      ToolTipML=[DAN=Indicate that the task is completed. The % Complete field is set to 100.;
+                      ToolTipML=[DAN=Angiv, at opgaven er fuldf›rt. Feltet % f‘rdigt angives til 100.;
                                  ENU=Indicate that the task is completed. The % Complete field is set to 100.];
                       ApplicationArea=#Basic,#Suite;
                       Promoted=Yes;

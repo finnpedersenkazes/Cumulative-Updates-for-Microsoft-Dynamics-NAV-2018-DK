@@ -2,9 +2,9 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -2724,7 +2724,7 @@ OBJECT Table 37 Sales Line
       SelectNonstockItemErr@1062 : TextConst 'DAN=Du kan kun v‘lge en katalogvare til en tom linje.;ENU=You can only select a nonstock item for an empty line.';
       EstimateLbl@1072 : TextConst 'DAN=Estimat;ENU=Estimate';
       CommentLbl@1046 : TextConst 'DAN=Bem‘rkning;ENU=Comment';
-      LineDiscountPctErr@1073 : TextConst 'DAN=The value in the Line Discount % field must be between 0 and 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
+      LineDiscountPctErr@1073 : TextConst 'DAN=V‘rdien i feltet Linjerabat % skal v‘re mellem 0 og 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
 
     [External]
     PROCEDURE InitOutstanding@16();
@@ -4084,11 +4084,8 @@ OBJECT Table 37 Sales Line
                   ELSE
                     "VAT Difference" := ROUND(VATDifference,Currency."Amount Rounding Precision");
                 END;
-                IF QtyType = QtyType::General THEN BEGIN
-                  Amount := NewAmount;
-                  "Amount Including VAT" := ROUND(NewAmountIncludingVAT,Currency."Amount Rounding Precision");
-                  "VAT Base Amount" := NewVATBaseAmount;
-                END;
+                IF QtyType = QtyType::General THEN
+                  UpdateBaseAmounts(NewAmount,ROUND(NewAmountIncludingVAT,Currency."Amount Rounding Precision"),NewVATBaseAmount);
                 InitOutstanding;
                 IF Type = Type::"Charge (Item)" THEN
                   UpdateItemChargeAssgnt;
@@ -5686,6 +5683,17 @@ OBJECT Table 37 Sales Line
         "Line Discount %" := LineDiscountPct;
       END ELSE
         "Line Discount %" := 0;
+    END;
+
+    LOCAL PROCEDURE UpdateBaseAmounts@173(NewAmount@1000 : Decimal;NewAmountIncludingVAT@1001 : Decimal;NewVATBaseAmount@1002 : Decimal);
+    BEGIN
+      Amount := NewAmount;
+      "Amount Including VAT" := NewAmountIncludingVAT;
+      "VAT Base Amount" := NewVATBaseAmount;
+      IF NOT SalesHeader."Prices Including VAT" AND (Amount > 0) AND (Amount < "Prepmt. Line Amount") THEN
+        "Prepmt. Line Amount" := Amount;
+      IF SalesHeader."Prices Including VAT" AND ("Amount Including VAT" > 0) AND ("Amount Including VAT" < "Prepmt. Line Amount") THEN
+        "Prepmt. Line Amount" := "Amount Including VAT";
     END;
 
     [Integration]

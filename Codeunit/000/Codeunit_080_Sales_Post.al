@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -284,8 +284,8 @@ OBJECT Codeunit 80 Sales-Post
       NoDeferralScheduleErr@1064 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";DAN=Du skal oprette en periodiseringsplan, fordi du har angivet periodiseringskoden %2 i linje %1.;ENU=You must create a deferral schedule because you have specified the deferral code %2 in line %1.';
       ZeroDeferralAmtErr@1060 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";DAN=Periodiseringsbel›b m† ikke v‘re 0. Linje: %1, periodiseringsskabelon: %2.;ENU=Deferral amounts cannot be 0. Line: %1, Deferral Template: %2.';
       DownloadShipmentAlsoQst@1036 : TextConst 'DAN=Du kan downloade bilaget Salg - leverance nu. Du kan ogs† †bne det fra vinduet Bogf›rte salgsleverancer p† et senere tidspunkt.\\Vil du downloade bilaget Salg - leverance nu?;ENU=You can also download the Sales - Shipment document now. Alternatively, you can access it from the Posted Sales Shipments window later.\\Do you want to download the Sales - Shipment document now?';
-      InvPickExistsErr@1062 : TextConst 'DAN=One or more related inventory picks must be registered before you can post the shipment.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
-      InvPutAwayExistsErr@1057 : TextConst 'DAN=One or more related inventory put-aways must be registered before you can post the receipt.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
+      InvPickExistsErr@1062 : TextConst 'DAN=Et eller flere relaterede pluk (lager) skal registreres, f›r du kan bogf›re leverancen.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
+      InvPutAwayExistsErr@1057 : TextConst 'DAN=En eller flere l‘g-p†-lager-aktiviteter skal registreres, f›r du kan bogf›re modtagelsen.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
 
     LOCAL PROCEDURE CopyToTempLines@180(SalesHeader@1000 : Record 36);
     VAR
@@ -861,7 +861,7 @@ OBJECT Codeunit 80 Sales-Post
           END;
 
           OriginalItemJnlLine := ItemJnlLine;
-          OnBeforeItemJnlPostLine(ItemJnlLine,SalesLine);
+          OnBeforeItemJnlPostLine(ItemJnlLine,SalesLine,SalesHeader);
           ItemJnlPostLine.RunWithCheck(ItemJnlLine);
 
           IF IsATO THEN
@@ -1221,6 +1221,7 @@ OBJECT Codeunit 80 Sales-Post
 
       IF PurchOrderLine."Job No." = '' THEN BEGIN
         TransferReservFromPurchLine(PurchOrderLine,ItemJnlLine,SalesLine,QtyToBeShippedBase);
+        OnBeforePostAssocItemJnlLine(ItemJnlLine,PurchOrderLine);
         ItemJnlPostLine.RunWithCheck(ItemJnlLine);
 
         // Handle Item Tracking
@@ -3820,7 +3821,7 @@ OBJECT Codeunit 80 Sales-Post
       WITH TempPrepmtDeductLCYSalesLine DO
         IF SalesLine."Prepayment %" = 100 THEN
           IF GET(SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.") THEN
-            EXIT("Prepmt Amt to Deduct" - "Line Amount");
+            EXIT("Prepmt Amt to Deduct" + "Inv. Discount Amount" - "Line Amount");
       EXIT(0);
     END;
 
@@ -6270,7 +6271,7 @@ OBJECT Codeunit 80 Sales-Post
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnBeforeItemJnlPostLine@227(VAR ItemJournalLine@1000 : Record 83;SalesLine@1001 : Record 37);
+    LOCAL PROCEDURE OnBeforeItemJnlPostLine@227(VAR ItemJournalLine@1000 : Record 83;SalesLine@1001 : Record 37;SalesHeader@1002 : Record 36);
     BEGIN
     END;
 
@@ -6326,6 +6327,11 @@ OBJECT Codeunit 80 Sales-Post
 
     [Integration]
     LOCAL PROCEDURE OnBeforePostInvPostBuffer@148(VAR GenJnlLine@1000 : Record 81;VAR InvoicePostBuffer@1001 : Record 49;SalesHeader@1003 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePostAssocItemJnlLine@238(VAR ItemJournalLine@1000 : Record 83;PurchaseLine@1001 : Record 39);
     BEGIN
     END;
 

@@ -2,12 +2,13 @@ OBJECT Page 130 Posted Sales Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
+    Permissions=TableData 110=m;
     CaptionML=[DAN=Bogf›rt salgsleverance;
                ENU=Posted Sales Shipment];
     InsertAllowed=No;

@@ -2,9 +2,9 @@ OBJECT Codeunit 87 Blanket Sales Order to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -139,6 +139,8 @@ OBJECT Codeunit 87 Blanket Sales Order to Order
               UNTIL BlanketOrderSalesLine.NEXT = 0;
             END;
 
+            OnAfterInsertAllSalesOrderLines(Rec,SalesOrderHeader);
+
             IF SalesSetup."Default Posting Date" = SalesSetup."Default Posting Date"::"No Date" THEN BEGIN
               SalesOrderHeader."Posting Date" := 0D;
               SalesOrderHeader.MODIFY;
@@ -202,6 +204,7 @@ OBJECT Codeunit 87 Blanket Sales Order to Order
         SalesOrderHeader."No." := '';
 
         SalesOrderLine.LOCKTABLE;
+        OnBeforeInsertSalesOrderHeader(SalesOrderHeader,SalesHeader);
         SalesOrderHeader.INSERT(TRUE);
 
         IF "Order Date" = 0D THEN
@@ -220,7 +223,7 @@ OBJECT Codeunit 87 Blanket Sales Order to Order
 
         SalesOrderHeader."Prepayment %" := PrepmtPercent;
 
-        OnBeforeInsertSalesOrderHeader(SalesOrderHeader,SalesHeader);
+        OnBeforeSalesOrderHeaderModify(SalesOrderHeader,SalesHeader);
         SalesOrderHeader.MODIFY;
       END;
     END;
@@ -329,6 +332,16 @@ OBJECT Codeunit 87 Blanket Sales Order to Order
 
     [Integration]
     LOCAL PROCEDURE OnBeforeInsertSalesOrderLine@7(VAR SalesOrderLine@1000 : Record 37;SalesOrderHeader@1001 : Record 36;BlanketOrderSalesLine@1002 : Record 37;BlanketOrderSalesHeader@1003 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterInsertAllSalesOrderLines@10(BlanketOrderSalesHeader@1000 : Record 36;OrderSalesHeader@1001 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeSalesOrderHeaderModify@9(VAR SalesOrderHeader@1000 : Record 36;BlanketOrderSalesHeader@1001 : Record 36);
     BEGIN
     END;
 

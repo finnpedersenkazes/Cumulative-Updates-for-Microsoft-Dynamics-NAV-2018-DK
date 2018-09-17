@@ -2,9 +2,9 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -271,6 +271,7 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
                  (WhseShptHeader."Shipping Agent Code" <> TransHeader."Shipping Agent Code")
               THEN BEGIN
                 TransHeader."Shipping Agent Code" := WhseShptHeader."Shipping Agent Code";
+                TransHeader."Shipping Agent Service Code" := WhseShptHeader."Shipping Agent Service Code";
                 ModifyHeader := TRUE;
               END;
               IF (WhseShptHeader."Shipping Agent Service Code" <> '') AND
@@ -299,10 +300,26 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
                 ReleaseServiceDocument.RUN(ServiceHeader);
                 ServiceHeader.MODIFY;
               END;
-              IF ModifyIfDifferent(ServiceHeader."Shipping Agent Code",WhseShptHeader."Shipping Agent Code") OR
-                 ModifyIfDifferent(ServiceHeader."Shipping Agent Service Code",WhseShptHeader."Shipping Agent Service Code") OR
-                 ModifyIfDifferent(ServiceHeader."Shipment Method Code",WhseShptHeader."Shipment Method Code")
-              THEN
+              IF (WhseShptHeader."Shipping Agent Code" <> '') AND
+                 (WhseShptHeader."Shipping Agent Code" <> ServiceHeader."Shipping Agent Code")
+              THEN BEGIN
+                ServiceHeader."Shipping Agent Code" := WhseShptHeader."Shipping Agent Code";
+                ServiceHeader."Shipping Agent Service Code" := WhseShptHeader."Shipping Agent Service Code";
+                ModifyHeader := TRUE;
+              END;
+              IF (WhseShptHeader."Shipping Agent Service Code" <> '') AND
+                 (WhseShptHeader."Shipping Agent Service Code" <> ServiceHeader."Shipping Agent Service Code")
+              THEN BEGIN
+                ServiceHeader."Shipping Agent Service Code" := WhseShptHeader."Shipping Agent Service Code";
+                ModifyHeader := TRUE;
+              END;
+              IF (WhseShptHeader."Shipment Method Code" <> '') AND
+                 (WhseShptHeader."Shipment Method Code" <> ServiceHeader."Shipment Method Code")
+              THEN BEGIN
+                ServiceHeader."Shipment Method Code" := WhseShptHeader."Shipment Method Code";
+                ModifyHeader := TRUE;
+              END;
+              IF ModifyHeader THEN
                 ServiceHeader.MODIFY;
             END;
         END;
@@ -1009,14 +1026,6 @@ OBJECT Codeunit 5763 Whse.-Post Shipment
               ServLine.MODIFY;
           UNTIL ServLine.NEXT = 0;
       END;
-    END;
-
-    LOCAL PROCEDURE ModifyIfDifferent@30(VAR Target@1001 : Code[10];Source@1002 : Code[10]) : Boolean;
-    BEGIN
-      IF (Source = '') OR (Target = Source) THEN
-        EXIT(FALSE);
-      Target := Source;
-      EXIT(TRUE);
     END;
 
     [External]

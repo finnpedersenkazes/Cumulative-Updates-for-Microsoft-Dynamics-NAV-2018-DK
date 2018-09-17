@@ -2,9 +2,9 @@ OBJECT Report 122 Reminder - Test
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -768,7 +768,7 @@ OBJECT Report 122 Reminder - Test
       ReminderInterestAmount@1020 : Decimal;
       Continue@1023 : Boolean;
       VATNoText@1024 : Text[30];
-      ReferenceText@1025 : Text[30];
+      ReferenceText@1025 : Text[35];
       TotalText@1026 : Text[50];
       TotalInclVATText@1027 : Text[50];
       ErrorCounter@1028 : Integer;

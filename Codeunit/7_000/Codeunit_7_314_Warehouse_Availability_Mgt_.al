@@ -2,9 +2,9 @@ OBJECT Codeunit 7314 Warehouse Availability Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -218,7 +218,7 @@ OBJECT Codeunit 7314 Warehouse Availability Mgt.
         IF RespectUOMCode THEN
           SETRANGE("Unit of Measure Code",DefWhseWkshLine."Unit of Measure Code");
         CALCSUMS("Qty. to Handle (Base)");
-        IF ExcludeLine THEN
+        IF ExcludeLine AND DefWhseWkshLine.FIND THEN
           "Qty. to Handle (Base)" := "Qty. to Handle (Base)" - DefWhseWkshLine."Qty. to Handle (Base)";
         EXIT("Qty. to Handle (Base)");
       END;

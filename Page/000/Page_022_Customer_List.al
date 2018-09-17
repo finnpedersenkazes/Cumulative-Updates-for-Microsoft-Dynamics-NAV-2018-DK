@@ -2,9 +2,9 @@ OBJECT Page 22 Customer List
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -27,12 +27,11 @@ OBJECT Page 22 Customer List
 
     OnOpenPage=VAR
                  CRMIntegrationManagement@1000 : Codeunit 5330;
-                 CustomerMgt@1001 : Codeunit 1302;
                BEGIN
                  CRMIntegrationEnabled := CRMIntegrationManagement.IsCRMIntegrationEnabled;
 
                  SetWorkflowManagementEnabledState;
-                 SETFILTER("Date Filter",CustomerMgt.GetCurrentYearFilter);
+                 SETFILTER("Date Filter",'..%1',WORKDATE);
 
                  // Contextual Power BI FactBox: filtering available reports, setting context, loading Power BI related user settings
                  CurrPage."Power BI Report FactBox".PAGE.SetNameFilter(CurrPage.CAPTION);

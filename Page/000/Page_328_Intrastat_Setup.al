@@ -2,9 +2,9 @@ OBJECT Page 328 Intrastat Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -28,7 +28,7 @@ OBJECT Page 328 Intrastat Setup
 
     { 6   ;1   ;Group     ;
                 Name=General;
-                CaptionML=[DAN=General;
+                CaptionML=[DAN=Generelt;
                            ENU=General];
                 GroupType=Group }
 
@@ -60,7 +60,7 @@ OBJECT Page 328 Intrastat Setup
 
     { 7   ;1   ;Group     ;
                 Name=Default Transactions;
-                CaptionML=[DAN=Default Transactions;
+                CaptionML=[DAN=Standardtransaktioner;
                            ENU=Default Transactions];
                 GroupType=Group }
 

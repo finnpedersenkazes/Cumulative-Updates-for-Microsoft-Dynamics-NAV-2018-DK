@@ -2,9 +2,9 @@ OBJECT Codeunit 6500 Item Tracking Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -24,7 +24,6 @@ OBJECT Codeunit 6500 Item Tracking Management
   {
     VAR
       Text001@1000 : TextConst 'DAN=Den antal, du vil udf›re handlingen %1 p†, stemmer ikke overens med det antal, der er angivet i varesporing.;ENU=The quantity to %1 does not match the quantity defined in item tracking.';
-      Text002@1015 : TextConst 'DAN=Varesporing stemmer ikke overens.;ENU=Cannot match item tracking.';
       Text003@1002 : TextConst 'DAN=Der findes ikke oplysninger til %1 %2.;ENU=No information exists for %1 %2.';
       Text005@1004 : TextConst 'DAN=Lagersporing er ikke aktiveret for %1 %2.;ENU=Warehouse item tracking is not enabled for %1 %2.';
       SourceSpecification@1005 : TEMPORARY Record 336;
@@ -41,6 +40,7 @@ OBJECT Codeunit 6500 Item Tracking Management
       Text012@1016 : TextConst 'DAN=Kun ‚n udl›bsdato er tilladt pr. lotnumber.\%1 har i ›jeblikket to forskellige udl›bsdatoer: %2 og %3.;ENU=Only one expiration date is allowed per lot number.\%1 currently has two different expiration dates: %2 and %3.';
       IsPick@1017 : Boolean;
       DeleteReservationEntries@1021 : Boolean;
+      CannotMatchItemTrackingErr@1003 : TextConst 'DAN=Cannot match item tracking.;ENU=Cannot match item tracking.';
 
     [External]
     PROCEDURE SetPointerFilter@21(VAR TrackingSpecification@1000 : Record 336);
@@ -1681,10 +1681,8 @@ OBJECT Codeunit 6500 Item Tracking Management
     [External]
     PROCEDURE SynchronizeWhseItemTracking@51(VAR TempTrackingSpecification@1002 : TEMPORARY Record 336;RegPickNo@1007 : Code[20];Deletion@1006 : Boolean);
     VAR
-      SourceSpec@1000 : Record 336;
       ReservEntry@1003 : Record 337;
       RegisteredWhseActLine@1004 : Record 5773;
-      ItemTrackingLines@1001 : Page 6510;
       Qty@1102601000 : Decimal;
       ZeroQtyToHandle@1005 : Boolean;
     BEGIN
@@ -1750,22 +1748,7 @@ OBJECT Codeunit 6500 Item Tracking Management
           END;
         UNTIL TempTrackingSpecification.NEXT = 0;
 
-      IF TempTrackingSpecification.FINDSET THEN
-        REPEAT
-          TempTrackingSpecification.SetSourceFilter(
-            TempTrackingSpecification."Source Type",TempTrackingSpecification."Source Subtype",
-            TempTrackingSpecification."Source ID",TempTrackingSpecification."Source Ref. No.",FALSE);
-          TempTrackingSpecification.SETRANGE("Source Prod. Order Line",TempTrackingSpecification."Source Prod. Order Line");
-          SourceSpec := TempTrackingSpecification;
-          TempTrackingSpecification.CALCSUMS("Qty. to Handle (Base)");
-          SourceSpec."Quantity (Base)" :=
-            TempTrackingSpecification."Qty. to Handle (Base)" +
-            ABS(ItemTrkgQtyPostedOnSource(SourceSpec));
-          CLEAR(ItemTrackingLines);
-          ItemTrackingLines.SetCalledFromSynchWhseItemTrkg(TRUE);
-          ItemTrackingLines.RegisterItemTrackingLines(SourceSpec,SourceSpec."Creation Date",TempTrackingSpecification);
-          TempTrackingSpecification.ClearSourceFilter;
-        UNTIL TempTrackingSpecification.NEXT = 0;
+      RegisterNewItemTrackingLines(TempTrackingSpecification);
     END;
 
     LOCAL PROCEDURE CheckWhseItemTrkg@40(VAR TempWhseItemTrkgLine@1000 : Record 6550;WhseWkshLine@1002 : Record 7326);
@@ -2367,10 +2350,7 @@ OBJECT Codeunit 6500 Item Tracking Management
           REPEAT
             IF TrackingExists THEN BEGIN
               TempReservEntry."Entry No." += 1;
-              IF SignFactor > 0 THEN
-                TempReservEntry.Positive := TRUE
-              ELSE
-                TempReservEntry.Positive := FALSE;
+              TempReservEntry.Positive := SignFactor > 0;
               TempReservEntry."Item No." := "Item No.";
               TempReservEntry."Location Code" := "Location Code";
               TempReservEntry.Description := Description;
@@ -2397,57 +2377,87 @@ OBJECT Codeunit 6500 Item Tracking Management
       END;
 
       SumUpItemTracking(TempReservEntry,TempTrackingSpec,FALSE,TRUE);
-      // Item Tracking cannot be changed on transfer receipt and on binding order-to-order
-      IF NOT IsTransferReceipt AND NOT IsBindingOrderToOrder THEN
-        SynchronizeItemTracking2(TempReservEntry,ToRowID,'');
-      ReservEntry.SetPointer(ToRowID);
-      ReservEntry.SetPointerFilter;
 
-      IF IsTransferReceipt THEN
-        ReservEntry.SETRANGE("Source Ref. No.");
-
-      IF ReservEntry.FINDSET THEN
+      IF TempTrackingSpec.FINDSET THEN
         REPEAT
-          TempTrackingSpec.SetTrackingFilterFromReservEntry(ReservEntry);
-          IF TempTrackingSpec.FINDFIRST THEN BEGIN
-            IF ABS(TempTrackingSpec."Qty. to Handle (Base)") > ABS(ReservEntry."Quantity (Base)") THEN
-              ReservEntry.VALIDATE("Qty. to Handle (Base)",ReservEntry."Quantity (Base)")
-            ELSE
-              ReservEntry.VALIDATE("Qty. to Handle (Base)",TempTrackingSpec."Qty. to Handle (Base)");
+          ReservEntry.SetSourceFilter(
+            TempTrackingSpec."Source Type",TempTrackingSpec."Source Subtype",
+            TempTrackingSpec."Source ID",TempTrackingSpec."Source Ref. No.",TRUE);
+          ReservEntry.SetSourceFilter2('',TempTrackingSpec."Source Prod. Order Line");
+          ReservEntry.SetTrackingFilterFromSpec(TempTrackingSpec);
+          IF IsTransferReceipt THEN
+            ReservEntry.SETRANGE("Source Ref. No.");
+          IF ReservEntry.FINDSET THEN BEGIN
+            REPEAT
+              IF ABS(TempTrackingSpec."Qty. to Handle (Base)") > ABS(ReservEntry."Quantity (Base)") THEN
+                ReservEntry.VALIDATE("Qty. to Handle (Base)",ReservEntry."Quantity (Base)")
+              ELSE
+                ReservEntry.VALIDATE("Qty. to Handle (Base)",TempTrackingSpec."Qty. to Handle (Base)");
 
-            IF ABS(TempTrackingSpec."Qty. to Invoice (Base)") > ABS(ReservEntry."Quantity (Base)") THEN
-              ReservEntry.VALIDATE("Qty. to Invoice (Base)",ReservEntry."Quantity (Base)")
-            ELSE
-              ReservEntry.VALIDATE("Qty. to Invoice (Base)",TempTrackingSpec."Qty. to Invoice (Base)");
+              IF ABS(TempTrackingSpec."Qty. to Invoice (Base)") > ABS(ReservEntry."Quantity (Base)") THEN
+                ReservEntry.VALIDATE("Qty. to Invoice (Base)",ReservEntry."Quantity (Base)")
+              ELSE
+                ReservEntry.VALIDATE("Qty. to Invoice (Base)",TempTrackingSpec."Qty. to Invoice (Base)");
 
-            TempTrackingSpec."Qty. to Handle (Base)" -= ReservEntry."Qty. to Handle (Base)";
-            TempTrackingSpec."Qty. to Invoice (Base)" -= ReservEntry."Qty. to Invoice (Base)";
-            TempTrackingSpec.MODIFY;
+              TempTrackingSpec."Qty. to Handle (Base)" -= ReservEntry."Qty. to Handle (Base)";
+              TempTrackingSpec."Qty. to Invoice (Base)" -= ReservEntry."Qty. to Invoice (Base)";
+              TempTrackingSpec.MODIFY;
 
-            WITH WhseActivLine DO BEGIN
-              RESET;
-              SetSourceFilter("Source Type","Source Subtype","Source No.","Source Line No.","Source Subline No.",TRUE);
-              SetTrackingFilter(ReservEntry."Serial No.",ReservEntry."Lot No.");
-              IF FINDFIRST THEN
-                ReservEntry."Expiration Date" := "Expiration Date";
-            END;
+              WITH WhseActivLine DO BEGIN
+                RESET;
+                SetSourceFilter("Source Type","Source Subtype","Source No.","Source Line No.","Source Subline No.",TRUE);
+                SetTrackingFilter(ReservEntry."Serial No.",ReservEntry."Lot No.");
+                IF FINDFIRST THEN
+                  ReservEntry."Expiration Date" := "Expiration Date";
+              END;
 
-            ReservEntry.MODIFY;
-
-            IF IsReservedFromTransferShipment(ReservEntry) THEN
-              UpdateItemTrackingInTransferReceipt(ReservEntry);
-          END ELSE
-            IF IsTransferReceipt THEN BEGIN
-              ReservEntry.VALIDATE("Qty. to Handle (Base)",0);
-              ReservEntry.VALIDATE("Qty. to Invoice (Base)",0);
               ReservEntry.MODIFY;
-            END;
-        UNTIL ReservEntry.NEXT = 0;
 
-      TempTrackingSpec.RESET;
-      TempTrackingSpec.CALCSUMS("Qty. to Handle (Base)","Qty. to Invoice (Base)");
-      IF (TempTrackingSpec."Qty. to Handle (Base)" <> 0) OR (TempTrackingSpec."Qty. to Invoice (Base)" <> 0) THEN
-        ERROR(Text002);
+              IF IsReservedFromTransferShipment(ReservEntry) THEN
+                UpdateItemTrackingInTransferReceipt(ReservEntry);
+            UNTIL ReservEntry.NEXT = 0;
+
+            IF (TempTrackingSpec."Qty. to Handle (Base)" = 0) AND (TempTrackingSpec."Qty. to Invoice (Base)" = 0) THEN
+              TempTrackingSpec.DELETE
+            ELSE
+              ERROR(CannotMatchItemTrackingErr);
+          END;
+        UNTIL TempTrackingSpec.NEXT = 0;
+
+      IF TempTrackingSpec.FINDSET THEN
+        REPEAT
+          TempTrackingSpec."Quantity (Base)" := ABS(TempTrackingSpec."Qty. to Handle (Base)");
+          TempTrackingSpec."Qty. to Handle (Base)" := ABS(TempTrackingSpec."Qty. to Handle (Base)");
+          TempTrackingSpec."Qty. to Invoice (Base)" := ABS(TempTrackingSpec."Qty. to Invoice (Base)");
+          TempTrackingSpec.MODIFY;
+        UNTIL TempTrackingSpec.NEXT = 0;
+
+      RegisterNewItemTrackingLines(TempTrackingSpec);
+    END;
+
+    LOCAL PROCEDURE RegisterNewItemTrackingLines@83(VAR TempTrackingSpec@1000 : TEMPORARY Record 336);
+    VAR
+      TrackingSpec@1001 : Record 336;
+      ItemTrackingLines@1002 : Page 6510;
+    BEGIN
+      IF TempTrackingSpec.FINDSET THEN
+        REPEAT
+          TempTrackingSpec.SetSourceFilter(
+            TempTrackingSpec."Source Type",TempTrackingSpec."Source Subtype",
+            TempTrackingSpec."Source ID",TempTrackingSpec."Source Ref. No.",FALSE);
+          TempTrackingSpec.SETRANGE("Source Prod. Order Line",TempTrackingSpec."Source Prod. Order Line");
+
+          TrackingSpec := TempTrackingSpec;
+          TempTrackingSpec.CALCSUMS("Qty. to Handle (Base)");
+
+          TrackingSpec."Quantity (Base)" :=
+            TempTrackingSpec."Qty. to Handle (Base)" + ABS(ItemTrkgQtyPostedOnSource(TrackingSpec));
+
+          CLEAR(ItemTrackingLines);
+          ItemTrackingLines.SetCalledFromSynchWhseItemTrkg(TRUE);
+          ItemTrackingLines.RegisterItemTrackingLines(TrackingSpec,TrackingSpec."Creation Date",TempTrackingSpec);
+          TempTrackingSpec.ClearSourceFilter;
+        UNTIL TempTrackingSpec.NEXT = 0;
     END;
 
     LOCAL PROCEDURE WhseActivitySignFactor@111(WhseActivityLine@1102601000 : Record 5767) : Integer;

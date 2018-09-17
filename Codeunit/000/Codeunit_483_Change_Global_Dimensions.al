@@ -2,9 +2,9 @@ OBJECT Codeunit 483 Change Global Dimensions
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -36,11 +36,28 @@ OBJECT Codeunit 483 Change Global Dimensions
                 TableData 1005=rm,
                 TableData 5222=rm,
                 TableData 5223=rm,
+                TableData 5405=rm,
+                TableData 5406=rm,
+                TableData 5407=rm,
+                TableData 5409=rm,
+                TableData 5410=rm,
+                TableData 5411=rm,
+                TableData 5412=rm,
+                TableData 5413=rm,
+                TableData 5414=rm,
+                TableData 5415=rm,
+                TableData 5416=rm,
                 TableData 5601=rm,
                 TableData 5625=rm,
                 TableData 5629=rm,
                 TableData 5802=rm,
                 TableData 5832=rm,
+                TableData 5900=rm,
+                TableData 5901=rm,
+                TableData 5902=rm,
+                TableData 5907=rm,
+                TableData 5965=rm,
+                TableData 5970=rm,
                 TableData 6650=rm,
                 TableData 6651=rm,
                 TableData 6660=rm,

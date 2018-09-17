@@ -2,9 +2,9 @@ OBJECT Table 49 Invoice Post. Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -470,6 +470,7 @@ OBJECT Table 49 Invoice Post. Buffer
         Quantity += InvoicePostBuffer.Quantity;
         IF NOT InvoicePostBuffer."System-Created Entry" THEN
           "System-Created Entry" := FALSE;
+        AdjustRoundingForUpdate;
         MODIFY;
         InvDefLineNo := "Deferral Line No.";
       END ELSE BEGIN
@@ -495,6 +496,21 @@ OBJECT Table 49 Invoice Post. Buffer
     [Integration]
     LOCAL PROCEDURE OnAfterInvPostBufferPrepareService@16(VAR ServiceLine@1000 : Record 5902;VAR InvoicePostBuffer@1001 : Record 49);
     BEGIN
+    END;
+
+    LOCAL PROCEDURE AdjustRoundingForUpdate@20();
+    BEGIN
+      AdjustRoundingFieldsPair(Amount,"Amount (ACY)");
+      AdjustRoundingFieldsPair("VAT Amount","VAT Amount (ACY)");
+      AdjustRoundingFieldsPair("VAT Base Amount","VAT Base Amount (ACY)");
+    END;
+
+    LOCAL PROCEDURE AdjustRoundingFieldsPair@21(VAR Value1@1000 : Decimal;VAR Value2@1001 : Decimal);
+    BEGIN
+      IF (Value1 = 0) AND (Value2 <> 0) THEN
+        Value2 := 0;
+      IF (Value1 <> 0) AND (Value2 = 0) THEN
+        Value1 := 0;
     END;
 
     BEGIN

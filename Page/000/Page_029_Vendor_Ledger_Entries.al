@@ -2,12 +2,13 @@ OBJECT Page 29 Vendor Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
+    Permissions=TableData 25=m;
     CaptionML=[DAN=Kreditorposter;
                ENU=Vendor Ledger Entries];
     InsertAllowed=No;
@@ -567,7 +568,8 @@ OBJECT Page 29 Vendor Ledger Entries
                 ToolTipML=[DAN=Angiver, at posten blev oprettet ved eksport af en betalingskladdelinje.;
                            ENU=Specifies that the entry was created as a result of exporting a payment journal line.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Exported to Payment File" }
+                SourceExpr="Exported to Payment File";
+                Editable=TRUE }
 
     { 25  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver a reference til en kombination af dimensionsv‘rdier. De faktiske v‘rdier gemmes i tabellen Dimensionsgruppepost.;

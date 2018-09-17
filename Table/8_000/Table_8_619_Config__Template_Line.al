@@ -2,9 +2,9 @@ OBJECT Table 8619 Config. Template Line
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -216,7 +216,7 @@ OBJECT Table 8619 Config. Template Line
       Text003@1003 : TextConst 'DAN=Skabelonen %1 findes allerede i dette hierarki.;ENU=The template %1 is already in this hierarchy.';
       Text004@1004 : TextConst 'DAN=Feltet %1 findes allerede i skabelonen.;ENU=Field %1 is already in the template.';
       Text005@1005 : TextConst 'DAN=Skabelonen kan ikke redigeres, hvis typen er Felt.;ENU=The template line cannot be edited if type is Field.';
-      EmptyDefaultValueErr@1001 : TextConst 'DAN=The Default Value field must be filled in if the Mandatory check box is selected.;ENU=The Default Value field must be filled in if the Mandatory check box is selected.';
+      EmptyDefaultValueErr@1001 : TextConst 'DAN=Feltet Standardv‘rdi skal udfyldes, hvis afkrydsningsfeltet Obligatorisk er markeret.;ENU=The Default Value field must be filled in if the Mandatory check box is selected.';
 
     PROCEDURE SelectFieldName@2();
     VAR

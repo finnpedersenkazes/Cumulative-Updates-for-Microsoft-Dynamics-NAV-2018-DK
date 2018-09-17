@@ -2,9 +2,9 @@ OBJECT Table 951 Time Sheet Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -96,7 +96,7 @@ OBJECT Table 951 Time Sheet Line
                                                                   IF Job.Blocked = Job.Blocked::All THEN
                                                                     Job.TestBlocked;
                                                                 END;
-
+                                                                VALIDATE("Job Task No.",'');
                                                                 UpdateApproverID;
                                                               END;
 

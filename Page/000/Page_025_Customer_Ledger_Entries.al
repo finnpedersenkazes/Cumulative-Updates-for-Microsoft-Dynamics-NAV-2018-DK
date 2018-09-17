@@ -2,12 +2,13 @@ OBJECT Page 25 Customer Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
+    Permissions=TableData 21=m;
     CaptionML=[DAN=Debitorposter;
                ENU=Customer Ledger Entries];
     InsertAllowed=No;
@@ -567,7 +568,8 @@ OBJECT Page 25 Customer Ledger Entries
                 ToolTipML=[DAN=Angiver, at posten blev oprettet ved eksport af en betalingskladdelinje.;
                            ENU=Specifies that the entry was created as a result of exporting a payment journal line.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Exported to Payment File" }
+                SourceExpr="Exported to Payment File";
+                Editable=TRUE }
 
     { 291 ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver den Direct Debit-betalingsaftale, som debitoren har underskrevet for at tillade Direct Debit-opkr‘vning af betalinger.;

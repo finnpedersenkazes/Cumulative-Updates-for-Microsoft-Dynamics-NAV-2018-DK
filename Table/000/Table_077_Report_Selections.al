@@ -2,9 +2,9 @@ OBJECT Table 77 Report Selections
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -109,6 +109,7 @@ OBJECT Table 77 Report Selections
       EmailBodyIsAlreadyDefinedErr@1002 : TextConst '@@@="%1 = Usage, for example Sales Invoice";DAN=En br›dtekst i mail er allerede defineret for %1.;ENU=An email body is already defined for %1.';
       CannotBeUsedAsAnEmailBodyErr@1003 : TextConst '@@@="%1 = Report ID,%2 = Type";DAN=Rapporten %1 bruger %2, som ikke kan bruges som br›dtekst i mail.;ENU=Report %1 uses the %2 which cannot be used as an email body.';
       ReportLayoutSelection@1004 : Record 9651;
+      OneRecordWillBeSentQst@1005 : TextConst 'DAN=Only the first of the selected documents can be scheduled in the job queue.\\Do you want to continue?;ENU=Only the first of the selected documents can be scheduled in the job queue.\\Do you want to continue?';
       InteractionMgt@1006 : Codeunit 5067;
 
     [External]
@@ -277,7 +278,6 @@ OBJECT Table 77 Report Selections
       RecRef@1007 : RecordRef;
       RecRefToPrint@1003 : RecordRef;
       RecVarToPrint@1011 : Variant;
-      AccountNo@1010 : Code[20];
       AccountNoFilter@1013 : Text;
     BEGIN
       OnBeforeSetReportLayout(RecordVariant);
@@ -285,24 +285,23 @@ OBJECT Table 77 Report Selections
       RecRef.GETTABLE(RecordVariant);
       GetUniqueAccountNos(TempNameValueBuffer,RecRef,AccountNoFieldNo);
 
-      IF TempNameValueBuffer.FINDSET THEN
-        REPEAT
-          AccountNo := COPYSTR(TempNameValueBuffer.Name,1,MAXSTRLEN(AccountNo));
-          SelectTempReportSelections(TempReportSelections,AccountNo,WithCheck,ReportUsage,TableNo);
-        UNTIL TempNameValueBuffer.NEXT = 0;
+      SelectTempReportSelectionsToPrint(TempReportSelections,TempNameValueBuffer,WithCheck,ReportUsage,TableNo);
 
       IF TempReportSelections.FINDSET THEN
         REPEAT
-          IF TempReportSelections."Custom Report Layout Code" <> '' THEN BEGIN
-            ReportLayoutSelection.SetTempLayoutSelected(TempReportSelections."Custom Report Layout Code");
-            TempNameValueBuffer.FINDSET;
-            AccountNoFilter := GetAccountNoFilterForCustomReportLayout(TempReportSelections,TempNameValueBuffer,TableNo);
-            GetFilteredRecordRef(RecRefToPrint,RecRef,AccountNoFieldNo,AccountNoFilter);
-            RecVarToPrint := RecRefToPrint;
-            REPORT.RUNMODAL(TempReportSelections."Report ID",IsGUI,FALSE,RecVarToPrint);
+          IF TempReportSelections."Custom Report Layout Code" <> '' THEN
+            ReportLayoutSelection.SetTempLayoutSelected(TempReportSelections."Custom Report Layout Code")
+          ELSE
             ReportLayoutSelection.SetTempLayoutSelected('');
-          END ELSE
-            REPORT.RUNMODAL(TempReportSelections."Report ID",IsGUI,FALSE,RecordVariant);
+
+          TempNameValueBuffer.FINDSET;
+          AccountNoFilter := GetAccountNoFilterForCustomReportLayout(TempReportSelections,TempNameValueBuffer,TableNo);
+          GetFilteredRecordRef(RecRefToPrint,RecRef,AccountNoFieldNo,AccountNoFilter);
+          RecVarToPrint := RecRefToPrint;
+
+          REPORT.RUNMODAL(TempReportSelections."Report ID",IsGUI,FALSE,RecVarToPrint);
+
+          ReportLayoutSelection.SetTempLayoutSelected('');
         UNTIL TempReportSelections.NEXT = 0;
     END;
 
@@ -329,10 +328,14 @@ OBJECT Table 77 Report Selections
       CustomReportSelection@1005 : Record 9657;
       AccountNo@1003 : Code[20];
       AccountNoFilter@1004 : Text;
+      AccountHasCustomSelection@1006 : Boolean;
+      ReportInvolvedInCustomSelection@1007 : Boolean;
     BEGIN
       CustomReportSelection.SETRANGE("Source Type",TableNo);
-      CustomReportSelection.SETRANGE("Custom Report Layout Code",TempReportSelections."Custom Report Layout Code");
+      CustomReportSelection.SETRANGE(Usage,TempReportSelections.Usage);
       CustomReportSelection.SETRANGE("Report ID",TempReportSelections."Report ID");
+
+      ReportInvolvedInCustomSelection := NOT CustomReportSelection.ISEMPTY;
 
       AccountNoFilter := '';
 
@@ -340,8 +343,25 @@ OBJECT Table 77 Report Selections
       REPEAT
         AccountNo := COPYSTR(TempNameValueBuffer.Name,1,MAXSTRLEN(AccountNo));
         CustomReportSelection.SETRANGE("Source No.",AccountNo);
-        IF NOT CustomReportSelection.ISEMPTY THEN
-          AccountNoFilter += AccountNo + '|';
+
+        IF ReportInvolvedInCustomSelection THEN BEGIN
+          CustomReportSelection.SETRANGE("Custom Report Layout Code",TempReportSelections."Custom Report Layout Code");
+
+          AccountHasCustomSelection := NOT CustomReportSelection.ISEMPTY;
+          IF AccountHasCustomSelection THEN
+            AccountNoFilter += AccountNo + '|';
+
+          CustomReportSelection.SETRANGE("Custom Report Layout Code");
+        END ELSE BEGIN
+          CustomReportSelection.SETRANGE("Report ID");
+
+          AccountHasCustomSelection := NOT CustomReportSelection.ISEMPTY;
+          IF NOT AccountHasCustomSelection THEN
+            AccountNoFilter += AccountNo + '|';
+
+          CustomReportSelection.SETRANGE("Report ID",TempReportSelections."Report ID");
+        END;
+
       UNTIL TempNameValueBuffer.NEXT = 0;
 
       AccountNoFilter := DELCHR(AccountNoFilter,'>','|');
@@ -357,6 +377,33 @@ OBJECT Table 77 Report Selections
           FINDSET;
       END ELSE
         FindPrintUsageInternal(ReportUsage,AccountNo,TempReportSelections,TableNo);
+    END;
+
+    LOCAL PROCEDURE SelectTempReportSelectionsToPrint@76(VAR TempReportSelections@1007 : TEMPORARY Record 77;VAR TempNameValueBuffer@1000 : TEMPORARY Record 823;WithCheck@1003 : Boolean;ReportUsage@1004 : Option;TableNo@1005 : Integer);
+    VAR
+      TempReportSelectionsAccount@1002 : TEMPORARY Record 77;
+      AccountNo@1001 : Code[20];
+      LastSequence@1006 : Code[10];
+    BEGIN
+      IF TempNameValueBuffer.FINDSET THEN
+        REPEAT
+          AccountNo := COPYSTR(TempNameValueBuffer.Name,1,MAXSTRLEN(AccountNo));
+          TempReportSelectionsAccount.RESET;
+          TempReportSelectionsAccount.DELETEALL;
+          SelectTempReportSelections(TempReportSelectionsAccount,AccountNo,WithCheck,ReportUsage,TableNo);
+          IF TempReportSelectionsAccount.FINDSET THEN
+            REPEAT
+              LastSequence := GetLastSequenceNo(TempReportSelections,ReportUsage);
+              IF NOT HasReportWithUsage(TempReportSelections,ReportUsage,TempReportSelectionsAccount."Report ID") THEN BEGIN
+                TempReportSelections := TempReportSelectionsAccount;
+                IF LastSequence = '' THEN
+                  TempReportSelections.Sequence := '1'
+                ELSE
+                  TempReportSelections.Sequence := INCSTR(LastSequence);
+                TempReportSelections.INSERT;
+              END;
+            UNTIL TempReportSelectionsAccount.NEXT = 0;
+        UNTIL TempNameValueBuffer.NEXT = 0;
     END;
 
     [Internal]
@@ -557,14 +604,16 @@ OBJECT Table 77 Report Selections
       END;
 
       RecRef.GETTABLE(RecordVariant);
-      JobQueueEntry.INIT;
-      JobQueueEntry."Object Type to Run" := JobQueueEntry."Object Type to Run"::Codeunit;
-      JobQueueEntry."Object ID to Run" := CODEUNIT::"Document-Mailing";
-      JobQueueEntry."Maximum No. of Attempts to Run" := 3;
-      JobQueueEntry."Record ID to Process" := RecRef.RECORDID;
-      JobQueueEntry."Parameter String" := STRSUBSTNO('%1|%2|%3|%4|',ReportUsage,DocNo,DocName,CustNo);
-      JobQueueEntry.Description := COPYSTR(DocName,1,MAXSTRLEN(JobQueueEntry.Description));
-      CODEUNIT.RUN(CODEUNIT::"Job Queue - Enqueue",JobQueueEntry);
+      IF RecordsCanBeSent(RecRef) THEN BEGIN
+        JobQueueEntry.INIT;
+        JobQueueEntry."Object Type to Run" := JobQueueEntry."Object Type to Run"::Codeunit;
+        JobQueueEntry."Object ID to Run" := CODEUNIT::"Document-Mailing";
+        JobQueueEntry."Maximum No. of Attempts to Run" := 3;
+        JobQueueEntry."Record ID to Process" := RecRef.RECORDID;
+        JobQueueEntry."Parameter String" := STRSUBSTNO('%1|%2|%3|%4|',ReportUsage,DocNo,DocName,CustNo);
+        JobQueueEntry.Description := COPYSTR(DocName,1,MAXSTRLEN(JobQueueEntry.Description));
+        CODEUNIT.RUN(CODEUNIT::"Job Queue - Enqueue",JobQueueEntry);
+      END;
     END;
 
     [Internal]
@@ -1079,6 +1128,14 @@ OBJECT Table 77 Report Selections
       EXIT(SendEmailToVendorDirectly(ReportUsage,RecRef,DocNo,DocName,FALSE,SourceNo));
     END;
 
+    LOCAL PROCEDURE RecordsCanBeSent@41(RecRef@1000 : RecordRef) : Boolean;
+    BEGIN
+      IF RecRef.COUNT > 1 THEN
+        EXIT(CONFIRM(OneRecordWillBeSentQst));
+
+      EXIT(TRUE);
+    END;
+
     [Integration]
     LOCAL PROCEDURE OnBeforeGetCustEmailAddress@57(BillToCustomerNo@1000 : Code[20];VAR ToAddress@1001 : Text;VAR IsHandled@1002 : Boolean);
     BEGIN
@@ -1102,6 +1159,28 @@ OBJECT Table 77 Report Selections
     [Integration]
     LOCAL PROCEDURE OnFindReportSelections@63(VAR FilterReportSelections@1001 : Record 77;VAR IsHandled@1002 : Boolean;VAR ReturnReportSelections@1000 : Record 77);
     BEGIN
+    END;
+
+    LOCAL PROCEDURE GetLastSequenceNo@82(VAR TempReportSelectionsSource@1000 : TEMPORARY Record 77;ReportUsage@1002 : Option) : Code[10];
+    VAR
+      TempReportSelections@1001 : TEMPORARY Record 77;
+    BEGIN
+      TempReportSelections.COPY(TempReportSelectionsSource,TRUE);
+      TempReportSelections.SETRANGE(Usage,ReportUsage);
+      IF TempReportSelections.FINDLAST THEN;
+      IF TempReportSelections.Sequence = '' THEN
+        TempReportSelections.Sequence := '1';
+      EXIT(TempReportSelections.Sequence);
+    END;
+
+    LOCAL PROCEDURE HasReportWithUsage@84(VAR TempReportSelectionsSource@1000 : TEMPORARY Record 77;ReportUsage@1002 : Option;ReportID@1003 : Integer) : Boolean;
+    VAR
+      TempReportSelections@1001 : TEMPORARY Record 77;
+    BEGIN
+      TempReportSelections.COPY(TempReportSelectionsSource,TRUE);
+      TempReportSelections.SETRANGE(Usage,ReportUsage);
+      TempReportSelections.SETRANGE("Report ID",ReportID);
+      EXIT(TempReportSelections.FINDFIRST);
     END;
 
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Table 5902 Service Line
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -2254,7 +2254,7 @@ OBJECT Table 5902 Service Line
       Text053@1020 : TextConst 'DAN=Du kan ikke ‘ndre denne servicelinje, da der findes en eller flere serviceposter for denne linje.;ENU=You cannot modify the service line because one or more service entries exist for this line.';
       IsCustCrLimitChecked@1049 : Boolean;
       LocationChangedMsg@1055 : TextConst '@@@="%1 = Item No., %2 = Item serial No., %3 = Location code";DAN=Varen %1 med serienummeret %2 opbevares p† placeringen %3. Feltet Lokationskode p† servicelinjen vil blive opdateret.;ENU=Item %1 with serial number %2 is stored on location %3. The Location Code field on the service line will be updated.';
-      LineDiscountPctErr@1022 : TextConst 'DAN=The value in the Line Discount % field must be between 0 and 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
+      LineDiscountPctErr@1022 : TextConst 'DAN=V‘rdien i feltet Linjerabat % skal v‘re mellem 0 og 100.;ENU=The value in the Line Discount % field must be between 0 and 100.';
 
     LOCAL PROCEDURE CheckItemAvailable@3(CalledByFieldNo@1000 : Integer);
     VAR

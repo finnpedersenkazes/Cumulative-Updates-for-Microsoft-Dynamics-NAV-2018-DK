@@ -2,9 +2,9 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -720,10 +720,17 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
                 "Location Code","Bin Code",
                 "Item No.","Variant Code","Unit of Measure Code");
               ItemTrackingMgt.CheckWhseItemTrkgSetup(BinContent."Item No.",WhseSNRequired,WhseLNRequired,FALSE);
+
               IF WhseLNRequired THEN
-                BinContent.SETRANGE("Lot No. Filter","Lot No.");
+                BinContent.SETRANGE("Lot No. Filter","Lot No.")
+              ELSE
+                BinContent.SETRANGE("Lot No. Filter");
+
               IF WhseSNRequired THEN
-                BinContent.SETRANGE("Serial No. Filter","Serial No.");
+                BinContent.SETRANGE("Serial No. Filter","Serial No.")
+              ELSE
+                BinContent.SETRANGE("Serial No. Filter");
+
               BreakBulkQtyBaseToPlace := CalcBreakBulkQtyToPlace(TempBinContentBuffer);
               GetItem("Item No.");
               AbsQtyToHandleBase := ABS("Qty. to Handle (Base)");

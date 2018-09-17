@@ -2,9 +2,9 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -428,6 +428,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
     LOCAL PROCEDURE PostOutput@25();
     VAR
       MfgItem@1012 : Record 27;
+      MfgSKU@1003 : Record 5700;
       MachCenter@1008 : Record 99000758;
       WorkCenter@1004 : Record 99000754;
       CapLedgEntry@1000 : Record 5832;
@@ -438,6 +439,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       DirCostAmt@1002 : Decimal;
       IndirCostAmt@1001 : Decimal;
       ValuedQty@1011 : Decimal;
+      MfgUnitCost@1010 : Decimal;
       ReTrack@1009 : Boolean;
     BEGIN
       WITH ItemJnlLine DO BEGIN
@@ -521,6 +523,8 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
         IF LastOperation AND ("Output Quantity" <> 0) THEN BEGIN
           CheckItemTracking;
           IF ("Output Quantity" < 0) AND NOT Adjustment THEN BEGIN
+            IF "Applies-to Entry" = 0 THEN
+              "Applies-to Entry" := FindOpenOutputEntryNoToApply(ItemJnlLine);
             TESTFIELD("Applies-to Entry");
             ItemLedgerEntry.GET("Applies-to Entry");
             TESTFIELD("Lot No.",ItemLedgerEntry."Lot No.");
@@ -529,7 +533,14 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
           MfgItem.GET(ProdOrderLine."Item No.");
           MfgItem.TESTFIELD("Gen. Prod. Posting Group");
 
-          Amount := "Output Quantity" * ProdOrderLine."Unit Cost";
+          IF Subcontracting THEN
+            MfgUnitCost := ProdOrderLine."Unit Cost"
+          ELSE
+            IF MfgSKU.GET(ProdOrderLine."Location Code",ProdOrderLine."Item No.",ProdOrderLine."Variant Code") THEN
+              MfgUnitCost := MfgSKU."Unit Cost"
+            ELSE
+              MfgUnitCost := MfgItem."Unit Cost";
+          Amount := "Output Quantity" * MfgUnitCost;
           "Amount (ACY)" := ACYMgt.CalcACYAmt(Amount,"Posting Date",FALSE);
           "Gen. Bus. Posting Group" := ProdOrder."Gen. Bus. Posting Group";
           "Gen. Prod. Posting Group" := MfgItem."Gen. Prod. Posting Group";
@@ -1965,15 +1976,20 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
           END;
         END;
 
-        IF TransferItem THEN BEGIN
-          ItemLedgEntry."Global Dimension 1 Code" := "New Shortcut Dimension 1 Code";
-          ItemLedgEntry."Global Dimension 2 Code" := "New Shortcut Dimension 2 Code";
-          ItemLedgEntry."Dimension Set ID" := "New Dimension Set ID";
-        END ELSE BEGIN
-          ItemLedgEntry."Global Dimension 1 Code" := "Shortcut Dimension 1 Code";
-          ItemLedgEntry."Global Dimension 2 Code" := "Shortcut Dimension 2 Code";
-          ItemLedgEntry."Dimension Set ID" := "Dimension Set ID";
-        END;
+        IF IsWarehouseReclassification(ItemJnlLine) THEN BEGIN
+          ItemLedgEntry."Global Dimension 1 Code" := OldItemLedgEntry."Global Dimension 1 Code";
+          ItemLedgEntry."Global Dimension 2 Code" := OldItemLedgEntry."Global Dimension 2 Code";
+          ItemLedgEntry."Dimension Set ID" := OldItemLedgEntry."Dimension Set ID"
+        END ELSE
+          IF TransferItem THEN BEGIN
+            ItemLedgEntry."Global Dimension 1 Code" := "New Shortcut Dimension 1 Code";
+            ItemLedgEntry."Global Dimension 2 Code" := "New Shortcut Dimension 2 Code";
+            ItemLedgEntry."Dimension Set ID" := "New Dimension Set ID";
+          END ELSE BEGIN
+            ItemLedgEntry."Global Dimension 1 Code" := "Shortcut Dimension 1 Code";
+            ItemLedgEntry."Global Dimension 2 Code" := "Shortcut Dimension 2 Code";
+            ItemLedgEntry."Dimension Set ID" := "Dimension Set ID";
+          END;
 
         IF NOT ("Entry Type" IN ["Entry Type"::Transfer,"Entry Type"::Output]) AND
            (ItemLedgEntry.Quantity = ItemLedgEntry."Invoiced Quantity")
@@ -2555,24 +2571,28 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       InvoicedQty@1004 : Decimal;
     BEGIN
       WITH ItemJnlLine DO BEGIN
-        IF TransferItem THEN BEGIN
-          ValueEntry."Global Dimension 1 Code" := "New Shortcut Dimension 1 Code";
-          ValueEntry."Global Dimension 2 Code" := "New Shortcut Dimension 2 Code";
-          ValueEntry."Dimension Set ID" := "New Dimension Set ID";
-        END ELSE BEGIN
-          IF (GlobalValueEntry."Entry Type" = GlobalValueEntry."Entry Type"::"Direct Cost") AND
-             (GlobalValueEntry."Item Charge No." <> '') AND
-             (ValueEntry."Entry Type" = ValueEntry."Entry Type"::Variance)
-          THEN BEGIN
-            GetLastDirectCostValEntry(ValueEntry."Item Ledger Entry No.");
-            ValueEntry."Gen. Prod. Posting Group" := DirCostValueEntry."Gen. Prod. Posting Group";
-            MoveValEntryDimToValEntryDim(ValueEntry,DirCostValueEntry);
-          END ELSE BEGIN
-            ValueEntry."Global Dimension 1 Code" := "Shortcut Dimension 1 Code";
-            ValueEntry."Global Dimension 2 Code" := "Shortcut Dimension 2 Code";
-            ValueEntry."Dimension Set ID" := "Dimension Set ID";
-          END;
-        END;
+        IF IsWarehouseReclassification(ItemJnlLine) THEN BEGIN
+          ValueEntry."Dimension Set ID" := OldItemLedgEntry."Dimension Set ID";
+          ValueEntry."Global Dimension 1 Code" := OldItemLedgEntry."Global Dimension 1 Code";
+          ValueEntry."Global Dimension 2 Code" := OldItemLedgEntry."Global Dimension 2 Code";
+        END ELSE
+          IF TransferItem THEN BEGIN
+            ValueEntry."Global Dimension 1 Code" := "New Shortcut Dimension 1 Code";
+            ValueEntry."Global Dimension 2 Code" := "New Shortcut Dimension 2 Code";
+            ValueEntry."Dimension Set ID" := "New Dimension Set ID";
+          END ELSE
+            IF (GlobalValueEntry."Entry Type" = GlobalValueEntry."Entry Type"::"Direct Cost") AND
+               (GlobalValueEntry."Item Charge No." <> '') AND
+               (ValueEntry."Entry Type" = ValueEntry."Entry Type"::Variance)
+            THEN BEGIN
+              GetLastDirectCostValEntry(ValueEntry."Item Ledger Entry No.");
+              ValueEntry."Gen. Prod. Posting Group" := DirCostValueEntry."Gen. Prod. Posting Group";
+              MoveValEntryDimToValEntryDim(ValueEntry,DirCostValueEntry);
+            END ELSE BEGIN
+              ValueEntry."Global Dimension 1 Code" := "Shortcut Dimension 1 Code";
+              ValueEntry."Global Dimension 2 Code" := "Shortcut Dimension 2 Code";
+              ValueEntry."Dimension Set ID" := "Dimension Set ID";
+            END;
         RoundAmtValueEntry(ValueEntry);
 
         IF ValueEntry."Entry Type" = ValueEntry."Entry Type"::Rounding THEN BEGIN
@@ -3408,6 +3428,7 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
     LOCAL PROCEDURE SetupSplitJnlLine@20(VAR ItemJnlLine2@1000 : Record 83;TrackingSpecExists@1001 : Boolean) : Boolean;
     VAR
       LateBindingMgt@1013 : Codeunit 6502;
+      UOMMgt@1007 : Codeunit 5402;
       NonDistrQuantity@1006 : Decimal;
       NonDistrAmount@1012 : Decimal;
       NonDistrAmountACY@1011 : Decimal;
@@ -3476,7 +3497,11 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
             TempTrackingSpecification.TestFieldError(TempTrackingSpecification.FIELDCAPTION("Qty. to Invoice (Base)"),
               TempTrackingSpecification."Qty. to Invoice (Base)",SignFactor * ItemJnlLine2."Invoiced Qty. (Base)");
 
-          NonDistrQuantity := ItemJnlLine2.Quantity;
+          NonDistrQuantity :=
+            UOMMgt.CalcQtyFromBase(
+              UOMMgt.RoundQty(
+                UOMMgt.CalcBaseQty(ItemJnlLine2.Quantity,ItemJnlLine2."Qty. per Unit of Measure")),
+              ItemJnlLine2."Qty. per Unit of Measure");
           NonDistrAmount := ItemJnlLine2.Amount;
           NonDistrAmountACY := ItemJnlLine2."Amount (ACY)";
           NonDistrDiscountAmount := ItemJnlLine2."Discount Amount";
@@ -4362,6 +4387,11 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
           Inventoriable AND NOT PostToGL AND
           (((NOT "Expected Cost") AND (("Cost Amount (Actual)" <> 0) OR ("Cost Amount (Actual) (ACY)" <> 0))) OR
            (InvtSetup."Expected Cost Posting to G/L" AND (("Cost Amount (Expected)" <> 0) OR ("Cost Amount (Expected) (ACY)" <> 0)))));
+    END;
+
+    LOCAL PROCEDURE IsWarehouseReclassification@160(ItemJournalLine@1000 : Record 83) : Boolean;
+    BEGIN
+      EXIT(ItemJournalLine."Warehouse Adjustment" AND (ItemJournalLine."Entry Type" = ItemJournalLine."Entry Type"::Transfer));
     END;
 
     LOCAL PROCEDURE MoveApplication@90(VAR ItemLedgEntry@1001 : Record 32;VAR OldItemLedgEntry@1000 : Record 32) : Boolean;
@@ -5270,6 +5300,37 @@ OBJECT Codeunit 22 Item Jnl.-Post Line
       OldValueEntry2.CALCSUMS("Cost Amount (Expected)","Cost Amount (Expected) (ACY)");
       OldValueEntry."Cost Amount (Expected)" += OldValueEntry2."Cost Amount (Expected)";
       OldValueEntry."Cost Amount (Expected) (ACY)" += OldValueEntry2."Cost Amount (Expected) (ACY)";
+    END;
+
+    LOCAL PROCEDURE FindOpenOutputEntryNoToApply@158(ItemJournalLine@1000 : Record 83) : Integer;
+    VAR
+      ItemLedgerEntry@1001 : Record 32;
+    BEGIN
+      IF (ItemJournalLine."Lot No." = '') AND (ItemJournalLine."Serial No." = '') THEN
+        EXIT(0);
+
+      WITH ItemLedgerEntry DO BEGIN
+        SETCURRENTKEY("Order Type","Order No.","Order Line No.","Entry Type","Prod. Order Comp. Line No.");
+        SETRANGE("Order Type","Order Type"::Production);
+        SETRANGE("Order No.",ItemJournalLine."Order No.");
+        SETRANGE("Order Line No.",ItemJournalLine."Order Line No.");
+        SETRANGE("Entry Type","Entry Type"::Output);
+        SETRANGE("Prod. Order Comp. Line No.",0);
+        SETRANGE("Item No.",ItemJournalLine."Item No.");
+        SETRANGE("Location Code",ItemJournalLine."Location Code");
+        SETRANGE("Lot No.",ItemJournalLine."Lot No.");
+        SETRANGE("Serial No.",ItemJournalLine."Serial No.");
+        SETRANGE(Positive,TRUE);
+        SETRANGE(Open,TRUE);
+        SETFILTER("Remaining Quantity",'>=%1',-ItemJournalLine."Output Quantity (Base)");
+        IF NOT ISEMPTY THEN
+          IF COUNT = 1 THEN BEGIN
+            FINDFIRST;
+            EXIT("Entry No.");
+          END;
+      END;
+
+      EXIT(0);
     END;
 
     BEGIN

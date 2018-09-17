@@ -2,9 +2,9 @@ OBJECT Table 368 Dimension Selection Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -197,53 +197,15 @@ OBJECT Table 368 Dimension Selection Buffer
     VAR
       GLAcc@1007 : Record 15;
     BEGIN
-      SetDimSelectionLevel(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,GLAcc.TABLECAPTION);
+      SetDimSelectionLevelWithAutoSet(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,GLAcc.TABLECAPTION,FALSE);
     END;
 
     [External]
     PROCEDURE SetDimSelectionLevelGLAccAutoSet@9(ObjectType@1000 : Integer;ObjectID@1001 : Integer;AnalysisViewCode@1002 : Code[10];VAR SelectedDimText@1003 : Text[250]);
     VAR
       GLAcc@1007 : Record 15;
-      SelectedDim@1009 : Record 369;
-      AnalysisView@1008 : Record 363;
-      Dim@1006 : Record 348;
-      TempDimSelectionBuf@1005 : TEMPORARY Record 368;
-      DimSelectionLevel@1004 : Page 564;
-      SelectedDimLevel@1011 : Option;
-      GetSelectedDim@1010 : Boolean;
     BEGIN
-      CLEAR(DimSelectionLevel);
-      IF AnalysisView.GET(AnalysisViewCode) THEN BEGIN
-        IF Dim.GET(AnalysisView."Dimension 1 Code") THEN BEGIN
-          GetSelectedDim := SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code);
-          IF SelectedDim.Level <> SelectedDim.Level::" " THEN
-            SelectedDimLevel := SelectedDim.Level
-          ELSE BEGIN
-            SelectedDimLevel := SelectedDim.Level::"Level 2";
-            GetSelectedDim := TRUE;
-          END;
-          DimSelectionLevel.InsertDimSelBuf(
-            GetSelectedDim,
-            Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
-            SelectedDim."Dimension Value Filter",SelectedDimLevel);
-        END;
-
-        AddDimensions(Dim,SelectedDim,AnalysisView,ObjectType,ObjectID,AnalysisViewCode);
-
-        GetSelectedDim := SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,GLAcc.TABLECAPTION);
-        IF SelectedDim.Level <> SelectedDim.Level::" " THEN
-          SelectedDimLevel := SelectedDim.Level
-        ELSE
-          SelectedDimLevel := SelectedDim.Level::"Level 1";
-
-        DimSelectionLevel.InsertDimSelBuf(
-          TRUE,
-          GLAcc.TABLECAPTION,GLAcc.TABLECAPTION,
-          SelectedDim."Dimension Value Filter",SelectedDimLevel);
-      END;
-
-      DimSelectionLevel.GetDimSelBuf(TempDimSelectionBuf);
-      SetDimSelection(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,TempDimSelectionBuf);
+      SetDimSelectionLevelWithAutoSet(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,GLAcc.TABLECAPTION,TRUE);
     END;
 
     [External]
@@ -251,57 +213,72 @@ OBJECT Table 368 Dimension Selection Buffer
     VAR
       CFAcc@1007 : Record 841;
     BEGIN
-      SetDimSelectionLevel(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,CFAcc.TABLECAPTION);
+      SetDimSelectionLevelWithAutoSet(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,CFAcc.TABLECAPTION,FALSE);
     END;
 
-    LOCAL PROCEDURE AddDimensions@19(Dim@1000 : Record 348;SelectedDim@1003 : Record 369;AnalysisView@1001 : Record 363;ObjectType@1006 : Integer;ObjectID@1005 : Integer;AnalysisViewCode@1004 : Code[10]);
+    LOCAL PROCEDURE SetDimSelectionLevelWithAutoSet@13(ObjectType@1004 : Integer;ObjectID@1003 : Integer;AnalysisViewCode@1002 : Code[10];VAR SelectedDimText@1001 : Text[250];AccTableCaption@1000 : Text[30];AutoSet@1010 : Boolean);
     VAR
-      DimSelectionLevel@1002 : Page 564;
-    BEGIN
-      IF Dim.GET(AnalysisView."Dimension 2 Code") THEN
-        DimSelectionLevel.InsertDimSelBuf(
-          SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code),
-          Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
-          SelectedDim."Dimension Value Filter",SelectedDim.Level);
-
-      IF Dim.GET(AnalysisView."Dimension 3 Code") THEN
-        DimSelectionLevel.InsertDimSelBuf(
-          SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code),
-          Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
-          SelectedDim."Dimension Value Filter",SelectedDim.Level);
-
-      IF Dim.GET(AnalysisView."Dimension 4 Code") THEN
-        DimSelectionLevel.InsertDimSelBuf(
-          SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code),
-          Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
-          SelectedDim."Dimension Value Filter",SelectedDim.Level);
-    END;
-
-    LOCAL PROCEDURE SetDimSelectionLevel@8(ObjectType@1003 : Integer;ObjectID@1002 : Integer;AnalysisViewCode@1001 : Code[10];VAR SelectedDimText@1000 : Text[250];AccTableCaption@1009 : Text[30]);
-    VAR
-      SelectedDim@1007 : Record 369;
-      AnalysisView@1004 : Record 363;
-      Dim@1005 : Record 348;
+      SelectedDim@1009 : Record 369;
+      AnalysisView@1008 : Record 363;
+      Dim@1007 : Record 348;
       TempDimSelectionBuf@1006 : TEMPORARY Record 368;
-      DimSelectionLevel@1008 : Page 564;
+      DimSelectionLevel@1005 : Page 564;
+      SelectedDimLevel@1012 : Option;
+      GetSelectedDim@1011 : Boolean;
+      Finished@1013 : Boolean;
     BEGIN
       CLEAR(DimSelectionLevel);
       IF AnalysisView.GET(AnalysisViewCode) THEN BEGIN
-        IF Dim.GET(AnalysisView."Dimension 1 Code") THEN
+        IF Dim.GET(AnalysisView."Dimension 1 Code") THEN BEGIN
+          GetSelectedDim := SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code);
+          IF AutoSet AND (SelectedDim.Level = SelectedDim.Level::" ") THEN BEGIN
+            SelectedDimLevel := SelectedDim.Level::"Level 2";
+            GetSelectedDim := TRUE;
+          END ELSE
+            SelectedDimLevel := SelectedDim.Level;
+
+          DimSelectionLevel.InsertDimSelBuf(
+            GetSelectedDim,
+            Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
+            SelectedDim."Dimension Value Filter",SelectedDimLevel);
+        END;
+
+        IF Dim.GET(AnalysisView."Dimension 2 Code") THEN
           DimSelectionLevel.InsertDimSelBuf(
             SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code),
             Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
             SelectedDim."Dimension Value Filter",SelectedDim.Level);
 
-        AddDimensions(Dim,SelectedDim,AnalysisView,ObjectType,ObjectID,AnalysisViewCode);
+        IF Dim.GET(AnalysisView."Dimension 3 Code") THEN
+          DimSelectionLevel.InsertDimSelBuf(
+            SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code),
+            Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
+            SelectedDim."Dimension Value Filter",SelectedDim.Level);
+
+        IF Dim.GET(AnalysisView."Dimension 4 Code") THEN
+          DimSelectionLevel.InsertDimSelBuf(
+            SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,Dim.Code),
+            Dim.Code,Dim.GetMLName(GLOBALLANGUAGE),
+            SelectedDim."Dimension Value Filter",SelectedDim.Level);
+
+        GetSelectedDim := SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,AccTableCaption);
+        IF AutoSet AND (SelectedDim.Level = SelectedDim.Level::" ") THEN
+          SelectedDimLevel := SelectedDim.Level::"Level 1"
+        ELSE
+          SelectedDimLevel := SelectedDim.Level;
 
         DimSelectionLevel.InsertDimSelBuf(
-          SelectedDim.GET(USERID,ObjectType,ObjectID,AnalysisViewCode,AccTableCaption),
+          GetSelectedDim,
           AccTableCaption,AccTableCaption,
-          SelectedDim."Dimension Value Filter",SelectedDim.Level);
+          SelectedDim."Dimension Value Filter",SelectedDimLevel);
       END;
 
-      IF DimSelectionLevel.RUNMODAL = ACTION::OK THEN BEGIN
+      IF NOT AutoSet THEN
+        Finished := DimSelectionLevel.RUNMODAL = ACTION::OK
+      ELSE
+        Finished := TRUE;
+
+      IF Finished THEN BEGIN
         DimSelectionLevel.GetDimSelBuf(TempDimSelectionBuf);
         SetDimSelection(ObjectType,ObjectID,AnalysisViewCode,SelectedDimText,TempDimSelectionBuf);
       END;

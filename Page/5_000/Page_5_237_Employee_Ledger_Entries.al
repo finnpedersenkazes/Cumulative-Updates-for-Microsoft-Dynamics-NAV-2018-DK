@@ -2,9 +2,9 @@ OBJECT Page 5237 Employee Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -279,7 +279,8 @@ OBJECT Page 5237 Employee Ledger Entries
                            ENU=Specifies that the entry was created as a result of exporting a payment journal line.];
                 ApplicationArea=#BasicHR;
                 SourceExpr="Exported to Payment File";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=TRUE }
 
     { 35  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver den kreditor, som har sendt medarbejderbilaget.;

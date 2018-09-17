@@ -2,9 +2,9 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -284,8 +284,8 @@ OBJECT Codeunit 90 Purch.-Post
       ZeroDeferralAmtErr@1067 : TextConst '@@@="%1=The item number of the sales transaction line, %2=The Deferral Template Code";DAN=Periodiseringsbel›b m† ikke v‘re 0. Linje: %1, periodiseringsskabelon: %2.;ENU=Deferral amounts cannot be 0. Line: %1, Deferral Template: %2.';
       MixedDerpFAUntilPostingDateErr@1268 : TextConst '@@@=%1 - Fixed Asset No.;DAN=V‘rdien i feltet Afskriv til bogf›ringsdato for anl‘g skal v‘re den samme i linjerne for samme anl‘gsaktiv %1.;ENU=The value in the Depr. Until FA Posting Date field must be the same on lines for the same fixed asset %1.';
       CannotPostSameMultipleFAWhenDeprBookValueZeroErr@1274 : TextConst '@@@=%1 - Fixed Asset No.;DAN=Du kan ikke markere afkrydsningsfeltet Afskriv til bogf›ringsdato for anl‘g, da der ikke er en tidligere anskaffelsespost for anl‘gsaktivet %1.\\Hvis du vil afskrive nye anskaffelser, kan du markere afkrydsningsfeltet Afskriv anskaffelse i stedet.;ENU=You cannot select the Depr. Until FA Posting Date check box because there is no previous acquisition entry for fixed asset %1.\\If you want to depreciate new acquisitions, you can select the Depr. Acquisition Cost check box instead.';
-      InvPickExistsErr@1057 : TextConst 'DAN=One or more related inventory picks must be registered before you can post the shipment.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
-      InvPutAwayExistsErr@1056 : TextConst 'DAN=One or more related inventory put-aways must be registered before you can post the receipt.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
+      InvPickExistsErr@1057 : TextConst 'DAN=Et eller flere relaterede pluk (lager) skal registreres, f›r du kan bogf›re leverancen.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
+      InvPutAwayExistsErr@1056 : TextConst 'DAN=En eller flere l‘g-p†-lager-aktiviteter skal registreres, f›r du kan bogf›re modtagelsen.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
 
     LOCAL PROCEDURE CopyToTempLines@174(PurchHeader@1001 : Record 38);
     VAR
@@ -880,7 +880,7 @@ OBJECT Codeunit 90 Purch.-Post
               TempHandlingSpecification,0);
         END;
 
-        OnBeforeItemJnlPostLine(ItemJnlLine,PurchLine);
+        OnBeforeItemJnlPostLine(ItemJnlLine,PurchLine,PurchHeader);
         ItemJnlPostLine.RunWithCheck(ItemJnlLine);
 
         IF NOT Subcontracting THEN
@@ -1498,6 +1498,7 @@ OBJECT Codeunit 90 Purch.-Post
 
       IF SalesOrderLine."Job Contract Entry No." = 0 THEN BEGIN
         TransferReservToItemJnlLine(SalesOrderLine,ItemJnlLine,PurchLine,QtyToBeShippedBase,TRUE);
+        OnBeforePostAssocItemJnlLine(ItemJnlLine,SalesOrderLine);
         ItemJnlPostLine.RunWithCheck(ItemJnlLine);
         // Handle Item Tracking
         IF ItemJnlPostLine.CollectTrackingSpecification(TempHandlingSpecification2) THEN BEGIN
@@ -4189,7 +4190,7 @@ OBJECT Codeunit 90 Purch.-Post
       WITH TempPrepmtDeductLCYPurchLine DO
         IF PurchLine."Prepayment %" = 100 THEN
           IF GET(PurchLine."Document Type",PurchLine."Document No.",PurchLine."Line No.") THEN
-            EXIT("Prepmt Amt to Deduct" - "Line Amount");
+            EXIT("Prepmt Amt to Deduct" + "Inv. Discount Amount" - "Line Amount");
       EXIT(0);
     END;
 
@@ -6489,7 +6490,7 @@ OBJECT Codeunit 90 Purch.-Post
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnBeforeItemJnlPostLine@227(VAR ItemJournalLine@1000 : Record 83;PurchaseLine@1001 : Record 39);
+    LOCAL PROCEDURE OnBeforeItemJnlPostLine@227(VAR ItemJournalLine@1000 : Record 83;PurchaseLine@1001 : Record 39;PurchaseHeader@1002 : Record 38);
     BEGIN
     END;
 
@@ -6560,6 +6561,11 @@ OBJECT Codeunit 90 Purch.-Post
 
     [Integration]
     LOCAL PROCEDURE OnBeforePostInvPostBuffer@6(VAR GenJnlLine@1000 : Record 81;VAR InvoicePostBuffer@1001 : Record 49;VAR PurchHeader@1003 : Record 38);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePostAssocItemJnlLine@233(VAR ItemJournalLine@1000 : Record 83;VAR SalesLine@1001 : Record 37);
     BEGIN
     END;
 

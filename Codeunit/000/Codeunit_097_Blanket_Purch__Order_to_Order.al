@@ -2,9 +2,9 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -122,6 +122,8 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
                 END;
               UNTIL PurchBlanketOrderLine.NEXT = 0;
 
+            OnAfterInsertAllPurchOrderLines(Rec,PurchOrderHeader);
+
             IF PurchSetup."Default Posting Date" = PurchSetup."Default Posting Date"::"No Date" THEN BEGIN
               PurchOrderHeader."Posting Date" := 0D;
               PurchOrderHeader.MODIFY;
@@ -164,6 +166,7 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
         PurchOrderHeader.InitRecord;
 
         PurchOrderLine.LOCKTABLE;
+        OnBeforeInsertPurchOrderHeader(PurchOrderHeader,PurchHeader);
         PurchOrderHeader.INSERT(TRUE);
 
         IF "Order Date" = 0D THEN
@@ -179,7 +182,7 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
         PurchOrderHeader.VALIDATE("Posting Date");
 
         PurchOrderHeader."Prepayment %" := PrepmtPercent;
-        OnBeforeInsertPurchOrderHeader(PurchOrderHeader,PurchHeader);
+        OnBeforePurchOrderHeaderModify(PurchOrderHeader,PurchHeader);
         PurchOrderHeader.MODIFY;
       END;
     END;
@@ -225,6 +228,16 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
 
     [Integration]
     LOCAL PROCEDURE OnBeforeInsertPurchOrderLine@7(VAR PurchOrderLine@1000 : Record 39;PurchOrderHeader@1001 : Record 38;BlanketOrderPurchLine@1002 : Record 39;BlanketOrderPurchHeader@1003 : Record 38);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterInsertAllPurchOrderLines@10(BlanketOrderPurchHeader@1000 : Record 38;OrderPurchHeader@1001 : Record 38);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePurchOrderHeaderModify@5(VAR PurchOrderHeader@1001 : Record 38;BlanketOrderPurchHeader@1000 : Record 38);
     BEGIN
     END;
 

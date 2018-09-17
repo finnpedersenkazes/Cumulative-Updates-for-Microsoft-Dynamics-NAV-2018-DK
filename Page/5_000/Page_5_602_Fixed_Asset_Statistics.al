@@ -2,9 +2,9 @@ OBJECT Page 5602 Fixed Asset Statistics
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -200,29 +200,35 @@ OBJECT Page 5602 Fixed Asset Statistics
                 ApplicationArea=#FixedAssets;
                 SourceExpr="Custom 1" }
 
-    { 34  ;4   ;Field     ;
-                ToolTipML=[DAN=Angiver anl‘ggets bogf›rte v‘rdi.;
-                           ENU=Specifies the book value for the fixed asset.];
-                ApplicationArea=#FixedAssets;
-                SourceExpr="Book Value" }
-
     { 36  ;4   ;Field     ;
                 ToolTipML=[DAN=Angiver den ansl†ede restv‘rdi af et anl‘gsaktiv, n†r det ikke l‘ngere kan bruges.;
                            ENU=Specifies the estimated residual value of a fixed asset when it can no longer be used.];
                 ApplicationArea=#FixedAssets;
                 SourceExpr="Salvage Value" }
 
-    { 38  ;4   ;Field     ;
-                ToolTipML=[DAN=Angiver afskrivningsgrundlaget for anl‘gget.;
-                           ENU=Specifies the depreciable basis amount for the fixed asset.];
-                ApplicationArea=#FixedAssets;
-                SourceExpr="Depreciable Basis" }
-
     { 41  ;4   ;Field     ;
                 ToolTipML=[DAN=Angiver det samlede bel›b i RV for Bruger 2-poster for anl‘gget.;
                            ENU=Specifies the total LCY amount for custom 2 entries for the fixed asset.];
                 ApplicationArea=#FixedAssets;
                 SourceExpr="Custom 2" }
+
+    { 2   ;2   ;Group     ;
+                GroupType=FixedLayout }
+
+    { 3   ;3   ;Group     ;
+                GroupType=Group }
+
+    { 34  ;4   ;Field     ;
+                ToolTipML=[DAN=Angiver anl‘ggets bogf›rte v‘rdi.;
+                           ENU=Specifies the book value for the fixed asset.];
+                ApplicationArea=#FixedAssets;
+                SourceExpr="Book Value" }
+
+    { 38  ;4   ;Field     ;
+                ToolTipML=[DAN=Angiver afskrivningsgrundlaget for anl‘gget.;
+                           ENU=Specifies the depreciable basis amount for the fixed asset.];
+                ApplicationArea=#FixedAssets;
+                SourceExpr="Depreciable Basis" }
 
     { 43  ;4   ;Field     ;
                 ToolTipML=[DAN=Angiver den samlede vedligeholdelsespris for anl‘gget.;

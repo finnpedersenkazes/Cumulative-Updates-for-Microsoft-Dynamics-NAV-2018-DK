@@ -2,9 +2,9 @@ OBJECT Table 210 Job Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -1389,11 +1389,10 @@ OBJECT Table 210 Job Journal Line
 
     LOCAL PROCEDURE UpdateTotalPrice@6();
     BEGIN
-      "Total Price" := Quantity * "Unit Price";
+      "Total Price" := ROUND(Quantity * "Unit Price",AmountRoundingPrecisionFCY);
       "Total Price (LCY)" := ROUND(
           CurrExchRate.ExchangeAmtFCYToLCY(
             "Posting Date","Currency Code","Total Price","Currency Factor"),AmountRoundingPrecision);
-      "Total Price" := ROUND("Total Price",AmountRoundingPrecisionFCY);
 
       OnAfterUpdateTotalPrice(Rec);
     END;

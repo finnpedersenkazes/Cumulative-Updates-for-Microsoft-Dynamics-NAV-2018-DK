@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -1603,13 +1603,15 @@ OBJECT Table 36 Sales Header
     { 200 ;   ;Work Description    ;BLOB          ;CaptionML=[DAN=Arbejdsbeskrivelse;
                                                               ENU=Work Description] }
     { 300 ;   ;Amt. Ship. Not Inv. (LCY);Decimal  ;FieldClass=FlowField;
-                                                   CalcFormula=Sum("Sales Line"."Shipped Not Invoiced (LCY)" WHERE (Document No.=FIELD(No.)));
+                                                   CalcFormula=Sum("Sales Line"."Shipped Not Invoiced (LCY)" WHERE (Document Type=FIELD(Document Type),
+                                                                                                                    Document No.=FIELD(No.)));
                                                    CaptionML=[DAN=Bel›b leveret, men ikke faktureret (RV) Inkl. moms;
                                                               ENU=Amount Shipped Not Invoiced (LCY) Incl. VAT];
                                                    Editable=No }
     { 301 ;   ;Amt. Ship. Not Inv. (LCY) Base;Decimal;
                                                    FieldClass=FlowField;
-                                                   CalcFormula=Sum("Sales Line"."Shipped Not Inv. (LCY) No VAT" WHERE (Document No.=FIELD(No.)));
+                                                   CalcFormula=Sum("Sales Line"."Shipped Not Inv. (LCY) No VAT" WHERE (Document Type=FIELD(Document Type),
+                                                                                                                       Document No.=FIELD(No.)));
                                                    CaptionML=[DAN=Bel›b leveret, men ikke faktureret (RV);
                                                               ENU=Amount Shipped Not Invoiced (LCY)];
                                                    Editable=No }
@@ -3222,7 +3224,7 @@ OBJECT Table 36 Sales Header
       END;
       "Bill-to Contact No." := Cont."No.";
 
-      IF Cust.GET("Bill-to Customer No.") THEN
+      IF Cust.GET("Bill-to Customer No.") AND (Cont.Type <> Cont.Type::Person) THEN
         "Bill-to Contact" := Cust.Contact
       ELSE
         "Bill-to Contact" := Cont.Name;
@@ -4784,6 +4786,9 @@ OBJECT Table 36 Sales Header
     VAR
       Customer@1000 : Record 18;
     BEGIN
+      SalesSetup.GET;
+      IF SalesSetup."Ignore Updated Addresses" THEN
+        EXIT;
       IF IsCreditDocType THEN
         EXIT;
       IF ("Bill-to Customer No." <> "Sell-to Customer No.") AND Customer.GET("Bill-to Customer No.") THEN
@@ -4798,6 +4803,9 @@ OBJECT Table 36 Sales Header
     VAR
       Customer@1000 : Record 18;
     BEGIN
+      SalesSetup.GET;
+      IF SalesSetup."Ignore Updated Addresses" THEN
+        EXIT;
       IF IsCreditDocType THEN
         EXIT;
       IF Customer.GET("Sell-to Customer No.") AND HasSellToAddress AND HasDifferentSellToAddress(Customer) THEN

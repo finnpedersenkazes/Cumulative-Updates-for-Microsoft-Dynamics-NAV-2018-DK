@@ -2,9 +2,9 @@ OBJECT Page 1180 Data Privacy Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -16,6 +16,7 @@ OBJECT Page 1180 Data Privacy Wizard
     OnInit=BEGIN
              LoadTopBanners;
              CurrentPage := 1;
+             PrivacyURL := PrivacyUrlTxt;
            END;
 
     OnOpenPage=BEGIN
@@ -625,6 +626,21 @@ OBJECT Page 1180 Data Privacy Wizard
                 InstructionalTextML=[DAN=Vi anbefaler, at du kontrollerer de data, der er eksporteret til Excel. Kontroller filtrene i konfigurationspakken at sikre, at du har f†et de data, du ›nsker.;
                                      ENU=We recommend that you verify the data that is exported to Excel. Please also verify the filters in the configuration package to make sure that you are getting the data that you want.] }
 
+    { 42  ;5   ;Group     ;
+                Name=Para5.1.1.1.1.1;
+                CaptionML=[DAN="";
+                           ENU=""];
+                Visible=(CurrentPage = 5) AND (ActionType = 0);
+                GroupType=Group;
+                InstructionalTextML=[DAN=Up to date information on privacy requests can be found at the link below.;
+                                     ENU=Up to date information on privacy requests can be found at the link below.] }
+
+    { 44  ;6   ;Field     ;
+                ExtendedDatatype=URL;
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=PrivacyURL;
+                Editable=false }
+
     { 38  ;3   ;Group     ;
                 Name=Para5.1.3;
                 CaptionML=[DAN="";
@@ -715,6 +731,8 @@ OBJECT Page 1180 Data Privacy Wizard
       DataSubjectBlockedMsg@1015 : TextConst 'DAN=Dette dataemne er allerede markeret som sp‘rret p† grund af beskyttelse af personlige oplysninger. Du kan eksportere de relaterede data.;ENU=This data subject is already marked as blocked due to privacy. You can export the related data.';
       NoPartnerPeopleErr@1002 : TextConst 'DAN=Det blev ikke fundet nogen records med partnertypen ''Person''.;ENU=No records of Partner Type of ''Person'' were found.';
       NoPersonErr@1013 : TextConst 'DAN=Det blev ikke fundet nogen records af typen ''Person''.;ENU=No records of type ''Person'' were found.';
+      PrivacyURL@1014 : Text;
+      PrivacyUrlTxt@1016 : TextConst '@@@={Locked};DAN=https://docs.microsoft.com/en-us/dynamics365/business-central/admin-responding-to-requests-about-personal-data;ENU=https://docs.microsoft.com/en-us/dynamics365/business-central/admin-responding-to-requests-about-personal-data';
 
     LOCAL PROCEDURE LoadTopBanners@1();
     BEGIN

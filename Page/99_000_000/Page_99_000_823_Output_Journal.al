@@ -2,9 +2,9 @@ OBJECT Page 99000823 Output Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -201,7 +201,6 @@ OBJECT Page 99000823 Output Journal
                       Image=PostOrder;
                       PromotedCategory=Process;
                       OnAction=BEGIN
-                                 TrySetApplyToEntries;
                                  PostingItemJnlFromProduction(FALSE);
                                  CurrentJnlBatchName := GETRANGEMAX("Journal Batch Name");
                                  CurrPage.UPDATE(FALSE);
@@ -219,7 +218,6 @@ OBJECT Page 99000823 Output Journal
                       Image=PostPrint;
                       PromotedCategory=Process;
                       OnAction=BEGIN
-                                 TrySetApplyToEntries;
                                  PostingItemJnlFromProduction(TRUE);
                                  CurrentJnlBatchName := GETRANGEMAX("Journal Batch Name");
                                  CurrPage.UPDATE(FALSE);
@@ -637,64 +635,6 @@ OBJECT Page 99000823 Output Journal
       CurrPage.SAVERECORD;
       ItemJnlMgt.SetName(CurrentJnlBatchName,Rec);
       CurrPage.UPDATE(FALSE);
-    END;
-
-    LOCAL PROCEDURE TrySetApplyToEntries@101();
-    VAR
-      ItemLedgerEntry@1005 : Record 32;
-      ItemJournalLine2@1001 : Record 83;
-      ReservationEntry@1002 : Record 337;
-    BEGIN
-      ItemJournalLine2.COPY(Rec);
-      IF ItemJournalLine2.FINDSET THEN
-        REPEAT
-          IF FindReservationsReverseOutput(ReservationEntry,ItemJournalLine2) THEN
-            REPEAT
-              IF FindILEFromReservation(ItemLedgerEntry,ItemJournalLine2,ReservationEntry,"Order No.") THEN BEGIN
-                ReservationEntry.VALIDATE("Appl.-to Item Entry",ItemLedgerEntry."Entry No.");
-                ReservationEntry.MODIFY(TRUE);
-              END;
-            UNTIL ReservationEntry.NEXT = 0;
-
-        UNTIL ItemJournalLine2.NEXT = 0;
-    END;
-
-    LOCAL PROCEDURE FindReservationsReverseOutput@19(VAR ReservationEntry@1001 : Record 337;ItemJnlLine@1000 : Record 83) : Boolean;
-    BEGIN
-      IF ItemJnlLine.Quantity >= 0 THEN
-        EXIT(FALSE);
-
-      ReservationEntry.SETCURRENTKEY(
-        "Source ID","Source Ref. No.","Source Type","Source Subtype",
-        "Source Batch Name","Source Prod. Order Line");
-      ReservationEntry.SETRANGE("Source ID",ItemJnlLine."Journal Template Name");
-      ReservationEntry.SETRANGE("Source Ref. No.",ItemJnlLine."Line No.");
-      ReservationEntry.SETRANGE("Source Type",DATABASE::"Item Journal Line");
-      ReservationEntry.SETRANGE("Source Subtype",ItemJnlLine."Entry Type");
-      ReservationEntry.SETRANGE("Source Batch Name",ItemJnlLine."Journal Batch Name");
-
-      ReservationEntry.SETFILTER("Serial No.",'<>%1','');
-      ReservationEntry.SETRANGE("Qty. to Handle (Base)",-1);
-      ReservationEntry.SETRANGE("Appl.-to Item Entry",0);
-
-      EXIT(ReservationEntry.FINDSET);
-    END;
-
-    LOCAL PROCEDURE FindILEFromReservation@20(VAR ItemLedgerEntry@1000 : Record 32;ItemJnlLine@1001 : Record 83;ReservationEntry@1002 : Record 337;ProductionOrderNo@1003 : Code[20]) : Boolean;
-    BEGIN
-      ItemLedgerEntry.SETCURRENTKEY("Item No.",Open,"Variant Code",Positive,
-        "Location Code","Posting Date","Expiration Date","Lot No.","Serial No.");
-
-      ItemLedgerEntry.SETRANGE("Item No.",ItemJnlLine."Item No.");
-      ItemLedgerEntry.SETRANGE(Open,TRUE);
-      ItemLedgerEntry.SETRANGE("Variant Code",ItemJnlLine."Variant Code");
-      ItemLedgerEntry.SETRANGE(Positive,TRUE);
-      ItemLedgerEntry.SETRANGE("Location Code",ItemJnlLine."Location Code");
-      ItemLedgerEntry.SETRANGE("Serial No.",ReservationEntry."Lot No.");
-      ItemLedgerEntry.SETRANGE("Serial No.",ReservationEntry."Serial No.");
-      ItemLedgerEntry.SETRANGE("Document No.",ProductionOrderNo);
-
-      EXIT(ItemLedgerEntry.FINDSET);
     END;
 
     BEGIN

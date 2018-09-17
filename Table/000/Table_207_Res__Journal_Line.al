@@ -2,9 +2,9 @@ OBJECT Table 207 Res. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -437,7 +437,7 @@ OBJECT Table 207 Res. Journal Line
       "Unit Price" := SalesLine."Unit Price";
       "Total Price" := -SalesLine.Amount;
 
-      OnAfterCopyResJnlLineFromSalesLine(SalesLine,ResJnlLine);
+      OnAfterCopyResJnlLineFromSalesLine(SalesLine,Rec);
     END;
 
     [External]
@@ -471,7 +471,7 @@ OBJECT Table 207 Res. Journal Line
       "Time Sheet Date" := ServiceLine."Time Sheet Date";
       "Job No." := ServiceLine."Job No.";
 
-      OnAfterCopyResJnlLineFromServLine(ServiceLine,ResJnlLine);
+      OnAfterCopyResJnlLineFromServLine(ServiceLine,Rec);
     END;
 
     [External]
@@ -499,7 +499,7 @@ OBJECT Table 207 Res. Journal Line
       "Gen. Prod. Posting Group" := ServShptLine."Gen. Prod. Posting Group";
       "Entry Type" := "Entry Type"::Usage;
 
-      OnAfterCopyResJnlLineFromServShptLine(ServShptLine,ResJnlLine);
+      OnAfterCopyResJnlLineFromServShptLine(ServShptLine,Rec);
     END;
 
     [External]

@@ -2,9 +2,9 @@ OBJECT Table 5050 Contact
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -1946,8 +1946,7 @@ OBJECT Table 5050 Contact
       SalesHeader.VALIDATE("Document Date",WORKDATE);
       SalesHeader.VALIDATE("Sell-to Contact No.","No.");
       SalesHeader.MODIFY;
-      COMMIT;
-      PAGE.RUNMODAL(PAGE::"Sales Quote",SalesHeader);
+      PAGE.RUN(PAGE::"Sales Quote",SalesHeader);
     END;
 
     PROCEDURE ContactToCustBusinessRelationExist@44() : Boolean;

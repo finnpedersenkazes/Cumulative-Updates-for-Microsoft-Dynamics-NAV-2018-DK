@@ -2,9 +2,9 @@ OBJECT Page 5603 Main Asset Statistics
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -261,15 +261,6 @@ OBJECT Page 5603 Main Asset Statistics
                 SourceExpr=Custom1;
                 AutoFormatType=1 }
 
-    { 16  ;4   ;Field     ;
-                CaptionML=[DAN=Bogf›rt v‘rdi;
-                           ENU=Book Value];
-                ToolTipML=[DAN=Angiver den sum, der udlignes med bogf›rte v‘rdier.;
-                           ENU=Specifies the sum that applies to book values.];
-                ApplicationArea=#FixedAssets;
-                SourceExpr=BookValue;
-                AutoFormatType=1 }
-
     { 24  ;4   ;Field     ;
                 CaptionML=[DAN=Skrapv‘rdi;
                            ENU=Salvage Value];
@@ -279,15 +270,6 @@ OBJECT Page 5603 Main Asset Statistics
                 SourceExpr=SalvageValue;
                 AutoFormatType=1 }
 
-    { 22  ;4   ;Field     ;
-                CaptionML=[DAN=Afskrivningsgrundlag;
-                           ENU=Depreciation Basis];
-                ToolTipML=[DAN=Angiver afskrivningsgrundlaget for anl‘gget.;
-                           ENU=Specifies the depreciation basis amount for the fixed asset.];
-                ApplicationArea=#FixedAssets;
-                SourceExpr=DeprBasis;
-                AutoFormatType=1 }
-
     { 4   ;4   ;Field     ;
                 CaptionML=[DAN=Bruger 2;
                            ENU=Custom 2];
@@ -295,6 +277,30 @@ OBJECT Page 5603 Main Asset Statistics
                            ENU=Specifies the total LCY amount for custom 2 entries for the fixed asset.];
                 ApplicationArea=#FixedAssets;
                 SourceExpr=Custom2;
+                AutoFormatType=1 }
+
+    { 3   ;2   ;Group     ;
+                GroupType=FixedLayout }
+
+    { 5   ;3   ;Group     ;
+                GroupType=Group }
+
+    { 16  ;4   ;Field     ;
+                CaptionML=[DAN=Bogf›rt v‘rdi;
+                           ENU=Book Value];
+                ToolTipML=[DAN=Angiver den sum, der udlignes med bogf›rte v‘rdier.;
+                           ENU=Specifies the sum that applies to book values.];
+                ApplicationArea=#FixedAssets;
+                SourceExpr=BookValue;
+                AutoFormatType=1 }
+
+    { 22  ;4   ;Field     ;
+                CaptionML=[DAN=Afskrivningsgrundlag;
+                           ENU=Depreciation Basis];
+                ToolTipML=[DAN=Angiver afskrivningsgrundlaget for anl‘gget.;
+                           ENU=Specifies the depreciation basis amount for the fixed asset.];
+                ApplicationArea=#FixedAssets;
+                SourceExpr=DeprBasis;
                 AutoFormatType=1 }
 
     { 2   ;4   ;Field     ;

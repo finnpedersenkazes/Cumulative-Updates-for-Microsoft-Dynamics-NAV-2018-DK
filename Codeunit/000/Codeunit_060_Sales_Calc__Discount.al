@@ -2,9 +2,9 @@ OBJECT Codeunit 60 Sales-Calc. Discount
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -198,11 +198,11 @@ OBJECT Codeunit 60 Sales-Calc. Discount
     BEGIN
       SalesLine.COPY(SalesLineToUpdate);
 
-      TempSalesHeader.GET(SalesLineToUpdate."Document Type",SalesLineToUpdate."Document No.");
+      TempSalesHeader.GET(SalesLine."Document Type",SalesLine."Document No.");
       UpdateHeader := FALSE;
-      CalculateInvoiceDiscount(TempSalesHeader,SalesLineToUpdate);
+      CalculateInvoiceDiscount(TempSalesHeader,SalesLine);
 
-      SalesLineToUpdate.COPY(SalesLine);
+      IF SalesLineToUpdate.GET(SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.") THEN;
     END;
 
     [External]

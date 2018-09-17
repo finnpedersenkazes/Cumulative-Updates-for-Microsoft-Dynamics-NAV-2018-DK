@@ -2,9 +2,9 @@ OBJECT Report 117 Reminder
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -339,6 +339,11 @@ OBJECT Report 117 Reminder
                DataItemTable=Table298;
                DataItemTableView=SORTING(Reminder No.,Line No.);
                OnPreDataItem=BEGIN
+                               CLEAR(CompanyInfo.Picture);
+                               CLEAR(CompanyInfo1.Picture);
+                               CLEAR(CompanyInfo2.Picture);
+                               CLEAR(CompanyInfo3.Picture);
+
                                IF FINDLAST THEN BEGIN
                                  EndLineNo := "Line No." + 1;
                                  REPEAT
@@ -672,7 +677,8 @@ OBJECT Report 117 Reminder
 
     { 64  ;2   ;DataItem;LetterText          ;
                DataItemTable=Table2000000026;
-               DataItemTableView=WHERE(Number=CONST(1));
+               DataItemTableView=SORTING(Number)
+                                 WHERE(Number=CONST(1));
                OnPreDataItem=BEGIN
                                AmtDueTxt := '';
                                IF FORMAT("Issued Reminder Header"."Due Date") <> '' THEN

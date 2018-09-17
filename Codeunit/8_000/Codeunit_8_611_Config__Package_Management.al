@@ -2,9 +2,9 @@ OBJECT Codeunit 8611 Config. Package Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -1672,21 +1672,22 @@ OBJECT Codeunit 8611 Config. Package Management
     PROCEDURE GetFieldsOrder@23(RecRef@1000 : RecordRef;PackageCode@1003 : Code[20];VAR TempConfigPackageField@1001 : TEMPORARY Record 8616);
     VAR
       ConfigPackageField@1002 : Record 8616;
+      Field@1004 : Record 2000000041;
       FieldRef@1007 : FieldRef;
-      FieldCount@1005 : Integer;
     BEGIN
-      FOR FieldCount := 1 TO RecRef.FIELDCOUNT DO BEGIN
-        FieldRef := RecRef.FIELDINDEX(FieldCount);
+      IF TypeHelper.FindFields(RecRef.NUMBER,Field) THEN
+        REPEAT
+          FieldRef := RecRef.FIELD(Field."No.");
 
-        IF ConfigPackageField.GET(PackageCode,RecRef.NUMBER,FieldRef.NUMBER) THEN;
+          IF ConfigPackageField.GET(PackageCode,RecRef.NUMBER,FieldRef.NUMBER) THEN;
 
-        TempConfigPackageField.INIT;
-        TempConfigPackageField."Package Code" := PackageCode;
-        TempConfigPackageField."Table ID" := RecRef.NUMBER;
-        TempConfigPackageField."Field ID" := FieldRef.NUMBER;
-        TempConfigPackageField."Processing Order" := ConfigPackageField."Processing Order";
-        TempConfigPackageField.INSERT;
-      END;
+          TempConfigPackageField.INIT;
+          TempConfigPackageField."Package Code" := PackageCode;
+          TempConfigPackageField."Table ID" := RecRef.NUMBER;
+          TempConfigPackageField."Field ID" := FieldRef.NUMBER;
+          TempConfigPackageField."Processing Order" := ConfigPackageField."Processing Order";
+          TempConfigPackageField.INSERT;
+        UNTIL Field.NEXT = 0;
     END;
 
     LOCAL PROCEDURE IsRecordErrorsExists@26(ConfigPackageRecord@1001 : Record 8614) : Boolean;

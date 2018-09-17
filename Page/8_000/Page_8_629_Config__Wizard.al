@@ -2,9 +2,9 @@ OBJECT Page 8629 Config. Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -18,6 +18,12 @@ OBJECT Page 8629 Config. Wizard
     PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Trin 4,Trin 5;
                                 ENU=New,Process,Report,Step 4,Step 5];
     ShowFilter=No;
+    OnInit=VAR
+             FileManagement@1000 : Codeunit 419;
+           BEGIN
+             CanRunDotNet := FileManagement.CanRunDotNetOnClient;
+           END;
+
     OnOpenPage=BEGIN
                  RESET;
                  IF NOT GET THEN BEGIN
@@ -253,12 +259,14 @@ OBJECT Page 8629 Config. Wizard
                 GroupType=Group }
 
     { 4   ;3   ;Field     ;
+                Name=PackageFileNameRtc;
                 CaptionML=[DAN=V‘lg den konfigurationspakke, du ›nsker at indl‘se:;
                            ENU=Select the configuration package you want to load:];
                 ToolTipML=[DAN=Angiver navnet p† den konfigurationspakke, som du har oprettet.;
                            ENU=Specifies the name of the configuration package that you have created.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr="Package File Name";
+                Visible=CanRunDotNet;
                 Editable=FALSE;
                 OnValidate=BEGIN
                              IF "Package File Name" = '' THEN
@@ -268,15 +276,15 @@ OBJECT Page 8629 Config. Wizard
                            END;
 
                 OnAssistEdit=VAR
-                               FileMgt@1000 : Codeunit 419;
+                               FileManagement@1000 : Codeunit 419;
                                ConfigXMLExchange@1001 : Codeunit 8614;
                              BEGIN
                                IF ConfigVisible THEN
-                                 ERROR(Text005);
+                                 ERROR(PackageIsAlreadyAppliedErr);
 
                                "Package File Name" :=
                                  COPYSTR(
-                                   FileMgt.OpenFileDialog(
+                                   FileManagement.OpenFileDialog(
                                      Text004,'',ConfigXMLExchange.GetFileDialogFilter),1,MAXSTRLEN("Package File Name"));
 
                                IF "Package File Name" <> '' THEN BEGIN
@@ -284,6 +292,44 @@ OBJECT Page 8629 Config. Wizard
                                  ApplyVisible := TRUE;
                                END ELSE
                                  ApplyVisible := FALSE;
+                             END;
+                              }
+
+    { 23  ;3   ;Field     ;
+                Name=PackageFileNameWeb;
+                CaptionML=[DAN=V‘lg den konfigurationspakke, du ›nsker at indl‘se:;
+                           ENU=Select the configuration package you want to load:];
+                ToolTipML=[DAN=Angiver navnet p† den konfigurationspakke, som du har oprettet.;
+                           ENU=Specifies the name of the configuration package that you have created.];
+                ApplicationArea=#Basic,#Suite,#Advanced;
+                SourceExpr=PackageFileName;
+                Visible=NOT CanRunDotNet;
+                Editable=FALSE;
+                OnValidate=BEGIN
+                             IF "Package File Name" = '' THEN
+                               ApplyVisible := FALSE;
+
+                             CurrPage.UPDATE;
+                           END;
+
+                OnAssistEdit=VAR
+                               FileManagement@1000 : Codeunit 419;
+                               ServerFileName@1001 : Text;
+                             BEGIN
+                               IF ConfigVisible THEN
+                                 ERROR(PackageIsAlreadyAppliedErr);
+
+                               ServerFileName := FileManagement.UploadFile(UpdateDialogTitleTxt,'');
+
+                               IF ServerFileName <> '' THEN
+                                 VALIDATE("Package File Name",COPYSTR(ServerFileName,1,MAXSTRLEN("Package File Name")))
+                               ELSE
+                                 PackageFileName := '';
+
+                               ApplyVisible := "Package File Name" <> '';
+
+                               IF "Package File Name" <> '' THEN
+                                 PackageFileName := FileManagement.GetFileName("Package File Name");
                              END;
                               }
 
@@ -374,7 +420,10 @@ OBJECT Page 8629 Config. Wizard
       YourProfileCode@1004 : Code[30];
       ApplyVisible@1002 : Boolean;
       ConfigVisible@1003 : Boolean;
-      Text005@1005 : TextConst 'DAN=En pakke er allerede valgt og anvendt.;ENU=A package has already been selected and applied.';
+      PackageIsAlreadyAppliedErr@1005 : TextConst 'DAN=En pakke er allerede valgt og anvendt.;ENU=A package has already been selected and applied.';
+      CanRunDotNet@1006 : Boolean;
+      UpdateDialogTitleTxt@1009 : TextConst 'DAN=Overf›r pakkefil;ENU=Upload package file';
+      PackageFileName@1008 : Text;
 
     BEGIN
     END.

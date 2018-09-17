@@ -2,9 +2,9 @@ OBJECT Page 96 Sales Cr. Memo Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -675,7 +675,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                                                             Blocked=CONST(No));
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             ValidateSaveShortcutDimCode(3,ShortcutDimCode[3]);
+                             ValidateShortcutDimCode(3,ShortcutDimCode[3]);
                            END;
                             }
 
@@ -688,7 +688,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                                                             Blocked=CONST(No));
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             ValidateSaveShortcutDimCode(4,ShortcutDimCode[4]);
+                             ValidateShortcutDimCode(4,ShortcutDimCode[4]);
                            END;
                             }
 
@@ -701,7 +701,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                                                             Blocked=CONST(No));
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             ValidateSaveShortcutDimCode(5,ShortcutDimCode[5]);
+                             ValidateShortcutDimCode(5,ShortcutDimCode[5]);
                            END;
                             }
 
@@ -714,7 +714,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                                                             Blocked=CONST(No));
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             ValidateSaveShortcutDimCode(6,ShortcutDimCode[6]);
+                             ValidateShortcutDimCode(6,ShortcutDimCode[6]);
                            END;
                             }
 
@@ -727,7 +727,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                                                             Blocked=CONST(No));
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             ValidateSaveShortcutDimCode(7,ShortcutDimCode[7]);
+                             ValidateShortcutDimCode(7,ShortcutDimCode[7]);
                            END;
                             }
 
@@ -740,7 +740,7 @@ OBJECT Page 96 Sales Cr. Memo Subform
                                                             Blocked=CONST(No));
                 Visible=FALSE;
                 OnValidate=BEGIN
-                             ValidateSaveShortcutDimCode(8,ShortcutDimCode[8]);
+                             ValidateShortcutDimCode(8,ShortcutDimCode[8]);
                            END;
                             }
 
@@ -963,12 +963,6 @@ OBJECT Page 96 Sales Cr. Memo Subform
       TotalSalesHeader.GET("Document Type","Document No.");
       DocumentTotals.SalesRedistributeInvoiceDiscountAmounts(Rec,VATAmount,TotalSalesLine);
       CurrPage.UPDATE;
-    END;
-
-    LOCAL PROCEDURE ValidateSaveShortcutDimCode@6(FieldNumber@1001 : Integer;VAR ShortcutDimCode@1000 : Code[20]);
-    BEGIN
-      ValidateShortcutDimCode(FieldNumber,ShortcutDimCode);
-      CurrPage.SAVERECORD;
     END;
 
     LOCAL PROCEDURE UpdateEditableOnRow@19();

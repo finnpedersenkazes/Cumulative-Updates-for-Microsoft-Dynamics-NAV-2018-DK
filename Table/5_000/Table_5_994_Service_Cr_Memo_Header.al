@@ -2,9 +2,9 @@ OBJECT Table 5994 Service Cr.Memo Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -160,6 +160,13 @@ OBJECT Table 5994 Service Cr.Memo Header
                                                                  ELSE IF (Bal. Account Type=CONST(Bank Account)) "Bank Account";
                                                    CaptionML=[DAN=Modkonto;
                                                               ENU=Bal. Account No.] }
+    { 60  ;   ;Amount              ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Service Cr.Memo Line".Amount WHERE (Document No.=FIELD(No.)));
+                                                   CaptionML=[DAN=Bel›b;
+                                                              ENU=Amount];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr="Currency Code" }
     { 61  ;   ;Amount Including VAT;Decimal       ;FieldClass=FlowField;
                                                    CalcFormula=Sum("Service Cr.Memo Line"."Amount Including VAT" WHERE (Document No.=FIELD(No.)));
                                                    CaptionML=[DAN=Bel›b inkl. moms;

@@ -2,9 +2,9 @@ OBJECT Table 472 Job Queue Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -14,13 +14,13 @@ OBJECT Table 472 Job Queue Entry
     OnInsert=BEGIN
                IF ISNULLGUID(ID) THEN
                  ID := CREATEGUID;
-               SetDefaultValues;
+               SetDefaultValues(TRUE);
              END;
 
     OnModify=BEGIN
                IF AreRunParametersChanged THEN
                  Reschedule;
-               SetDefaultValues;
+               SetDefaultValues(FALSE);
                "On Hold Due to Inactivity" := FALSE;
              END;
 
@@ -571,7 +571,7 @@ OBJECT Table 472 Job Queue Entry
     BEGIN
       CancelTask;
       IF Status = Status::Ready THEN BEGIN
-        SetDefaultValues;
+        SetDefaultValues(TRUE);
         EnqueueTask;
       END;
     END;
@@ -609,11 +609,12 @@ OBJECT Table 472 Job Queue Entry
         ("Parameter String" <> xRec."Parameter String"));
     END;
 
-    LOCAL PROCEDURE SetDefaultValues@6();
+    LOCAL PROCEDURE SetDefaultValues@6(SetupUserId@1002 : Boolean);
     BEGIN
       "Last Ready State" := CURRENTDATETIME;
       "User Language ID" := GLOBALLANGUAGE;
-      "User ID" := USERID;
+      IF SetupUserId THEN
+        "User ID" := USERID;
       "No. of Attempts to Run" := 0;
     END;
 
@@ -679,7 +680,7 @@ OBJECT Table 472 Job Queue Entry
       CASE NewStatus OF
         Status::Ready:
           BEGIN
-            SetDefaultValues;
+            SetDefaultValues(TRUE);
             IF "On Hold Due to Inactivity" THEN
               "Earliest Start Date/Time" :=
                 JobQueueDispatcher.CalcNextRunTimeForRecurringJob(Rec,CURRENTDATETIME)

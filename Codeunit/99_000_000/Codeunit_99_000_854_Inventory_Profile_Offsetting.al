@@ -2,9 +2,9 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -66,6 +66,8 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
       OverflowLevel@1046 : Decimal;
       ExceedROPqty@1015 : Decimal;
       NextStateTxt@1036 : TextConst 'DAN=StartOver,MatchDates,MatchQty,CreateSupply,ReduceSupply,CloseDemand,CloseSupply,CloseLoop;ENU=StartOver,MatchDates,MatchQty,CreateSupply,ReduceSupply,CloseDemand,CloseSupply,CloseLoop';
+      NextState@1050 : 'StartOver,MatchDates,MatchQty,CreateSupply,ReduceSupply,CloseDemand,CloseSupply,CloseLoop';
+      LotAccumulationPeriodStartDate@1051 : Date;
 
     [Internal]
     PROCEDURE CalculatePlanFromWorksheet@3(VAR Item@1000 : Record 27;ManufacturingSetup2@1001 : Record 99000765;TemplateName@1002 : Code[10];WorksheetName@1003 : Code[10];OrderDate@1004 : Date;ToDate@1005 : Date;MRPPlanning@1006 : Boolean;RespectPlanningParm@1008 : Boolean);
@@ -1222,7 +1224,6 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
       OriginalSupplyDate@1014 : Date;
       NewSupplyDate@1013 : Date;
       LatestBucketStartDate@1012 : Date;
-      NextState@1011 : 'StartOver,MatchDates,MatchQty,CreateSupply,ReduceSupply,CloseDemand,CloseSupply,CloseLoop';
       LastProjectedInventory@1005 : Decimal;
       LastAvailableInventory@1007 : Decimal;
       SupplyWithinLeadtime@1015 : Decimal;
@@ -1429,6 +1430,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
 
             CheckSupplyWithSKU(Supply,TempSKU);
 
+            LotAccumulationPeriodStartDate := 0D;
             NextState := NextState::StartOver;
             WHILE PlanThisSKU DO
               CASE NextState OF
@@ -1495,32 +1497,16 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
                     END;
                   END;
                 NextState::MatchQty:
-                  BEGIN
-                    IF Supply."Untracked Quantity" < Demand."Untracked Quantity" THEN BEGIN
-                      IF ShallSupplyBeClosed(Supply,Demand."Due Date",IsReorderPointPlanning) THEN
-                        NextState := NextState::CloseSupply
-                      ELSE
-                        IF IncreaseQtyToMeetDemand(
-                             Supply,Demand,TRUE,RespectPlanningParm,
-                             NOT SKURequiresLotAccumulation(TempSKU))
-                        THEN BEGIN
-                          NextState := NextState::CloseDemand;
-                          // initial Safety Stock can be changed to normal, if we can increase qty for normal demand
-                          IF (Supply."Order Relation" = Supply."Order Relation"::"Safety Stock") AND
-                             (Demand."Order Relation" = Demand."Order Relation"::Normal)
-                          THEN BEGIN
-                            Supply."Order Relation" := Supply."Order Relation"::Normal;
-                            LastProjectedInventory -= TempSKU."Safety Stock Quantity";
-                          END;
-                        END ELSE
-                          NextState := NextState::CloseSupply;
-                    END ELSE
-                      NextState := NextState::CloseDemand;
-                  END;
+                  PlanItemNextStateMatchQty(Demand,Supply,LastProjectedInventory,IsReorderPointPlanning,RespectPlanningParm);
                 NextState::CreateSupply:
                   BEGIN
                     WeAreSureThatDatesMatch := TRUE; // We assume this is true at this point.....
-                    NewSupplyDate := Demand."Due Date";
+                    IF FromLotAccumulationPeriodStartDate(LotAccumulationPeriodStartDate,Demand."Due Date") THEN
+                      NewSupplyDate := LotAccumulationPeriodStartDate
+                    ELSE BEGIN
+                      NewSupplyDate := Demand."Due Date";
+                      LotAccumulationPeriodStartDate := 0D;
+                    END;
                     IF (NewSupplyDate >= LatestBucketStartDate) AND IsReorderPointPlanning THEN
                       MaintainProjectedInv(
                         InvChangeReminder,NewSupplyDate,LastProjectedInventory,LatestBucketStartDate,ROPHasBeenCrossed);
@@ -1541,7 +1527,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
                         QtyFromPendingReminders(InvChangeReminder,Demand."Due Date",LatestBucketStartDate) -
                         Demand."Remaining Quantity (Base)",
                         IsExceptionOrder,RespectPlanningParm);
-                      Supply.TESTFIELD("Due Date",NewSupplyDate);
+                      Supply."Due Date" := NewSupplyDate;
                       Supply."Fixed Date" := Supply."Due Date"; // We note the latest possible date on the supply.
                       SupplyExists := TRUE;
                       IF IsExceptionOrder THEN BEGIN
@@ -1698,6 +1684,34 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
       SetAcceptAction(TempSKU."Item No.");
     END;
 
+    LOCAL PROCEDURE PlanItemNextStateMatchQty@134(VAR DemandInventoryProfile@1001 : Record 99000853;VAR SupplyInventoryProfile@1000 : Record 99000853;VAR LastProjectedInventory@1004 : Decimal;IsReorderPointPlanning@1002 : Boolean;RespectPlanningParm@1003 : Boolean);
+    BEGIN
+      CASE TRUE OF
+        SupplyInventoryProfile."Untracked Quantity" >= DemandInventoryProfile."Untracked Quantity":
+          NextState := NextState::CloseDemand;
+        ShallSupplyBeClosed(SupplyInventoryProfile,DemandInventoryProfile."Due Date",IsReorderPointPlanning):
+          NextState := NextState::CloseSupply;
+        IncreaseQtyToMeetDemand(
+          SupplyInventoryProfile,DemandInventoryProfile,TRUE,RespectPlanningParm,
+          NOT SKURequiresLotAccumulation(TempSKU)):
+          BEGIN
+            NextState := NextState::CloseDemand;
+            // initial Safety Stock can be changed to normal, if we can increase qty for normal demand
+            IF (SupplyInventoryProfile."Order Relation" = SupplyInventoryProfile."Order Relation"::"Safety Stock") AND
+               (DemandInventoryProfile."Order Relation" = DemandInventoryProfile."Order Relation"::Normal)
+            THEN BEGIN
+              SupplyInventoryProfile."Order Relation" := SupplyInventoryProfile."Order Relation"::Normal;
+              LastProjectedInventory -= TempSKU."Safety Stock Quantity";
+            END;
+          END;
+        ELSE BEGIN
+          NextState := NextState::CloseSupply;
+          IF TempSKU."Maximum Order Quantity" > 0 THEN
+            LotAccumulationPeriodStartDate := SupplyInventoryProfile."Due Date";
+        END;
+      END;
+    END;
+
     LOCAL PROCEDURE FilterDemandSupplyRelatedToSKU@23(VAR InventoryProfile@1000 : Record 99000853);
     BEGIN
       InventoryProfile.SETRANGE("Item No.",TempSKU."Item No.");
@@ -1785,32 +1799,15 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
     LOCAL PROCEDURE DecreaseQty@63(VAR Supply@1000 : Record 99000853;ReduceQty@1001 : Decimal) : Boolean;
     VAR
       TempQty@1002 : Decimal;
-      TrackedQty@1003 : Decimal;
     BEGIN
-      IF ReduceQty > Supply."Untracked Quantity" THEN
-        ReduceQty := Supply."Untracked Quantity";
-      IF Supply."Min. Quantity" > Supply."Remaining Quantity (Base)" - ReduceQty THEN
-        ReduceQty := Supply."Remaining Quantity (Base)" - Supply."Min. Quantity";
-
-      // Ensure leaving enough untracked qty. to cover the safety stock
-      TrackedQty := Supply."Remaining Quantity (Base)" - Supply."Untracked Quantity";
-      IF TrackedQty + Supply."Safety Stock Quantity" > Supply."Remaining Quantity (Base)" - ReduceQty THEN
-        ReduceQty := Supply."Remaining Quantity (Base)" - (TrackedQty + Supply."Safety Stock Quantity");
-
-      // Planning Transparency
-      IF (ReduceQty <= DampenerQty) AND (Supply."Planning Level Code" = 0) THEN BEGIN
-        Transparency.LogSurplus(
-          Supply."Line No.",0,
-          DATABASE::"Manufacturing Setup",Supply."Source ID",
-          DampenerQty,SurplusType::DampenerQty);
+      IF NOT CanDecreaseSupply(Supply,ReduceQty) THEN BEGIN
+        IF (ReduceQty <= DampenerQty) AND (Supply."Planning Level Code" = 0) THEN
+          Transparency.LogSurplus(
+            Supply."Line No.",0,
+            DATABASE::"Manufacturing Setup",Supply."Source ID",
+            DampenerQty,SurplusType::DampenerQty);
         EXIT(FALSE);
       END;
-
-      IF (Supply."Planning Flexibility" = Supply."Planning Flexibility"::None) OR
-         ((ReduceQty <= DampenerQty) AND
-          (Supply."Planning Level Code" = 0))
-      THEN
-        EXIT(FALSE);
 
       IF ReduceQty > 0 THEN BEGIN
         TempQty := Supply."Remaining Quantity (Base)";
@@ -1850,6 +1847,35 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
       END;
 
       EXIT(Supply."Untracked Quantity" = 0);
+    END;
+
+    LOCAL PROCEDURE CanDecreaseSupply@154(InventoryProfileSupply@1000 : Record 99000853;VAR ReduceQty@1001 : Decimal) : Boolean;
+    VAR
+      TrackedQty@1002 : Decimal;
+    BEGIN
+      WITH InventoryProfileSupply DO BEGIN
+        IF ReduceQty > "Untracked Quantity" THEN
+          ReduceQty := "Untracked Quantity";
+        IF "Min. Quantity" > "Remaining Quantity (Base)" - ReduceQty THEN
+          ReduceQty := "Remaining Quantity (Base)" - "Min. Quantity";
+
+        // Ensure leaving enough untracked qty. to cover the safety stock
+        TrackedQty := "Remaining Quantity (Base)" - "Untracked Quantity";
+        IF TrackedQty + "Safety Stock Quantity" > "Remaining Quantity (Base)" - ReduceQty THEN
+          ReduceQty := "Remaining Quantity (Base)" - (TrackedQty + "Safety Stock Quantity");
+
+        // Planning Transparency
+        IF (ReduceQty <= DampenerQty) AND ("Planning Level Code" = 0) THEN
+          EXIT(FALSE);
+
+        IF ("Planning Flexibility" = "Planning Flexibility"::None) OR
+           ((ReduceQty <= DampenerQty) AND
+            ("Planning Level Code" = 0))
+        THEN
+          EXIT(FALSE);
+
+        EXIT(TRUE);
+      END;
     END;
 
     LOCAL PROCEDURE CreateSupply@53(VAR Supply@1000 : Record 99000853;VAR Demand@1002 : Record 99000853;ProjectedInventory@1006 : Decimal;IsExceptionOrder@1001 : Boolean;RespectPlanningParm@1003 : Boolean);
@@ -2938,6 +2964,7 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
       xSupplyInvtProfile@1006 : Record 99000853;
       OverflowQty@1008 : Decimal;
       OriginalSupplyQty@1009 : Decimal;
+      DecreasedSupplyQty@1015 : Decimal;
       PrevBucketStartDate@1010 : Date;
       PrevBucketEndDate@1011 : Date;
       CurrBucketStartDate@1003 : Date;
@@ -2998,6 +3025,15 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
                   OriginalSupplyQty := SupplyInvtProfile."Quantity (Base)";
                   SupplyInvtProfile."Min. Quantity" := 0;
                   DecreaseQty(SupplyInvtProfile,OverflowQty);
+
+                  // If the supply has not been decreased as planned, try to cancel it.
+                  DecreasedSupplyQty := SupplyInvtProfile."Quantity (Base)";
+                  IF (DecreasedSupplyQty > 0) AND (OriginalSupplyQty - DecreasedSupplyQty < OverflowQty) AND
+                     (SupplyInvtProfile."Order Priority" < 1000)
+                  THEN
+                    IF CanDecreaseSupply(SupplyInvtProfile,OverflowQty) THEN
+                      DecreaseQty(SupplyInvtProfile,DecreasedSupplyQty);
+
                   IF OriginalSupplyQty <> SupplyInvtProfile."Quantity (Base)" THEN BEGIN
                     DummyInventoryProfileTrackBuffer."Warning Level" := DummyInventoryProfileTrackBuffer."Warning Level"::Attention;
                     Transparency.LogWarning(SupplyInvtProfile."Line No.",ReqLine,DummyInventoryProfileTrackBuffer."Warning Level",
@@ -4383,6 +4419,12 @@ OBJECT Codeunit 99000854 Inventory Profile Offsetting
           EXIT("Lot Accumulation Period" <> BlankPeriod);
         END;
       EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE FromLotAccumulationPeriodStartDate@138(LotAccumulationPeriodStartDate@1000 : Date;DemandDueDate@1001 : Date) : Boolean;
+    BEGIN
+      IF LotAccumulationPeriodStartDate > 0D THEN
+        EXIT(CALCDATE(TempSKU."Lot Accumulation Period",LotAccumulationPeriodStartDate) >= DemandDueDate);
     END;
 
     [Integration]

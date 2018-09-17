@@ -2,9 +2,9 @@ OBJECT Codeunit 5704 TransferOrder-Post Shipment
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -17,7 +17,6 @@ OBJECT Codeunit 5704 TransferOrder-Post Shipment
             NoSeriesMgt@1003 : Codeunit 396;
             UpdateAnalysisView@1004 : Codeunit 410;
             UpdateItemAnalysisView@1009 : Codeunit 7150;
-            CreateReservEntry@1010 : Codeunit 99000830;
             RecordLinkManagement@1011 : Codeunit 447;
             Window@1006 : Dialog;
             LineCount@1005 : Integer;
@@ -182,10 +181,9 @@ OBJECT Codeunit 5704 TransferOrder-Post Shipment
               ELSE BEGIN
                 WhseTransferRelease.Release(TransHeader);
                 ReserveTransLine.UpdateItemTrackingAfterPosting(TransHeader,0);
-                CreateReservEntry.UpdReservEntryAfterPostingPick(TransHeader);
               END;
 
-              IF NOT InvtPickPutaway THEN
+              IF NOT (InvtPickPutaway OR "Direct Transfer") THEN
                 COMMIT;
               CLEAR(WhsePostShpt);
               CLEAR(InvtAdjmt);

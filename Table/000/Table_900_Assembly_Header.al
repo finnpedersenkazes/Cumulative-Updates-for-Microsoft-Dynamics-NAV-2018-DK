@@ -2,9 +2,9 @@ OBJECT Table 900 Assembly Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -108,6 +108,7 @@ OBJECT Table 900 Assembly Header
                                                                 SetCurrentFieldNum(FIELDNO("Item No."));
                                                                 IF "Item No." <> '' THEN BEGIN
                                                                   SetDescriptionsFromItem;
+                                                                  Item.TESTFIELD(Blocked,FALSE);
                                                                   "Unit Cost" := GetUnitCost;
                                                                   "Overhead Rate" := Item."Overhead Rate";
                                                                   "Inventory Posting Group" := Item."Inventory Posting Group";

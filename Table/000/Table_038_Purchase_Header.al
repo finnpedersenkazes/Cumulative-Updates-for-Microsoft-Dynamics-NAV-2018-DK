@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -1698,7 +1698,7 @@ OBJECT Table 38 Purchase Header
                                                                                             Type=FILTER(<>' '),
                                                                                             Location Code=FIELD(Location Filter),
                                                                                             Quantity Invoiced=FILTER(<>0)));
-                                                   CaptionML=[DAN=Partially Invoiced;
+                                                   CaptionML=[DAN=Delvist faktureret;
                                                               ENU=Partially Invoiced];
                                                    Editable=No }
     { 5752;   ;Completely Received ;Boolean       ;FieldClass=FlowField;
@@ -3808,6 +3808,9 @@ OBJECT Table 38 Purchase Header
     VAR
       Vendor@1000 : Record 23;
     BEGIN
+      PurchSetup.GET;
+      IF PurchSetup."Ignore Updated Addresses" THEN
+        EXIT;
       IF IsCreditDocType THEN
         EXIT;
       IF ("Pay-to Vendor No." <> "Buy-from Vendor No.") AND Vendor.GET("Pay-to Vendor No.") THEN
@@ -3822,6 +3825,9 @@ OBJECT Table 38 Purchase Header
     VAR
       Vendor@1000 : Record 23;
     BEGIN
+      PurchSetup.GET;
+      IF PurchSetup."Ignore Updated Addresses" THEN
+        EXIT;
       IF IsCreditDocType THEN
         EXIT;
       IF Vendor.GET("Buy-from Vendor No.") AND HasBuyFromAddress AND HasDifferentBuyFromAddress(Vendor) THEN

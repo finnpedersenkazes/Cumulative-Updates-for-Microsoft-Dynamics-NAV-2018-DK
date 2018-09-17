@@ -2,9 +2,9 @@ OBJECT Codeunit 1535 Approvals Mgmt.
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -499,6 +499,8 @@ OBJECT Codeunit 1535 Approvals Mgmt.
             ApprovalEntry2.MODIFY(TRUE);
             CreateApprovalEntryNotification(ApprovalEntry2,WorkflowStepInstance);
           UNTIL ApprovalEntry2.NEXT = 0;
+        IF FindApprovedApprovalEntryForWorkflowUserGroup(ApprovalEntry,WorkflowStepInstance) THEN
+          OnApproveApprovalRequest(ApprovalEntry);
         EXIT;
       END;
 
@@ -520,9 +522,12 @@ OBJECT Codeunit 1535 Approvals Mgmt.
         EXIT;
       END;
 
+      IF FindOpenApprovalEntriesForWorkflowStepInstance(ApprovalEntry,WorkflowStepInstance."Record ID") THEN
+        EXIT;
+
       ApprovalEntry2.SETCURRENTKEY("Table ID","Document Type","Document No.","Sequence No.");
       ApprovalEntry2.SETRANGE("Record ID to Approve",ApprovalEntry."Record ID to Approve");
-      ApprovalEntry2.SETRANGE(Status,ApprovalEntry.Status::Created);
+      ApprovalEntry2.SETRANGE(Status,ApprovalEntry2.Status::Created);
 
       IF ApprovalEntry2.FINDFIRST THEN BEGIN
         ApprovalEntry3.COPYFILTERS(ApprovalEntry2);
@@ -1802,6 +1807,39 @@ OBJECT Codeunit 1535 Approvals Mgmt.
     BEGIN
       UserSetup.GET(USERID);
       UserSetup.TESTFIELD("Approval Administrator");
+    END;
+
+    LOCAL PROCEDURE FindApprovedApprovalEntryForWorkflowUserGroup@122(VAR ApprovalEntry@1000 : Record 454;WorkflowStepInstance@1005 : Record 1504) : Boolean;
+    VAR
+      WorkflowStepArgument@1001 : Record 1523;
+      WorkflowResponseHandling@1003 : Codeunit 1521;
+      WorkflowInstance@1004 : Query 1501;
+    BEGIN
+      WorkflowInstance.SETRANGE(Function_Name,WorkflowResponseHandling.CreateApprovalRequestsCode);
+      WorkflowInstance.SETRANGE(Record_ID,WorkflowStepInstance."Record ID");
+      WorkflowInstance.SETRANGE(Code,WorkflowStepInstance."Workflow Code");
+      WorkflowInstance.SETRANGE(Type,WorkflowInstance.Type::Response);
+      WorkflowInstance.SETRANGE(Status,WorkflowInstance.Status::Completed);
+      WorkflowInstance.OPEN;
+      WHILE WorkflowInstance.READ DO
+        IF WorkflowStepInstance.GET(WorkflowInstance.Instance_ID,WorkflowInstance.Code,WorkflowInstance.Step_ID) THEN
+          IF WorkflowStepArgument.GET(WorkflowStepInstance.Argument) THEN
+            IF WorkflowStepArgument."Approver Type" = WorkflowStepArgument."Approver Type"::"Workflow User Group" THEN BEGIN
+              ApprovalEntry.SETRANGE(Status,ApprovalEntry.Status::Approved);
+              EXIT(ApprovalEntry.FINDLAST);
+            END;
+
+      EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE FindOpenApprovalEntriesForWorkflowStepInstance@117(ApprovalEntry@1001 : Record 454;WorkflowStepInstanceRecID@1002 : RecordID) : Boolean;
+    VAR
+      ApprovalEntry2@1000 : Record 454;
+    BEGIN
+      ApprovalEntry2.SETFILTER("Record ID to Approve",'%1|%2',WorkflowStepInstanceRecID,ApprovalEntry."Record ID to Approve");
+      ApprovalEntry2.SETRANGE(Status,ApprovalEntry2.Status::Open);
+      ApprovalEntry2.SETRANGE("Workflow Step Instance ID",ApprovalEntry."Workflow Step Instance ID");
+      EXIT(NOT ApprovalEntry2.ISEMPTY);
     END;
 
     BEGIN

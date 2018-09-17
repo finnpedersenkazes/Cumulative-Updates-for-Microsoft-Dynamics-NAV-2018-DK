@@ -2,9 +2,9 @@ OBJECT Codeunit 5923 Service-Quote to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -96,6 +96,8 @@ OBJECT Codeunit 5923 Service-Quote to Order
       ServiceHeaderOrder."Document Date" := ServiceHeaderQuote."Document Date";
       ServiceHeaderOrder."Location Code" := ServiceHeaderQuote."Location Code";
       ServiceHeaderOrder.MODIFY;
+
+      OnAfterInsertServHeader(ServiceHeaderOrder,ServiceHeaderQuote);
     END;
 
     LOCAL PROCEDURE MakeOrder@3(ServiceHeader@1000 : Record 5900);
@@ -167,6 +169,7 @@ OBJECT Codeunit 5923 Service-Quote to Order
             IF RepairStatus.FINDFIRST THEN
               ServItemLine2."Repair Status Code" := RepairStatus.Code;
             ServItemLine2.INSERT(TRUE);
+            OnAfterInsertServiceLine(ServItemLine2,ServItemLine);
           UNTIL ServItemLine.NEXT = 0;
 
         UpdateResponseDateTime;
@@ -216,6 +219,16 @@ OBJECT Codeunit 5923 Service-Quote to Order
 
     [Integration]
     LOCAL PROCEDURE OnBeforeRun@2(VAR ServiceHeader@1000 : Record 5900);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterInsertServHeader@5(VAR ServiceHeaderOrder@1000 : Record 5900;ServiceHeaderQuote@1001 : Record 5900);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterInsertServiceLine@7(VAR ServiceItemLine2@1000 : Record 5901;ServiceItemLine@1001 : Record 5901);
     BEGIN
     END;
 

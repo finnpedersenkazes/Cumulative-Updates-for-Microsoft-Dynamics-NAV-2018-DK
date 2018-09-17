@@ -2,9 +2,9 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -19,7 +19,7 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
             UpdateHeader := TRUE;
             CalculateInvoiceDiscount(TempPurchHeader,TempPurchLine);
 
-            Rec := PurchLine;
+            IF GET(PurchLine."Document Type",PurchLine."Document No.",PurchLine."Line No.") THEN;
           END;
 
   }
@@ -42,6 +42,7 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
       TempVATAmountLine@1002 : TEMPORARY Record 290;
       PurchSetup@1003 : Record 312;
       TempServiceChargeLine@1005 : TEMPORARY Record 39;
+      PurchCalcDiscByType@1004 : Codeunit 66;
     BEGIN
       PurchSetup.GET;
 
@@ -167,6 +168,7 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
         END;
       END;
 
+      PurchCalcDiscByType.ResetRecalculateInvoiceDisc(PurchHeader);
       OnAfterCalcPurchaseDiscount(PurchHeader);
     END;
 
@@ -201,11 +203,11 @@ OBJECT Codeunit 70 Purch.-Calc.Discount
     BEGIN
       PurchLine.COPY(PurchLineToUpdate);
 
-      PurchHeaderTemp.GET(PurchLineToUpdate."Document Type",PurchLineToUpdate."Document No.");
+      PurchHeaderTemp.GET(PurchLine."Document Type",PurchLine."Document No.");
       UpdateHeader := FALSE;
-      CalculateInvoiceDiscount(PurchHeaderTemp,PurchLineToUpdate);
+      CalculateInvoiceDiscount(PurchHeaderTemp,PurchLine);
 
-      PurchLineToUpdate.COPY(PurchLine);
+      IF PurchLineToUpdate.GET(PurchLine."Document Type",PurchLine."Document No.",PurchLine."Line No.") THEN;
     END;
 
     LOCAL PROCEDURE UpdatePrepmtLineAmount@7(PurchaseHeader@1000 : Record 38);

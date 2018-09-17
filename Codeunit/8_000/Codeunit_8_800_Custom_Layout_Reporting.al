@@ -2,9 +2,9 @@ OBJECT Codeunit 8800 Custom Layout Reporting
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -807,21 +807,19 @@ OBJECT Codeunit 8800 Custom Layout Reporting
 
     LOCAL PROCEDURE SetReportDataItem@1051(VAR DataRecordRef@1065 : RecordRef;SourceJoinFieldName@1066 : Text;DataRecordJoinTable@1067 : Integer;IteratorTableFieldName@1069 : Text;DataItemTableSameAsIterator@1068 : Boolean);
     VAR
+      Field@1000 : Record 2000000041;
+      TypeHelper@1001 : Codeunit 10;
       ConfigValidateManagement@1076 : Codeunit 8617;
       RelationTable@1077 : Integer;
       RelationField@1079 : Integer;
-      i@1078 : Integer;
     BEGIN
       // Copy the RecordRef so as to not disturb the original
       ReportDataRecordRef := DataRecordRef.DUPLICATE;
 
       // Find the fields that relate the iterator to the data record - based on caption:
-      FOR i := 1 TO ReportDataRecordRef.FIELDCOUNT DO
-        IF ReportDataRecordRef.FIELDEXIST(i) THEN
-          IF ReportDataRecordRef.FIELD(i).NAME = SourceJoinFieldName THEN BEGIN
-            ReportDataIteratorFieldRef := ReportDataRecordRef.FIELD(i);
-            BREAK;
-          END;
+      Field.SETRANGE(FieldName,SourceJoinFieldName);
+      IF TypeHelper.FindFields(ReportDataRecordRef.NUMBER,Field) THEN
+        ReportDataIteratorFieldRef := ReportDataRecordRef.FIELD(Field."No.");
       // If the tables are different, 'join' using the filter of the data item passed in.
       IF DataItemTableSameAsIterator THEN BEGIN
         IteratorRecordRef.OPEN(ReportDataRecordRef.NUMBER);
@@ -832,11 +830,10 @@ OBJECT Codeunit 8800 Custom Layout Reporting
         ConfigValidateManagement.GetRelationInfoByIDs(
           ReportDataRecordRef.NUMBER,ReportDataIteratorFieldRef.NUMBER,RelationTable,RelationField);
         IteratorRecordRef.OPEN(DataRecordJoinTable);
-        FOR i := 1 TO IteratorRecordRef.FIELDCOUNT DO
-          IF IteratorRecordRef.FIELD(i).NAME = IteratorTableFieldName THEN BEGIN
-            IteratorJoinFieldRef := IteratorRecordRef.FIELD(i);
-            BREAK;
-          END;
+        Field.RESET;
+        Field.SETRANGE(FieldName,IteratorTableFieldName);
+        IF TypeHelper.FindFields(IteratorRecordRef.NUMBER,Field) THEN
+          IteratorJoinFieldRef := IteratorRecordRef.FIELD(Field."No.");
         ReportDataAndIteratorDiffer := TRUE;
       END;
 

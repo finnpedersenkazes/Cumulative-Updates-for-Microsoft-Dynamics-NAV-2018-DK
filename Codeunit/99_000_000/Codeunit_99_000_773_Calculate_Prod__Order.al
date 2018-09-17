@@ -2,9 +2,9 @@ OBJECT Codeunit 99000773 Calculate Prod. Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -186,7 +186,7 @@ OBJECT Codeunit 99000773 Calculate Prod. Order
       RoutingQualityMeasure.SETRANGE("Version Code",VersionCode);
       IF RoutingQualityMeasure.FIND('-') THEN
         REPEAT
-          ProdOrderRtngQltyMeas.TRANSFERFIELDS(ProdOrderRtngQltyMeas);
+          ProdOrderRtngQltyMeas.TRANSFERFIELDS(RoutingQualityMeasure);
           ProdOrderRtngQltyMeas.Status := FromProdOrderRoutingLine.Status;
           ProdOrderRtngQltyMeas."Prod. Order No." := FromProdOrderRoutingLine."Prod. Order No.";
           ProdOrderRtngQltyMeas."Routing Reference No." := FromProdOrderRoutingLine."Routing Reference No.";

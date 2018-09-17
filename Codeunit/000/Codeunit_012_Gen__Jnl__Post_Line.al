@@ -2,9 +2,9 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -4433,6 +4433,7 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
       DeductedVATBase@1006 : Decimal;
       EntryNoBegin@1002 : ARRAY [3] OF Integer;
       i@1001 : Integer;
+      SummarizedVAT@1007 : Boolean;
     BEGIN
       IF NOT (DtldCVLedgEntryBuf."Entry Type" IN
               [DtldCVLedgEntryBuf."Entry Type"::"Payment Discount (VAT Excl.)",
@@ -4451,11 +4452,11 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
       IF TempVATEntry.FINDSET THEN
         REPEAT
           CASE TRUE OF
-            VATBaseSum[3] + TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase:
+            SummarizedVAT AND (VATBaseSum[3] + TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase):
               i := 4;
-            VATBaseSum[2] + TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase:
+            SummarizedVAT AND (VATBaseSum[2] + TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase):
               i := 3;
-            VATBaseSum[1] + TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase:
+            SummarizedVAT AND (VATBaseSum[1] + TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase):
               i := 2;
             TempVATEntry.Base = DtldCVLedgEntryBuf."Amount (LCY)" - DeductedVATBase:
               i := 1;
@@ -4488,6 +4489,7 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
             FOR i := 1 TO 3 DO BEGIN
               VATBaseSum[i] := 0;
               EntryNoBegin[i] := 0;
+              SummarizedVAT := FALSE;
             END;
             TempVATEntry.SETRANGE("Entry No.",0,999999);
           END ELSE BEGIN
@@ -4498,6 +4500,7 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
               EntryNoBegin[3] := TempVATEntry."Entry No.";
             EntryNoBegin[2] := EntryNoBegin[1];
             EntryNoBegin[1] := TempVATEntry."Entry No.";
+            SummarizedVAT := TRUE;
           END;
         UNTIL TempVATEntry.NEXT = 0;
     END;

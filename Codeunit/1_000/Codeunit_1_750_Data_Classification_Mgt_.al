@@ -2,9 +2,9 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -417,7 +417,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
           FieldNameFilter += STRSUBSTNO('*%1*|',DELCHR(DataSensitivity."Field Caption",'=','()'));
         UNTIL DataSensitivity.NEXT = 0;
 
-        FieldNameFilter := COPYSTR(FieldNameFilter,1,STRLEN(FieldNameFilter) - 1);
+        FieldNameFilter := DELCHR(FieldNameFilter,'>','|');
         DataSensitivity.RESET;
         DataSensitivity.SETRANGE("Company Name",COMPANYNAME);
         DataSensitivity.FILTERGROUP(2);
@@ -428,7 +428,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
             TableNoFilter += STRSUBSTNO('%1|',TempDataPrivacyEntities."Table No.");
           UNTIL TempDataPrivacyEntities.NEXT = 0;
 
-          TableNoFilter := COPYSTR(TableNoFilter,1,STRLEN(TableNoFilter) - 1);
+          TableNoFilter := DELCHR(TableNoFilter,'>','|');
           DataSensitivity.SETFILTER("Table No",TableNoFilter);
         END;
       END;
@@ -461,7 +461,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
             TableNoFilter += STRSUBSTNO('%1|',Field.TableNo);
         UNTIL Field.NEXT = 0;
 
-        TableNoFilter := COPYSTR(TableNoFilter,1,STRLEN(TableNoFilter) - 1);
+        TableNoFilter := DELCHR(TableNoFilter,'>','|');
       END;
       EXIT(TableNoFilter);
     END;
@@ -542,7 +542,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
         UNTIL NAVAppObjectMetadata.NEXT = 0;
 
         // Remove the last '|' character
-        FilterText := COPYSTR(FilterText,1,STRLEN(FilterText) - 1);
+        FilterText := DELCHR(FilterText,'>','|');
         Field.SETFILTER(TableNo,FilterText);
         SetFilterOnField(Field);
         IF Field.FINDSET THEN BEGIN
@@ -582,7 +582,7 @@ OBJECT Codeunit 1750 Data Classification Mgt.
         UNTIL NAVAppObjectMetadata.NEXT = 0;
 
         // Remove the last '|' character
-        FilterText := COPYSTR(FilterText,1,STRLEN(FilterText) - 1);
+        FilterText := DELCHR(FilterText,'>','|');
 
         DataSensitivity.SETFILTER("Table No",FilterText);
         DataSensitivity.SETRANGE("Data Sensitivity",DataSensitivity."Data Sensitivity"::Unclassified);
@@ -698,14 +698,16 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 
       DataSensitivity.SETRANGE("Company Name",COMPANYNAME);
       IF DataSensitivity.ISEMPTY THEN BEGIN
-        IF CountryRegion.FINDSET THEN BEGIN
+        CountryRegion.SETFILTER("EU Country/Region Code",'<>%1','');
+        IF CountryRegion.FINDSET THEN
           REPEAT
-            IF CountryRegion."EU Country/Region Code" <> '' THEN
-              CountryCodeFilter += STRSUBSTNO('%1|',CountryRegion.Code);
+            CountryCodeFilter += STRSUBSTNO('%1|',CountryRegion.Code);
           UNTIL CountryRegion.NEXT = 0;
 
-          CountryCodeFilter := COPYSTR(CountryCodeFilter,1,STRLEN(CountryCodeFilter) - 1);
-        END;
+        IF CountryCodeFilter = '' THEN
+          EXIT;
+
+        CountryCodeFilter := DELCHR(CountryCodeFilter,'>','|');
 
         Vendor.SETRANGE("Partner Type",Vendor."Partner Type"::Person);
         Vendor.SETFILTER("Country/Region Code",CountryCodeFilter);

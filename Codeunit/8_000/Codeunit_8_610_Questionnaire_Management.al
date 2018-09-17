@@ -2,9 +2,9 @@ OBJECT Codeunit 8610 Questionnaire Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -645,24 +645,21 @@ OBJECT Codeunit 8610 Questionnaire Management
       FieldRef@1003 : FieldRef;
       FieldNode@1101 : DotNet "'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";
       XmlDom@1102 : DotNet "'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlDocument";
-      i@1002 : Integer;
     BEGIN
       XmlDom := Node.OwnerDocument;
-      FOR i := 1 TO RecRef.FIELDCOUNT DO BEGIN
-        FieldRef := RecRef.FIELDINDEX(i);
-        IF NOT FieldException(RecRef.NUMBER,FieldRef.NUMBER) THEN BEGIN
-          FieldNode := XmlDom.CreateElement(GetElementName(FieldRef.NAME));
-
-          IF TypeHelper.GetField(RecRef.NUMBER,FieldRef.NUMBER,Field) THEN BEGIN
+      IF TypeHelper.FindFields(RecRef.NUMBER,Field) THEN
+        REPEAT
+          FieldRef := RecRef.FIELD(Field."No.");
+          IF NOT FieldException(RecRef.NUMBER,FieldRef.NUMBER) THEN BEGIN
+            FieldNode := XmlDom.CreateElement(GetElementName(FieldRef.NAME));
             IF Field.Class = Field.Class::FlowField THEN
               FieldRef.CALCFIELD;
             FieldNode.InnerText := FORMAT(FieldRef.VALUE);
 
             XMLDOMMgt.AddAttribute(FieldNode,'fieldlength',FORMAT(Field.Len));
+            Node.AppendChild(FieldNode);
           END;
-          Node.AppendChild(FieldNode);
-        END;
-      END;
+        UNTIL Field.NEXT = 0;
     END;
 
     LOCAL PROCEDURE GetNodeValue@26(VAR RecordNode@1100 : DotNet "'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Xml.XmlNode";FieldNodeName@1001 : Text[250]) : Text[250];

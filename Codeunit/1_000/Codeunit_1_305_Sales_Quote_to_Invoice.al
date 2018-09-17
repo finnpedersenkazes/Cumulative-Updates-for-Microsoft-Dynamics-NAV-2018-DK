@@ -2,9 +2,9 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23019;
   }
   PROPERTIES
   {
@@ -34,7 +34,9 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
             SalesInvoiceLine.LOCKTABLE;
 
             CreateSalesInvoiceHeader(SalesInvoiceHeader,Rec);
+            OnBeforeDeletionOfQuote(Rec,SalesInvoiceHeader);
             CreateSalesInvoiceLines(SalesInvoiceHeader,Rec);
+            OnAfterInsertAllSalesInvLines(SalesInvoiceLine,Rec);
 
             SalesSetup.GET;
             IF SalesSetup."Default Posting Date" = SalesSetup."Default Posting Date"::"No Date" THEN BEGIN
@@ -49,6 +51,8 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
 
             COMMIT;
             CLEAR(CustCheckCrLimit);
+
+            OnAfterOnRun(Rec,SalesInvoiceHeader);
           END;
 
   }
@@ -113,6 +117,7 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
               SalesInvoiceLine.DefaultDeferralCode;
             OnBeforeInsertSalesInvoiceLine(SalesQuoteLine,SalesQuoteHeader,SalesInvoiceLine,SalesInvoiceHeader);
             SalesInvoiceLine.INSERT;
+            OnAfterInsertSalesInvoiceLine(SalesQuoteLine,SalesQuoteHeader,SalesInvoiceLine,SalesInvoiceHeader);
           UNTIL SalesQuoteLine.NEXT = 0;
 
         MoveLineCommentsToSalesInvoice(SalesInvoiceHeader,SalesQuoteHeader);
@@ -159,7 +164,27 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnAfterInsertSalesInvoiceLine@9(VAR SalesQuoteLine@1004 : Record 37;SalesQuoteHeader@1003 : Record 36;SalesInvoiceLine@1002 : Record 37;SalesInvoiceHeader@1001 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterInsertAllSalesInvLines@11(VAR SalesInvoiceLine@1001 : Record 37;SalesQuoteHeader@1000 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterOnRun@10(VAR SalesHeader@1000 : Record 36;VAR SalesInvoiceHeader@1001 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
     LOCAL PROCEDURE OnBeforeInsertSalesInvoiceLine@8(VAR SalesQuoteLine@1004 : Record 37;SalesQuoteHeader@1003 : Record 36;SalesInvoiceLine@1002 : Record 37;SalesInvoiceHeader@1001 : Record 36);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeDeletionOfQuote@6(VAR SalesHeader@1000 : Record 36;VAR SalesInvoiceHeader@1001 : Record 36);
     BEGIN
     END;
 

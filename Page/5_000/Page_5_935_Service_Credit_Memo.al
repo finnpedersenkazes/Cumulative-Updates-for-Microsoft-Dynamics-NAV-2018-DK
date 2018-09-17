@@ -2,9 +2,9 @@ OBJECT Page 5935 Service Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=28-06-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
   }
   PROPERTIES
   {
@@ -282,9 +282,11 @@ OBJECT Page 5935 Service Credit Memo
                       Image=PostPrint;
                       PromotedCategory=Process;
                       OnAction=VAR
+                                 ServiceHeader@1002 : Record 5900;
                                  ServPostPrint@1000 : Codeunit 5982;
                                BEGIN
                                  ServPostPrint.PostDocument(Rec);
+                                 DocumentIsPosted := NOT ServiceHeader.GET("Document Type","No.");
                                END;
                                 }
       { 63      ;2   ;Action    ;
