@@ -2,9 +2,9 @@ OBJECT Table 167 Job
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -755,6 +755,8 @@ OBJECT Table 167 Job
         Cust.GET("Bill-to Customer No.");
         Cust.TESTFIELD("Customer Posting Group");
         Cust.TESTFIELD("Bill-to Customer No.",'');
+        IF Cust."Privacy Blocked" THEN
+          ERROR(Cust.GetPrivacyBlockedGenericErrorText(Cust));
         IF Cust.Blocked = Cust.Blocked::All THEN
           ERROR(
             BlockedCustErr,

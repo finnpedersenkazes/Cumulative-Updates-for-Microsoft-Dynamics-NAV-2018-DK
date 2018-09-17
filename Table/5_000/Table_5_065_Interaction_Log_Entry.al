@@ -2,9 +2,9 @@ OBJECT Table 5065 Interaction Log Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -220,9 +220,16 @@ OBJECT Table 5065 Interaction Log Entry
     PROCEDURE AssignNewOpportunity@15();
     VAR
       Opportunity@1000 : Record 5092;
+      Contact@1001 : Record 5050;
     BEGIN
       TESTFIELD(Canceled,FALSE);
       TESTFIELD("Opportunity No.",'');
+      IF "Contact No." <> '' THEN
+        IF Contact.GET("Contact No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
+      IF "Contact Company No." <> '' THEN
+        IF Contact.GET("Contact Company No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
       Opportunity.CreateFromInteractionLogEntry(Rec);
       "Opportunity No." := Opportunity."No.";
       MODIFY;
@@ -269,13 +276,22 @@ OBJECT Table 5065 Interaction Log Entry
       "Send Word Docs. as Attmt." := SegLine."Send Word Doc. As Attmt.";
       "Contact Via" := SegLine."Contact Via";
       "Opportunity No." := SegLine."Opportunity No.";
+
+      OnAfterCopyFromSegment(Rec,SegLine);
     END;
 
     [External]
     PROCEDURE CreateInteraction@10();
     VAR
       TempSegLine@1000 : TEMPORARY Record 5077;
+      Contact@1001 : Record 5050;
     BEGIN
+      IF "Contact No." <> '' THEN
+        IF Contact.GET("Contact No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
+      IF "Contact Company No." <> '' THEN
+        IF Contact.GET("Contact Company No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
       TempSegLine.CreateInteractionFromInteractLogEntry(Rec);
     END;
 
@@ -283,7 +299,14 @@ OBJECT Table 5065 Interaction Log Entry
     PROCEDURE CreateTask@8();
     VAR
       TempTask@1000 : TEMPORARY Record 5080;
+      Contact@1001 : Record 5050;
     BEGIN
+      IF "Contact No." <> '' THEN
+        IF Contact.GET("Contact No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
+      IF "Contact Company No." <> '' THEN
+        IF Contact.GET("Contact Company No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
       TempTask.CreateTaskFromInteractLogEntry(Rec)
     END;
 
@@ -631,6 +654,11 @@ OBJECT Table 5065 Interaction Log Entry
         TempSegLine.SETRANGE("Opportunity No.",TempSegLine."Opportunity No.");
 
       TempSegLine.StartWizard;
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterCopyFromSegment@12(VAR InteractionLogEntry@1000 : Record 5065;SegmentLine@1001 : Record 5077);
+    BEGIN
     END;
 
     BEGIN

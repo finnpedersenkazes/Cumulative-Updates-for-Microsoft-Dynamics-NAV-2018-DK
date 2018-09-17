@@ -2,9 +2,9 @@ OBJECT Page 9018 Administrator Role Center
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -265,6 +265,54 @@ OBJECT Page 9018 Administrator Role Center
                                  ENU=View or edit your predefined views of items at a specified location per their combination of dimensions.];
                       ApplicationArea=#Advanced;
                       RunObject=Page 9372 }
+      { 68      ;1   ;ActionGroup;
+                      CaptionML=[DAN=Beskyttelse af data;
+                                 ENU=Data Privacy];
+                      ToolTipML=[DAN=Administrer klassificeringer af databeskyttelse, og besvar anmodninger fra dataemner.;
+                                 ENU=Manage data privacy classifications, and respond to requests from data subjects.];
+                      Image=HumanResources }
+      { 127     ;2   ;Action    ;
+                      Name=Page Data Classifications;
+                      CaptionML=[DAN=Dataklassificeringer;
+                                 ENU=Data Classifications];
+                      ToolTipML=[DAN=Vis de aktuelle dataklassificeringer;
+                                 ENU=View your current data classifications];
+                      ApplicationArea=#All;
+                      RunObject=Page 1751 }
+      { 126     ;2   ;Action    ;
+                      Name=Classified;
+                      CaptionML=[DAN=Klassificerede felter;
+                                 ENU=Classified Fields];
+                      ToolTipML=[DAN=Vis kun klassificerede felter;
+                                 ENU=View only classified fields];
+                      ApplicationArea=#All;
+                      RunObject=Page 1751;
+                      RunPageView=WHERE(Data Sensitivity=FILTER(<>Unclassified)) }
+      { 66      ;2   ;Action    ;
+                      Name=Unclassified;
+                      CaptionML=[DAN=Ikke-klassificerede felter;
+                                 ENU=Unclassified Fields];
+                      ToolTipML=[DAN=Vis kun ikke-klassificerede felter;
+                                 ENU=View only unclassified fields];
+                      ApplicationArea=#All;
+                      RunObject=Page 1751;
+                      RunPageView=WHERE(Data Sensitivity=CONST(Unclassified)) }
+      { 76      ;2   ;Action    ;
+                      Name=Page Data Subjects;
+                      CaptionML=[DAN=Dataemner;
+                                 ENU=Data Subjects];
+                      ToolTipML=[DAN=Vis dine potentielle dataemner;
+                                 ENU=View your potential data subjects];
+                      ApplicationArea=#All;
+                      RunObject=Page 1754 }
+      { 128     ;2   ;Action    ;
+                      Name=Page Change Log Entries;
+                      CaptionML=[DAN=’ndringslogposter;
+                                 ENU=Change Log Entries];
+                      ToolTipML=[DAN=Vis logfilen med alle ‘ndringer i systemet;
+                                 ENU=View the log with all the changes in your system];
+                      ApplicationArea=#All;
+                      RunObject=Page 595 }
       { 4       ;0   ;ActionContainer;
                       ActionContainerType=NewDocumentItems }
       { 21      ;1   ;Action    ;

@@ -2,9 +2,9 @@ OBJECT Table 130 Incoming Document
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -346,7 +346,7 @@ OBJECT Table 130 Incoming Document
         ERROR(DocAlreadyCreatedErr);
     END;
 
-    [Internal]
+    [External]
     PROCEDURE CreateDocumentWithDataExchange@126();
     VAR
       RelatedRecord@1000 : Variant;
@@ -357,13 +357,13 @@ OBJECT Table 130 Incoming Document
       CreateWithDataExchange("Document Type"::" ")
     END;
 
-    [Internal]
+    [External]
     PROCEDURE TryCreateDocumentWithDataExchange@73();
     BEGIN
       CreateDocumentWithDataExchange
     END;
 
-    [Internal]
+    [External]
     PROCEDURE CreateReleasedDocumentWithDataExchange@72();
     VAR
       PurchaseHeader@1002 : Record 38;
@@ -558,7 +558,7 @@ OBJECT Table 130 Incoming Document
       CreateSalesDoc(DocumentType::"Credit Memo");
     END;
 
-    [Internal]
+    [External]
     PROCEDURE CreateGeneralJournalLineWithDataExchange@45();
     VAR
       ErrorMessage@1002 : Record 700;

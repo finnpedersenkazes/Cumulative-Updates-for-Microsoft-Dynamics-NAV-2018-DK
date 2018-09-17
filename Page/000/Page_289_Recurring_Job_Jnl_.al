@@ -2,9 +2,9 @@ OBJECT Page 289 Recurring Job Jnl.
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -451,11 +451,23 @@ OBJECT Page 289 Recurring Job Jnl.
                 SourceExpr="Direct Unit Cost (LCY)";
                 Visible=FALSE }
 
+    { 3   ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver kostprisen for den valgte type og det valgte nummer p† kladdelinjen. Kostprisen er angivet i sagens valuta, afledt fra feltet Valutakode p† jobkortet.;
+                           ENU=Specifies the unit cost for the selected type and number on the journal line. The unit cost is in the job currency, derived from the Currency Code field on the job card.];
+                ApplicationArea=#Advanced;
+                SourceExpr="Unit Cost" }
+
     { 96  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver omkostningen, i RV, p† ‚n enhed af varen eller ressourcen p† linjen.;
                            ENU=Specifies the cost, in LCY, of one unit of the item or resource on the line.];
                 ApplicationArea=#Advanced;
                 SourceExpr="Unit Cost (LCY)" }
+
+    { 5   ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver kostbel›bet for kladdelinjen. Kostbel›bet beregnes i sagens valuta, som stammer fra feltet Valutakode p† jobkortet.;
+                           ENU=Specifies the total cost for the journal line. The total cost is calculated based on the job currency, which comes from the Currency Code field on the job card.];
+                ApplicationArea=#Advanced;
+                SourceExpr="Total Cost" }
 
     { 20  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver kostbel›bet for denne kladdelinje. Bel›bet vises i den lokale valuta.;

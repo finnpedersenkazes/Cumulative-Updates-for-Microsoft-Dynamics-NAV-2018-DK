@@ -2,9 +2,9 @@ OBJECT Report 1306 Standard Sales - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -532,6 +532,7 @@ OBJECT Report 1306 Standard Sales - Invoice
                OnAfterGetRecord=VAR
                                   PermissionManager@1000 : Codeunit 9002;
                                 BEGIN
+                                  InitializeShipmentLine;
                                   IF Type = Type::"G/L Account" THEN
                                     "No." := '';
 
@@ -590,7 +591,7 @@ OBJECT Report 1306 Standard Sales - Invoice
                                   ELSE
                                     JobNoLbl := '';
 
-                                  FormatDocument.SetSalesInvoiceLine(Line,FormattedQuantity,FormattedUnitPrice,FormattedVATPct);
+                                  FormatDocument.SetSalesInvoiceLine(Line,FormattedQuantity,FormattedUnitPrice,FormattedVATPct,FormattedLineAmount);
                                 END;
 
                DataItemLinkReference=Header;
@@ -630,7 +631,7 @@ OBJECT Report 1306 Standard Sales - Invoice
                SourceExpr=LineDiscountPctText }
 
     { 56  ;2   ;Column  ;LineAmount_Line     ;
-               SourceExpr="Line Amount";
+               SourceExpr=FormattedLineAmount;
                AutoFormatType=1;
                AutoFormatExpr=GetCurrencyCode }
 
@@ -1270,6 +1271,7 @@ OBJECT Report 1306 Standard Sales - Invoice
       FormattedVATPct@1111 : Text;
       FormattedUnitPrice@1110 : Text;
       FormattedQuantity@1108 : Text;
+      FormattedLineAmount@1121 : Text;
       TotalAmountExclInclVATTextValue@1106 : Text;
       MoreLines@1031 : Boolean;
       ShowWorkDescription@1097 : Boolean;
@@ -1325,6 +1327,40 @@ OBJECT Report 1306 Standard Sales - Invoice
     LOCAL PROCEDURE InitLogInteraction@1();
     BEGIN
       LogInteraction := SegManagement.FindInteractTmplCode(4) <> '';
+    END;
+
+    LOCAL PROCEDURE InitializeShipmentLine@6() : Date;
+    VAR
+      SalesShipmentHeader@1000 : Record 110;
+      SalesShipmentBuffer2@1001 : Record 7190;
+    BEGIN
+      IF Line."Shipment No." <> '' THEN
+        IF SalesShipmentHeader.GET(Line."Shipment No.") THEN
+          EXIT(SalesShipmentHeader."Posting Date");
+
+      IF Line.Type = Line.Type::" " THEN
+        EXIT(0D);
+
+      ShipmentLine.GetLinesForSalesInvoiceLine(Line,Header);
+
+      ShipmentLine.RESET;
+      ShipmentLine.SETRANGE("Line No." ,Line."Line No.");
+      IF ShipmentLine.FIND('-') THEN BEGIN
+        SalesShipmentBuffer2 := ShipmentLine;
+        IF NOT DisplayShipmentInformation THEN
+          IF ShipmentLine.NEXT = 0 THEN BEGIN
+            ShipmentLine.GET(
+              SalesShipmentBuffer2."Document No.",SalesShipmentBuffer2."Line No.",SalesShipmentBuffer2."Entry No.");
+            ShipmentLine.DELETE;
+            EXIT(SalesShipmentBuffer2."Posting Date");
+          END;
+        ShipmentLine.CALCSUMS(Quantity);
+        IF ShipmentLine.Quantity <> Line.Quantity THEN BEGIN
+          ShipmentLine.DELETEALL;
+          EXIT(Header."Posting Date");
+        END;
+      END;
+      EXIT(Header."Posting Date");
     END;
 
     LOCAL PROCEDURE DocumentCaption@4() : Text[250];
@@ -5356,7 +5392,6 @@ OBJECT Report 1306 Standard Sales - Invoice
                                                     <Style>
                                                       <FontFamily>Segoe UI</FontFamily>
                                                       <FontSize>8pt</FontSize>
-                                                      <Format>=Fields!LineAmount_LineFormat.Value</Format>
                                                     </Style>
                                                   </TextRun>
                                                 </TextRuns>

@@ -2,9 +2,9 @@ OBJECT Table 5080 To-do
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -1241,11 +1241,13 @@ OBJECT Table 5080 To-do
       SegHeader@1001 : Record 5076;
     BEGIN
       IF Cont.GET(Task.GETFILTER("Contact Company No.")) THEN BEGIN
+        Cont.CheckIfPrivacyBlockedGeneric;
         VALIDATE("Contact No.",Cont."No.");
         "Salesperson Code" := Cont."Salesperson Code";
         SETRANGE("Contact Company No.","Contact No.");
       END;
       IF Cont.GET(Task.GETFILTER("Contact No.")) THEN BEGIN
+        Cont.CheckIfPrivacyBlockedGeneric;
         VALIDATE("Contact No.",Cont."No.");
         "Salesperson Code" := Cont."Salesperson Code";
         SETRANGE("Contact No.","Contact No.");

@@ -2,9 +2,9 @@ OBJECT Page 595 Change Log Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -30,6 +30,17 @@ OBJECT Page 595 Change Log Entries
                                  REPORT.RUN(REPORT::"Change Log Entries",TRUE,FALSE,Rec);
                                END;
                                 }
+      { 6       ;1   ;Action    ;
+                      Name=Setup;
+                      CaptionML=[DAN=Ops‘tning;
+                                 ENU=Setup];
+                      ToolTipML=[DAN=Aktiv‚r, deaktiver eller konfigurer logf›ring af ‘ndringer.;
+                                 ENU=Enable, disable or setup change logging.];
+                      ApplicationArea=#All;
+                      RunObject=Page 592;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Setup }
     }
   }
   CONTROLS

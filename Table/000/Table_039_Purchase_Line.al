@@ -2,9 +2,9 @@ OBJECT Table 39 Purchase Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -4050,7 +4050,7 @@ OBJECT Table 39 Purchase Line
       EXIT(FORMAT(TotalDays));
     END;
 
-    [Internal]
+    [External]
     PROCEDURE UpdateVATOnLines@32(QtyType@1000 : 'General,Invoicing,Shipping';VAR PurchHeader@1001 : Record 38;VAR PurchLine@1002 : Record 39;VAR VATAmountLine@1003 : Record 290) LineWasModified : Boolean;
     VAR
       TempVATAmountLineRemainder@1004 : TEMPORARY Record 290;
@@ -4696,7 +4696,12 @@ OBJECT Table 39 Purchase Line
         EXIT(0);
 
       GetPurchHeader;
-      LineAmount := ROUND(QtyToHandle * "Direct Unit Cost",Currency."Amount Rounding Precision");
+      IF "Prepmt Amt to Deduct" = 0 THEN
+        LineAmount := ROUND(QtyToHandle * "Direct Unit Cost",Currency."Amount Rounding Precision")
+      ELSE BEGIN
+        LineAmount := ROUND(Quantity * "Direct Unit Cost",Currency."Amount Rounding Precision");
+        LineAmount := ROUND(QtyToHandle * LineAmount / Quantity,Currency."Amount Rounding Precision");
+      END;
       LineDiscAmount :=
         ROUND(
           LineAmount * "Line Discount %" / 100,Currency."Amount Rounding Precision");

@@ -2,9 +2,9 @@ OBJECT Page 39 General Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -896,7 +896,7 @@ OBJECT Page 39 General Journal
                              GenJnlManagement.GetAccounts(Rec,AccName,BalAccName);
                              SetUserInteractions;
                              EnableApplyEntriesAction;
-                             CurrPage.UPDATE;
+                             CurrPage.SAVERECORD;
                            END;
                             }
 

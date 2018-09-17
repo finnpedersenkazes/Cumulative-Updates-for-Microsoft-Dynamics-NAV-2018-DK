@@ -2,9 +2,9 @@ OBJECT Codeunit 8618 Config. Excel Exchange
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -49,6 +49,7 @@ OBJECT Codeunit 8618 Config. Excel Exchange
       ExcelFileExtensionTok@1010 : TextConst 'DAN=.xlsx;ENU=.xlsx';
       InvalidDataInSheetMsg@1020 : TextConst '@@@="%1=excel sheet name";DAN=Data p† arket ''%1'' kunne ikke importeres, fordi arket har et uventet format.;ENU=Data in sheet ''%1'' could not be imported, because the sheet has an unexpected format.';
       ImportFromExcelTxt@1022 : TextConst 'DAN=Indl‘s fra Excel;ENU=Import from Excel';
+      FileOnServer@1024 : Boolean;
 
     [Internal]
     PROCEDURE ExportExcelFromConfig@19(VAR ConfigLine@1006 : Record 8622) : Text;
@@ -197,7 +198,11 @@ OBJECT Codeunit 8618 Config. Excel Exchange
         FileName :=
           STRSUBSTNO(ExcelFileNameTok,FORMAT(CURRENTDATETIME,0,'<Day,2>_<Month,2>_<Year4>_<Hours24>_<Minutes,2>_<Seconds,2>'));
 
-      FileName := FileMgt.BLOBExport(TempBlob,FileName,NOT HideDialog);
+      IF NOT FileOnServer THEN
+        FileName := FileMgt.BLOBExport(TempBlob,FileName,NOT HideDialog)
+      ELSE
+        FileMgt.BLOBExportToServerFile(TempBlob,FileName);
+
       EXIT(FileName <> '');
     END;
 
@@ -993,6 +998,11 @@ OBJECT Codeunit 8618 Config. Excel Exchange
       TempXMLBuffer."Entry No." := ColumnIndex; // column index in table definition
       TempXMLBuffer."Parent Entry No." := TempXMLBuffer.COUNT; // column index in dataset
       TempXMLBuffer.INSERT;
+    END;
+
+    PROCEDURE SetFileOnServer@29(NewFileOnServer@1000 : Boolean);
+    BEGIN
+      FileOnServer := NewFileOnServer;
     END;
 
     [Integration]

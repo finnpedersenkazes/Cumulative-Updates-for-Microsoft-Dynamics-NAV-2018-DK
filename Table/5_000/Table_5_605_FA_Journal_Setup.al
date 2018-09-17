@@ -2,9 +2,9 @@ OBJECT Table 5605 FA Journal Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -219,7 +219,7 @@ OBJECT Table 5605 FA Journal Setup
     END;
 
     [External]
-    PROCEDURE GetFANoSeries@5(VAR FAJnlLine@1000 : Record 5621) : Code[10];
+    PROCEDURE GetFANoSeries@5(VAR FAJnlLine@1000 : Record 5621) : Code[20];
     VAR
       FAJnlBatch@1001 : Record 5620;
     BEGIN
@@ -230,7 +230,7 @@ OBJECT Table 5605 FA Journal Setup
     END;
 
     [External]
-    PROCEDURE GetGenNoSeries@7(VAR GenJnlLine@1000 : Record 81) : Code[10];
+    PROCEDURE GetGenNoSeries@7(VAR GenJnlLine@1000 : Record 81) : Code[20];
     VAR
       GenJnlBatch@1001 : Record 232;
     BEGIN
@@ -241,7 +241,7 @@ OBJECT Table 5605 FA Journal Setup
     END;
 
     [External]
-    PROCEDURE GetInsuranceNoSeries@9(VAR InsuranceJnlLine@1000 : Record 5635) : Code[10];
+    PROCEDURE GetInsuranceNoSeries@9(VAR InsuranceJnlLine@1000 : Record 5635) : Code[20];
     VAR
       InsuranceJnlBatch@1001 : Record 5634;
     BEGIN

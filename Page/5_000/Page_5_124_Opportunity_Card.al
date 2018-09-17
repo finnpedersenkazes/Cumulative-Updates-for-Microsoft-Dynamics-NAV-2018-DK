@@ -2,9 +2,9 @@ OBJECT Page 5124 Opportunity Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -55,7 +55,15 @@ OBJECT Page 5124 Opportunity Card
                            StartActivateFirstStage;
                      END;
 
-    OnAfterGetCurrRecord=BEGIN
+    OnAfterGetCurrRecord=VAR
+                           Contact@1000 : Record 5050;
+                         BEGIN
+                           IF "Contact No." <> '' THEN
+                             IF Contact.GET("Contact No.") THEN
+                               Contact.CheckIfPrivacyBlockedGeneric;
+                           IF "Contact Company No." <> '' THEN
+                             IF Contact.GET("Contact Company No.") THEN
+                               Contact.CheckIfPrivacyBlockedGeneric;
                            UpdateEditable;
                            OppInProgress := Status = Status::"In Progress";
                            OppNo := "No.";
@@ -370,7 +378,12 @@ OBJECT Page 5124 Opportunity Card
                 ApplicationArea=#RelationshipMgmt;
                 SourceExpr="Contact No.";
                 Editable=ContactNoEditable;
-                OnValidate=BEGIN
+                OnValidate=VAR
+                             Contact@1000 : Record 5050;
+                           BEGIN
+                             IF "Contact No." <> '' THEN
+                               IF Contact.GET("Contact No.") THEN
+                                 Contact.CheckIfPrivacyBlockedGeneric;
                              ContactNoOnAfterValidate;
                            END;
                             }

@@ -2,24 +2,29 @@ OBJECT Codeunit 448 Job Queue Dispatcher
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
     TableNo=472;
     Permissions=TableData 472=rimd;
     OnRun=BEGIN
-            RefreshLocked;
-            IF Status IN [Status::Ready,Status::"In Process"] THEN
+            SELECTLATESTVERSION;
+            GET(ID);
+            IF IsReadyToStart THEN
               IF IsExpired(CURRENTDATETIME) THEN
                 DeleteTask
               ELSE
                 IF WaitForOthersWithSameCategory(Rec) THEN
                   Reschedule(Rec)
-                ELSE
+                ELSE BEGIN
+                  RefreshLocked;
+                  IF NOT IsReadyToStart THEN
+                    EXIT;
                   HandleRequest(Rec);
+                END;
             COMMIT;
           END;
 
@@ -72,7 +77,8 @@ OBJECT Codeunit 448 Job Queue Dispatcher
       WITH JobQueueEntry DO BEGIN
         SETFILTER(ID,'<>%1',CurrJobQueueEntry.ID);
         SETRANGE("Job Queue Category Code",CurrJobQueueEntry."Job Queue Category Code");
-        SETRANGE(Status,Status::"In Process");
+        SETFILTER(Status,'%1|%2',Status::"In Process",Status::Ready);
+        SETFILTER("Earliest Start Date/Time",'<%1',CURRENTDATETIME + 500); // already started or imminent start
         EXIT(NOT ISEMPTY);
       END;
     END;
@@ -81,7 +87,8 @@ OBJECT Codeunit 448 Job Queue Dispatcher
     BEGIN
       WITH JobQueueEntry DO BEGIN
         RANDOMIZE;
-        "Earliest Start Date/Time" := CURRENTDATETIME + 1000 + RANDOM(3000);
+        CLEAR("System Task ID"); // to avoid canceling this task, which has already been executed
+        "Earliest Start Date/Time" := CURRENTDATETIME + 2000 + RANDOM(5000);
         CODEUNIT.RUN(CODEUNIT::"Job Queue - Enqueue",JobQueueEntry);
       END;
     END;

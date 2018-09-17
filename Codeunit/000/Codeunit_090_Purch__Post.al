@@ -2,9 +2,9 @@ OBJECT Codeunit 90 Purch.-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -245,6 +245,8 @@ OBJECT Codeunit 90 Purch.-Post
       RemQtyToBeInvoicedBase@1115 : Decimal;
       RemAmt@1135 : Decimal;
       RemDiscAmt@1136 : Decimal;
+      TotalChargeAmt@1042 : Decimal;
+      TotalChargeAmtLCY@1041 : Decimal;
       LastLineRetrieved@1119 : Boolean;
       RoundingLineInserted@1120 : Boolean;
       DropShipOrder@1121 : Boolean;
@@ -865,6 +867,7 @@ OBJECT Codeunit 90 Purch.-Post
               PurchHeader,PurchLine,OriginalItemJnlLine,TempReservationEntry,QtyToBeInvoiced,QtyToBeReceived);
         END;
 
+        OnBeforeItemJnlPostLine(ItemJnlLine,PurchLine);
         ItemJnlPostLine.RunWithCheck(ItemJnlLine);
 
         IF NOT Subcontracting THEN
@@ -1917,11 +1920,13 @@ OBJECT Codeunit 90 Purch.-Post
       END;
       IF NOT InvtPickPutaway THEN
         COMMIT;
-      ClearPostBuffers;
+
       IF GUIALLOWED THEN
         Window.CLOSE;
 
       OnAfterFinalizePosting(PurchHeader,PurchRcptHeader,PurchInvHeader,PurchCrMemoHeader,ReturnShptHeader,GenJnlPostLine);
+
+      ClearPostBuffers;
     END;
 
     LOCAL PROCEDURE FillInvoicePostBuffer@5804(PurchHeader@1012 : Record 38;PurchLine@1000 : Record 39;PurchLineACY@1001 : Record 39;VAR TempInvoicePostBuffer@1014 : TEMPORARY Record 49;VAR InvoicePostBuffer@1013 : Record 49);
@@ -2728,16 +2733,26 @@ OBJECT Codeunit 90 Purch.-Post
     LOCAL PROCEDURE CheckPostRestrictions@148(PurchaseHeader@1000 : Record 38);
     VAR
       Vendor@1002 : Record 23;
+      Contact@1001 : Record 5050;
     BEGIN
       IF NOT PreviewMode THEN
         PurchaseHeader.OnCheckPurchasePostRestrictions;
 
       Vendor.GET(PurchaseHeader."Buy-from Vendor No.");
       Vendor.CheckBlockedVendOnDocs(Vendor,TRUE);
+      PurchaseHeader.ValidatePurchaserOnPurchHeader(PurchaseHeader,TRUE,TRUE);
+
       IF PurchaseHeader."Pay-to Vendor No." <> PurchaseHeader."Buy-from Vendor No." THEN BEGIN
         Vendor.GET(PurchaseHeader."Pay-to Vendor No.");
         Vendor.CheckBlockedVendOnDocs(Vendor,TRUE);
       END;
+
+      IF PurchaseHeader."Buy-from Contact No." <> '' THEN
+        IF Contact.GET(PurchaseHeader."Buy-from Contact No.") THEN
+          Contact.CheckIfPrivacyBlocked(TRUE);
+      IF PurchaseHeader."Pay-to Contact No." <> '' THEN
+        IF Contact.GET(PurchaseHeader."Pay-to Contact No.") THEN
+          Contact.CheckIfPrivacyBlocked(TRUE);
     END;
 
     LOCAL PROCEDURE CheckDim@34(PurchHeader@1001 : Record 38);
@@ -3551,8 +3566,6 @@ OBJECT Codeunit 90 Purch.-Post
       DummyTrackingSpecification@1001 : Record 336;
       PurchLineToPost@1009 : Record 39;
       CurrExchRate@1002 : Record 330;
-      TotalChargeAmt@1003 : Decimal;
-      TotalChargeAmtLCY@1010 : Decimal;
     BEGIN
       WITH TempItemChargeAssgntPurch DO BEGIN
         PurchLineToPost := PurchLine;
@@ -4062,7 +4075,8 @@ OBJECT Codeunit 90 Purch.-Post
         IF ((TotalRoundingAmount[2] <> 0) OR FinalInvoice) AND (TotalRoundingAmount[1] = 0) THEN BEGIN
           IF ("Prepayment %" = 100) AND ("Prepmt. Amount Inv. (LCY)" = 0) THEN
             Prepmt100PctVATRoundingAmt += TotalRoundingAmount[2];
-          TotalRoundingAmount[2] := 0;
+          IF ("Prepayment %" = 100) OR FinalInvoice THEN
+            TotalRoundingAmount[2] := 0;
         END;
 
         IF (PricesInclVATRoundingAmount[2] <> 0) AND (TotalRoundingAmount[2] = 0) THEN BEGIN
@@ -6396,6 +6410,11 @@ OBJECT Codeunit 90 Purch.-Post
 
     [Integration]
     LOCAL PROCEDURE OnBeforeInvoiceRoundingAmount@208(PurchHeader@1000 : Record 38;TotalAmountIncludingVAT@1001 : Decimal;UseTempData@1002 : Boolean;VAR InvoiceRoundingAmount@1003 : Decimal);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeItemJnlPostLine@227(VAR ItemJournalLine@1000 : Record 83;PurchaseLine@1001 : Record 39);
     BEGIN
     END;
 

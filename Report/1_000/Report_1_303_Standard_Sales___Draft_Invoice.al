@@ -2,9 +2,9 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -493,7 +493,7 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
                                       VATAmountLine.MODIFY;
                                     END;
 
-                                  FormatDocument.SetSalesLine(Line,FormattedQuantity,FormattedUnitPrice,FormattedVATPct);
+                                  FormatDocument.SetSalesLine(Line,FormattedQuantity,FormattedUnitPrice,FormattedVATPct,FormattedLineAmount);
 
                                   IF FirstLineHasBeenOutput THEN
                                     CLEAR(CompanyInfo.Picture);
@@ -538,7 +538,7 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
                SourceExpr=LineDiscountPctText }
 
     { 56  ;2   ;Column  ;LineAmount_Line     ;
-               SourceExpr="Line Amount";
+               SourceExpr=FormattedLineAmount;
                AutoFormatType=1;
                AutoFormatExpr="Currency Code" }
 
@@ -1003,6 +1003,7 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
       FormattedVATPct@1041 : Text;
       FormattedUnitPrice@1036 : Text;
       FormattedQuantity@1034 : Text;
+      FormattedLineAmount@1104 : Text;
       MoreLines@1031 : Boolean;
       ShowWorkDescription@1006 : Boolean;
       ShowShippingAddr@1035 : Boolean;
@@ -5350,7 +5351,6 @@ OBJECT Report 1303 Standard Sales - Draft Invoice
                                                     <Style>
                                                       <FontFamily>Segoe UI</FontFamily>
                                                       <FontSize>8pt</FontSize>
-                                                      <Format>=Fields!LineAmount_LineFormat.Value</Format>
                                                     </Style>
                                                   </TextRun>
                                                 </TextRuns>

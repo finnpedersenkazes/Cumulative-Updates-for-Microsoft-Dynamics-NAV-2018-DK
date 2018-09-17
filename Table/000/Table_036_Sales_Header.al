@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -283,7 +283,7 @@ OBJECT Table 36 Sales Header
                                                                 "Invoice Disc. Code" := Cust."Invoice Disc. Code";
                                                                 "Customer Disc. Group" := Cust."Customer Disc. Group";
                                                                 "Language Code" := Cust."Language Code";
-                                                                "Salesperson Code" := Cust."Salesperson Code";
+                                                                SetSalespersonCode(Cust."Salesperson Code","Salesperson Code");
                                                                 "Combine Shipments" := Cust."Combine Shipments";
                                                                 Reserve := Cust.Reserve;
                                                                 IF "Document Type" = "Document Type"::Order THEN
@@ -777,6 +777,8 @@ OBJECT Table 36 Sales Header
                                                    OnValidate=VAR
                                                                 ApprovalEntry@1001 : Record 454;
                                                               BEGIN
+                                                                ValidateSalesPersonOnSalesHeader(Rec,FALSE,FALSE);
+
                                                                 ApprovalEntry.SETRANGE("Table ID",DATABASE::"Sales Header");
                                                                 ApprovalEntry.SETRANGE("Document Type","Document Type");
                                                                 ApprovalEntry.SETRANGE("Document No.","No.");
@@ -1708,6 +1710,10 @@ OBJECT Table 36 Sales Header
                                                               BEGIN
                                                                 TESTFIELD(Status,Status::Open);
 
+                                                                IF "Sell-to Contact No." <> '' THEN
+                                                                  IF Cont.GET("Sell-to Contact No.") THEN
+                                                                    Cont.CheckIfPrivacyBlockedGeneric;
+
                                                                 IF ("Sell-to Contact No." <> xRec."Sell-to Contact No.") AND
                                                                    (xRec."Sell-to Contact No." <> '')
                                                                 THEN BEGIN
@@ -1780,6 +1786,10 @@ OBJECT Table 36 Sales Header
                                                                 Cont@1002 : Record 5050;
                                                               BEGIN
                                                                 TESTFIELD(Status,Status::Open);
+
+                                                                IF "Bill-to Contact No." <> '' THEN
+                                                                  IF Cont.GET("Bill-to Contact No.") THEN
+                                                                    Cont.CheckIfPrivacyBlockedGeneric;
 
                                                                 IF ("Bill-to Contact No." <> xRec."Bill-to Contact No.") AND
                                                                    (xRec."Bill-to Contact No." <> '')
@@ -2222,6 +2232,7 @@ OBJECT Table 36 Sales Header
       ReservEntry@1001 : Record 337;
       TempReservEntry@1000 : TEMPORARY Record 337;
       CompanyInfo@1002 : Record 79;
+      Salesperson@1932 : Record 13;
       UserSetupMgt@1058 : Codeunit 5700;
       NoSeriesMgt@1059 : Codeunit 396;
       CustCheckCreditLimit@1060 : Codeunit 312;
@@ -2855,7 +2866,8 @@ OBJECT Table 36 Sales Header
       END;
     END;
 
-    LOCAL PROCEDURE ValidateShortcutDimCode@19(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
+    [External]
+    PROCEDURE ValidateShortcutDimCode@19(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
     VAR
       OldDimSetID@1005 : Integer;
     BEGIN
@@ -3083,12 +3095,16 @@ OBJECT Table 36 Sales Header
         "Sell-to Contact E-Mail" := Cust."E-Mail";
         "Sell-to Contact Role" := "Sell-to Contact Role"::" ";
       END;
+      IF "Sell-to Contact No." <> '' THEN
+        IF OfficeContact.GET("Sell-to Contact No.") THEN
+          OfficeContact.CheckIfPrivacyBlockedGeneric;
     END;
 
     LOCAL PROCEDURE UpdateBillToCont@27(CustomerNo@1000 : Code[20]);
     VAR
       ContBusRel@1003 : Record 5054;
       Cust@1001 : Record 18;
+      Contact@1002 : Record 5050;
     BEGIN
       IF Cust.GET(CustomerNo) THEN BEGIN
         IF Cust."Primary Contact No." <> '' THEN
@@ -3105,6 +3121,9 @@ OBJECT Table 36 Sales Header
         END;
         "Bill-to Contact" := Cust.Contact;
       END;
+      IF "Bill-to Contact No." <> '' THEN
+        IF Contact.GET("Bill-to Contact No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
     END;
 
     LOCAL PROCEDURE UpdateSellToCust@25(ContactNo@1002 : Code[20]);
@@ -4900,6 +4919,28 @@ OBJECT Table 36 Sales Header
         EXIT(Currency.GetCurrencySymbol);
 
       EXIT("Currency Code");
+    END;
+
+    LOCAL PROCEDURE SetSalespersonCode@433(SalesPersonCodeToCheck@1000 : Code[20];VAR SalesPersonCodeToAssign@1001 : Code[20]);
+    BEGIN
+      IF SalesPersonCodeToCheck <> '' THEN
+        IF Salesperson.GET(SalesPersonCodeToCheck) THEN
+          IF Salesperson.VerifySalesPersonPurchaserPrivacyBlocked(Salesperson) THEN
+            SalesPersonCodeToAssign := ''
+          ELSE
+            SalesPersonCodeToAssign := SalesPersonCodeToCheck;
+    END;
+
+    PROCEDURE ValidateSalesPersonOnSalesHeader@218(SalesHeader2@1000 : Record 36;IsTransaction@1001 : Boolean;IsPostAction@1002 : Boolean);
+    BEGIN
+      IF SalesHeader2."Salesperson Code" <> '' THEN
+        IF Salesperson.GET(SalesHeader2."Salesperson Code") THEN
+          IF Salesperson.VerifySalesPersonPurchaserPrivacyBlocked(Salesperson) THEN BEGIN
+            IF IsTransaction THEN
+              ERROR(Salesperson.GetPrivacyBlockedTransactionText(Salesperson,IsPostAction,TRUE));
+            IF NOT IsTransaction THEN
+              ERROR(Salesperson.GetPrivacyBlockedGenericText(Salesperson,TRUE));
+          END;
     END;
 
     [Integration]

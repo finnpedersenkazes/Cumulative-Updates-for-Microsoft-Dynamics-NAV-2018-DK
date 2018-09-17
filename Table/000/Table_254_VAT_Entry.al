@@ -2,9 +2,9 @@ OBJECT Table 254 VAT Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -346,6 +346,8 @@ OBJECT Table 254 VAT Entry
             BEGIN
               IF ABS(Full) = ABS(Paid) - ABS(SettledAmount) THEN
                 EXIT(1);
+              IF Full = 0 THEN
+                EXIT(ABS(SettledAmount) / (ABS(Paid) + ABS(SettledAmount)));
               EXIT(ABS(SettledAmount) / (ABS(Full) - (ABS(Paid) - ABS(SettledAmount))));
             END;
           UnrealizedVATType::First:

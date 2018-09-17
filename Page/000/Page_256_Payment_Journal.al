@@ -2,9 +2,9 @@ OBJECT Page 256 Payment Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -253,6 +253,7 @@ OBJECT Page 256 Payment Journal
                       OnAction=VAR
                                  GenJnlLine@1001 : Record 81;
                                BEGIN
+                                 CheckIfPrivacyBlocked;
                                  GenJnlLine.COPYFILTERS(Rec);
                                  IF GenJnlLine.FINDFIRST THEN
                                    GenJnlLine.ExportPaymentFile;

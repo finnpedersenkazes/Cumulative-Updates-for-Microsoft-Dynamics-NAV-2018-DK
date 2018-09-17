@@ -2,9 +2,9 @@ OBJECT Report 317 Vendor Pre-Payment Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -1221,6 +1221,8 @@ OBJECT Report 317 Vendor Pre-Payment Journal
               Cust.TABLECAPTION,"Account No."))
         ELSE BEGIN
           AccName := Cust.Name;
+          IF Cust."Privacy Blocked" THEN
+            AddError(Cust.GetPrivacyBlockedGenericErrorText(Cust));
           IF ((Cust.Blocked = Cust.Blocked::All) OR
               ((Cust.Blocked IN [Cust.Blocked::Invoice,Cust.Blocked::Ship]) AND
                ("Document Type" IN ["Document Type"::Invoice,"Document Type"::" "]))
@@ -1309,6 +1311,9 @@ OBJECT Report 317 Vendor Pre-Payment Journal
               Vend.TABLECAPTION,"Account No."))
         ELSE BEGIN
           AccName := Vend.Name;
+
+          IF Vend."Privacy Blocked" THEN
+            AddError(Vend.GetPrivacyBlockedGenericErrorText(Vend));
 
           IF ((Vend.Blocked = Vend.Blocked::All) OR
               ((Vend.Blocked = Vend.Blocked::Payment) AND ("Document Type" = "Document Type"::Payment))

@@ -2,9 +2,9 @@ OBJECT Page 1345 Sales Price and Line Discounts
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 1345 Sales Price and Line Discounts
     DeleteAllowed=No;
     ModifyAllowed=No;
     SourceTable=Table1304;
-    PageType=ListPart;
+    PageType=List;
     SourceTableTemporary=Yes;
     OnNewRecord=BEGIN
                   IF ("Loaded Customer No." = GetLoadedCustNo) AND ("Loaded Item No." = GetLoadedItemNo) THEN

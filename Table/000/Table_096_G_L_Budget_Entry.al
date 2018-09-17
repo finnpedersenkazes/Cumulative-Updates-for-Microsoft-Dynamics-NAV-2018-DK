@@ -2,9 +2,9 @@ OBJECT Table 96 G/L Budget Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -122,6 +122,8 @@ OBJECT Table 96 G/L Budget Entry
 
                                                    OnLookup=BEGIN
                                                               "Budget Dimension 1 Code" := OnLookupDimCode(2,"Budget Dimension 1 Code");
+                                                              ValidateDimValue(GLBudgetName."Budget Dimension 1 Code","Budget Dimension 1 Code");
+                                                              UpdateDimensionSetId(GLBudgetName."Budget Dimension 1 Code","Budget Dimension 1 Code");
                                                             END;
 
                                                    AccessByPermission=TableData 348=R;
@@ -139,6 +141,8 @@ OBJECT Table 96 G/L Budget Entry
 
                                                    OnLookup=BEGIN
                                                               "Budget Dimension 2 Code" := OnLookupDimCode(3,"Budget Dimension 2 Code");
+                                                              ValidateDimValue(GLBudgetName."Budget Dimension 2 Code","Budget Dimension 2 Code");
+                                                              UpdateDimensionSetId(GLBudgetName."Budget Dimension 2 Code","Budget Dimension 2 Code");
                                                             END;
 
                                                    AccessByPermission=TableData 348=R;
@@ -156,6 +160,8 @@ OBJECT Table 96 G/L Budget Entry
 
                                                    OnLookup=BEGIN
                                                               "Budget Dimension 3 Code" := OnLookupDimCode(4,"Budget Dimension 3 Code");
+                                                              ValidateDimValue(GLBudgetName."Budget Dimension 3 Code","Budget Dimension 3 Code");
+                                                              UpdateDimensionSetId(GLBudgetName."Budget Dimension 3 Code","Budget Dimension 3 Code");
                                                             END;
 
                                                    AccessByPermission=TableData 350=R;
@@ -173,6 +179,8 @@ OBJECT Table 96 G/L Budget Entry
 
                                                    OnLookup=BEGIN
                                                               "Budget Dimension 4 Code" := OnLookupDimCode(5,"Budget Dimension 4 Code");
+                                                              ValidateDimValue(GLBudgetName."Budget Dimension 4 Code","Budget Dimension 4 Code");
+                                                              UpdateDimensionSetId(GLBudgetName."Budget Dimension 4 Code","Budget Dimension 4 Code");
                                                             END;
 
                                                    AccessByPermission=TableData 350=R;

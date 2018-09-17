@@ -2,9 +2,9 @@ OBJECT Page 5200 Employee Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -241,6 +241,13 @@ OBJECT Page 5200 Employee Card
                            ENU=Specifies when this record was last modified.];
                 ApplicationArea=#BasicHR;
                 SourceExpr="Last Date Modified";
+                Importance=Additional }
+
+    { 1901147547;2;Field  ;
+                ToolTipML=[DAN=Angiver, om adgangen til data skal begr‘nses for dataemnet i den daglige drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om de indeholder personlige oplysninger.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#BasicHR;
+                SourceExpr="Privacy Blocked";
                 Importance=Additional }
 
     { 1902768601;1;Group  ;

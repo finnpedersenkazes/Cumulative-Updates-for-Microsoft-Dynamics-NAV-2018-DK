@@ -2,9 +2,9 @@ OBJECT Table 5870 BOM Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -118,9 +118,11 @@ OBJECT Table 5870 BOM Buffer
                                                    CaptionML=[DAN=Ubrugt antal;
                                                               ENU=Unused Quantity];
                                                    DecimalPlaces=0:5 }
-    { 40  ;   ;Lead Time Calculation;DateFormula  ;CaptionML=[DAN=Leveringstid;
+    { 40  ;   ;Lead Time Calculation;DateFormula  ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Leveringstid;
                                                               ENU=Lead Time Calculation] }
-    { 41  ;   ;Lead-Time Offset    ;DateFormula   ;CaptionML=[DAN=Genneml›bstid;
+    { 41  ;   ;Lead-Time Offset    ;DateFormula   ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Genneml›bstid;
                                                               ENU=Lead-Time Offset] }
     { 42  ;   ;Rolled-up Lead-Time Offset;Integer ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Akkumuleret genneml›bstid;
@@ -128,7 +130,8 @@ OBJECT Table 5870 BOM Buffer
     { 43  ;   ;Needed by Date      ;Date          ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Behovsdato;
                                                               ENU=Needed by Date] }
-    { 45  ;   ;Safety Lead Time    ;DateFormula   ;CaptionML=[DAN=Sikkerhedstid;
+    { 45  ;   ;Safety Lead Time    ;DateFormula   ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Sikkerhedstid;
                                                               ENU=Safety Lead Time] }
     { 50  ;   ;Unit Cost           ;Decimal       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Kostpris;

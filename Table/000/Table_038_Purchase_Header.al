@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -240,7 +240,7 @@ OBJECT Table 38 Purchase Header
                                                                 "Currency Code" := Vend."Currency Code";
                                                                 "Invoice Disc. Code" := Vend."Invoice Disc. Code";
                                                                 "Language Code" := Vend."Language Code";
-                                                                "Purchaser Code" := Vend."Purchaser Code";
+                                                                SetPurchaserCode(Vend."Purchaser Code","Purchaser Code");
                                                                 VALIDATE("Payment Terms Code");
                                                                 VALIDATE("Prepmt. Payment Terms Code");
                                                                 VALIDATE("Payment Method Code");
@@ -678,6 +678,8 @@ OBJECT Table 38 Purchase Header
                                                    OnValidate=VAR
                                                                 ApprovalEntry@1001 : Record 454;
                                                               BEGIN
+                                                                ValidatePurchaserOnPurchHeader(Rec,FALSE,FALSE);
+
                                                                 ApprovalEntry.SETRANGE("Table ID",DATABASE::"Purchase Header");
                                                                 ApprovalEntry.SETRANGE("Document Type","Document Type");
                                                                 ApprovalEntry.SETRANGE("Document No.","No.");
@@ -1544,6 +1546,10 @@ OBJECT Table 38 Purchase Header
                                                               BEGIN
                                                                 TESTFIELD(Status,Status::Open);
 
+                                                                IF "Buy-from Contact No." <> '' THEN
+                                                                  IF Cont.GET("Buy-from Contact No.") THEN
+                                                                    Cont.CheckIfPrivacyBlockedGeneric;
+
                                                                 IF ("Buy-from Contact No." <> xRec."Buy-from Contact No.") AND
                                                                    (xRec."Buy-from Contact No." <> '')
                                                                 THEN BEGIN
@@ -1599,6 +1605,10 @@ OBJECT Table 38 Purchase Header
                                                                 Cont@1002 : Record 5050;
                                                               BEGIN
                                                                 TESTFIELD(Status,Status::Open);
+
+                                                                IF "Pay-to Contact No." <> '' THEN
+                                                                  IF Cont.GET("Pay-to Contact No.") THEN
+                                                                    Cont.CheckIfPrivacyBlockedGeneric;
 
                                                                 IF ("Pay-to Contact No." <> xRec."Pay-to Contact No.") AND
                                                                    (xRec."Pay-to Contact No." <> '')
@@ -1864,6 +1874,7 @@ OBJECT Table 38 Purchase Header
       Location@1057 : Record 14;
       WhseRequest@1058 : Record 5765;
       InvtSetup@1059 : Record 313;
+      SalespersonPurchaser@1932 : Record 13;
       NoSeriesMgt@1060 : Codeunit 396;
       DimMgt@1065 : Codeunit 408;
       ApprovalsMgmt@1082 : Codeunit 1535;
@@ -2595,7 +2606,8 @@ OBJECT Table 38 Purchase Header
       END;
     END;
 
-    LOCAL PROCEDURE ValidateShortcutDimCode@19(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
+    [External]
+    PROCEDURE ValidateShortcutDimCode@19(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
     VAR
       OldDimSetID@1005 : Integer;
     BEGIN
@@ -2745,12 +2757,17 @@ OBJECT Table 38 Purchase Header
             "Buy-from Contact No." := ContBusRel.GetContactNo(ContBusRel."Link to Table"::Vendor,"Buy-from Vendor No.");
           "Buy-from Contact" := Vend.Contact;
         END;
+
+      IF "Buy-from Contact No." <> '' THEN
+        IF OfficeContact.GET("Buy-from Contact No.") THEN
+          OfficeContact.CheckIfPrivacyBlockedGeneric;
     END;
 
     LOCAL PROCEDURE UpdatePayToCont@27(VendorNo@1000 : Code[20]);
     VAR
       ContBusRel@1003 : Record 5054;
       Vend@1001 : Record 23;
+      Contact@1002 : Record 5050;
     BEGIN
       IF Vend.GET(VendorNo) THEN BEGIN
         IF Vend."Primary Contact No." <> '' THEN
@@ -2759,6 +2776,10 @@ OBJECT Table 38 Purchase Header
           "Pay-to Contact No." := ContBusRel.GetContactNo(ContBusRel."Link to Table"::Vendor,"Pay-to Vendor No.");
         "Pay-to Contact" := Vend.Contact;
       END;
+
+      IF "Pay-to Contact No." <> '' THEN
+        IF Contact.GET("Pay-to Contact No.") THEN
+          Contact.CheckIfPrivacyBlockedGeneric;
     END;
 
     LOCAL PROCEDURE UpdateBuyFromVend@25(ContactNo@1002 : Code[20]);
@@ -3976,6 +3997,28 @@ OBJECT Table 38 Purchase Header
         ("Ship-to Post Code" = "Buy-from Post Code") AND
         ("Ship-to Country/Region Code" = "Buy-from Country/Region Code") AND
         ("Ship-to Name" = "Buy-from Vendor Name"));
+    END;
+
+    LOCAL PROCEDURE SetPurchaserCode@933(PurchaserCodeToCheck@1000 : Code[20];VAR PurchaserCodeToAssign@1001 : Code[20]);
+    BEGIN
+      IF PurchaserCodeToCheck <> '' THEN
+        IF SalespersonPurchaser.GET(PurchaserCodeToCheck) THEN
+          IF SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN
+            PurchaserCodeToAssign := ''
+          ELSE
+            PurchaserCodeToAssign := PurchaserCodeToCheck;
+    END;
+
+    PROCEDURE ValidatePurchaserOnPurchHeader@912(PurchaseHeader2@1000 : Record 38;IsTransaction@1001 : Boolean;IsPostAction@1002 : Boolean);
+    BEGIN
+      IF PurchaseHeader2."Purchaser Code" <> '' THEN
+        IF SalespersonPurchaser.GET(PurchaseHeader2."Purchaser Code") THEN
+          IF SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN BEGIN
+            IF IsTransaction THEN
+              ERROR(SalespersonPurchaser.GetPrivacyBlockedTransactionText(SalespersonPurchaser,IsPostAction,FALSE));
+            IF NOT IsTransaction THEN
+              ERROR(SalespersonPurchaser.GetPrivacyBlockedGenericText(SalespersonPurchaser,FALSE));
+          END;
     END;
 
     [Integration]

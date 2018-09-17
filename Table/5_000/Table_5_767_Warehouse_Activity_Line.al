@@ -2,9 +2,9 @@ OBJECT Table 5767 Warehouse Activity Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -1548,6 +1548,7 @@ OBJECT Table 5767 Warehouse Activity Line
           BEGIN
             WhseShptLine.GET("Whse. Document No.","Whse. Document Line No.");
             "Assemble to Order" := WhseShptLine."Assemble to Order";
+            "ATO Component" := WhseShptLine."Assemble to Order";
           END;
         "Whse. Document Type"::Assembly:
           BEGIN

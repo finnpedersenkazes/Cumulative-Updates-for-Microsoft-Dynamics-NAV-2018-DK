@@ -2,9 +2,9 @@ OBJECT Page 27 Vendor List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -832,6 +832,13 @@ OBJECT Page 27 Vendor List
                            ENU=Specifies that the related record is blocked from being posted in transactions, for example a customer that is declared insolvent or an item that is placed in quarantine.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=Blocked;
+                Visible=FALSE }
+
+    { 200 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, om adgangen til data skal begr‘nses for dataemnet i den daglige drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om de indeholder personlige oplysninger.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="Privacy Blocked";
                 Visible=FALSE }
 
     { 1102601002;2;Field  ;

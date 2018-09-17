@@ -2,9 +2,9 @@ OBJECT Page 5050 Contact Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -28,6 +28,7 @@ OBJECT Page 5050 Contact Card
                  IsOfficeAddin := OfficeManagement.IsAvailable;
                  CRMIntegrationEnabled := CRMIntegrationManagement.IsCRMIntegrationEnabled;
                  SetNoFieldVisible;
+                 SetParentalConsentReceivedEnable;
                END;
 
     OnNewRecord=VAR
@@ -842,6 +843,32 @@ OBJECT Page 5050 Contact Card
                 SourceExpr="Exclude from Segment";
                 Importance=Additional }
 
+    { 195 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, om adgangen til data skal begr‘nses for dataemnet i den daglige drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om de indeholder personlige oplysninger.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="Privacy Blocked";
+                Importance=Additional }
+
+    { 196 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, at personens alder er lavere end den myndighedsalder, som lovgivningen foreskriver. Data for mindre†rige blokeres, indtil en for‘lder eller v‘rge giver for‘ldresamtykke. Du kan oph‘ve blokeringen af data ved at markere afkrydsningsfeltet For‘ldresamtykke modtaget.;
+                           ENU=Specifies that the person's age is below the definition of adulthood as recognized by law. Data for minors is blocked until a parent or guardian of the minor provides parental consent. You unblock the data by choosing the Parental Consent Received check box.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=Minor;
+                Importance=Additional;
+                OnValidate=BEGIN
+                             SetParentalConsentReceivedEnable;
+                           END;
+                            }
+
+    { 197 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, at den mindre†riges for‘ldre eller v‘rge har givet samtykke til, at den mindre†rige m† bruge denne tjeneste. N†r dette afkrydsningsfelt er markeret, kan data til den mindre†rige behandles.;
+                           ENU=Specifies that a parent or guardian of the minor has provided their consent to allow the minor to use this service. When this check box is selected, data for the minor can be processed.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="Parental Consent Received";
+                Importance=Additional;
+                Enabled=ParentalConsentReceivedEnable }
+
     { 1902768601;1;Group  ;
                 CaptionML=[DAN=Kommunikation;
                            ENU=Communication] }
@@ -1039,6 +1066,7 @@ OBJECT Page 5050 Contact Card
       ActionVisible@1009 : Boolean;
       ShowMapLbl@1010 : TextConst 'DAN=Vis kort;ENU=Show Map';
       NoFieldVisible@1012 : Boolean;
+      ParentalConsentReceivedEnable@1013 : Boolean;
 
     LOCAL PROCEDURE EnableFields@1();
     BEGIN
@@ -1073,6 +1101,16 @@ OBJECT Page 5050 Contact Card
       DocumentNoVisibility@1000 : Codeunit 1400;
     BEGIN
       NoFieldVisible := DocumentNoVisibility.ContactNoIsVisible;
+    END;
+
+    LOCAL PROCEDURE SetParentalConsentReceivedEnable@20();
+    BEGIN
+      IF Minor THEN
+        ParentalConsentReceivedEnable := TRUE
+      ELSE BEGIN
+        "Parental Consent Received" := FALSE;
+        ParentalConsentReceivedEnable := FALSE;
+      END;
     END;
 
     BEGIN

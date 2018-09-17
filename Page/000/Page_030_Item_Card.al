@@ -2,9 +2,9 @@ OBJECT Page 30 Item Card
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -1842,6 +1842,12 @@ OBJECT Page 30 Item Card
                 SourceExpr="Application Wksh. User ID";
                 Importance=Additional;
                 Visible=FALSE }
+
+    { 151 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver momsvirksomhedsbogf›ringsgruppen for debitorer, som salgsprisen (inklusive moms) skal anvendes p†.;
+                           ENU=Specifies the VAT business posting group for customers for whom you want the sales price including VAT to apply.];
+                ApplicationArea=#Advanced;
+                SourceExpr="VAT Bus. Posting Gr. (Price)" }
 
     { 1904731401;1;Group  ;
                 CaptionML=[DAN=Genbestilling;

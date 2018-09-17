@@ -2,9 +2,9 @@ OBJECT Report 1401 Check
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -136,6 +136,9 @@ OBJECT Report 1401 Check
                                       BalancingType::Customer:
                                         BEGIN
                                           Cust.GET(BalancingNo);
+                                          IF Cust."Privacy Blocked" THEN
+                                            ERROR(Cust.GetPrivacyBlockedGenericErrorText(Cust));
+
                                           IF Cust.Blocked = Cust.Blocked::All THEN
                                             ERROR(Text064,Cust.FIELDCAPTION(Blocked),Cust.Blocked,Cust.TABLECAPTION,Cust."No.");
                                           Cust.Contact := '';
@@ -148,6 +151,9 @@ OBJECT Report 1401 Check
                                       BalancingType::Vendor:
                                         BEGIN
                                           Vend.GET(BalancingNo);
+                                          IF Vend."Privacy Blocked" THEN
+                                            ERROR(Vend.GetPrivacyBlockedGenericErrorText(Vend));
+
                                           IF Vend.Blocked IN [Vend.Blocked::All,Vend.Blocked::Payment] THEN
                                             ERROR(Text064,Vend.FIELDCAPTION(Blocked),Vend.Blocked,Vend.TABLECAPTION,Vend."No.");
                                           Vend.Contact := '';

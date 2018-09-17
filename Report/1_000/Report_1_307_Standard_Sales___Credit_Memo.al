@@ -2,9 +2,9 @@ OBJECT Report 1307 Standard Sales - Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -437,6 +437,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
                              END;
 
                OnAfterGetRecord=BEGIN
+                                  InitializeSalesShipmentLine;
                                   IF Type = Type::"G/L Account" THEN
                                     "No." := '';
 
@@ -469,7 +470,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
                                   TotalAmountInclVAT += "Amount Including VAT";
                                   TotalPaymentDiscOnVAT += -("Line Amount" - "Inv. Discount Amount" - "Amount Including VAT");
 
-                                  FormatDocument.SetSalesCrMemoLine(Line,FormattedQuantity,FormattedUnitPrice,FormattedVATPct);
+                                  FormatDocument.SetSalesCrMemoLine(Line,FormattedQuantity,FormattedUnitPrice,FormattedVATPct,FormattedLineAmount);
 
                                   IF FirstLineHasBeenOutput THEN
                                     CLEAR(CompanyInfo.Picture);
@@ -513,7 +514,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
                SourceExpr=LineDiscountPctText }
 
     { 56  ;2   ;Column  ;LineAmount_Line     ;
-               SourceExpr="Line Amount";
+               SourceExpr=FormattedLineAmount;
                AutoFormatType=1;
                AutoFormatExpr=GetCurrencyCode }
 
@@ -978,6 +979,7 @@ OBJECT Report 1307 Standard Sales - Credit Memo
       FormattedVATPct@1006 : Text;
       FormattedUnitPrice@1002 : Text;
       FormattedQuantity@1001 : Text;
+      FormattedLineAmount@1036 : Text;
       MoreLines@1031 : Boolean;
       CopyText@1034 : Text[30];
       ShowShippingAddr@1035 : Boolean;
@@ -1013,6 +1015,41 @@ OBJECT Report 1307 Standard Sales - Credit Memo
     LOCAL PROCEDURE InitLogInteraction@1();
     BEGIN
       LogInteraction := SegManagement.FindInteractTmplCode(6) <> '';
+    END;
+
+    LOCAL PROCEDURE InitializeSalesShipmentLine@6() : Date;
+    VAR
+      ReturnReceiptHeader@1000 : Record 6660;
+      SalesShipmentBuffer2@1001 : Record 7190;
+    BEGIN
+      IF Line."Return Receipt No." <> '' THEN
+        IF ReturnReceiptHeader.GET(Line."Return Receipt No.") THEN
+          EXIT(ReturnReceiptHeader."Posting Date");
+      IF Header."Return Order No." = '' THEN
+        EXIT(Header."Posting Date");
+      IF Line.Type = Line.Type::" " THEN
+        EXIT(0D);
+
+      ShipmentLine.GetLinesForSalesCreditMemoLine(Line,Header);
+
+      ShipmentLine.RESET;
+      ShipmentLine.SETRANGE("Line No." ,Line."Line No.");
+      IF ShipmentLine.FIND('-') THEN BEGIN
+        SalesShipmentBuffer2 := ShipmentLine;
+        IF NOT DisplayShipmentInformation THEN
+          IF ShipmentLine.NEXT = 0 THEN BEGIN
+            ShipmentLine.GET(
+              SalesShipmentBuffer2."Document No.",SalesShipmentBuffer2."Line No.",SalesShipmentBuffer2."Entry No.");
+            ShipmentLine.DELETE;
+            EXIT(SalesShipmentBuffer2."Posting Date");
+          END;
+        ShipmentLine.CALCSUMS(Quantity);
+        IF ShipmentLine.Quantity <> Line.Quantity THEN BEGIN
+          ShipmentLine.DELETEALL;
+          EXIT(Header."Posting Date");
+        END;
+      END;
+      EXIT(Header."Posting Date");
     END;
 
     LOCAL PROCEDURE DocumentCaption@4() : Text[250];
@@ -5303,7 +5340,6 @@ OBJECT Report 1307 Standard Sales - Credit Memo
                                                     <Style>
                                                       <FontFamily>Segoe UI</FontFamily>
                                                       <FontSize>8pt</FontSize>
-                                                      <Format>=Fields!LineAmount_LineFormat.Value</Format>
                                                     </Style>
                                                   </TextRun>
                                                 </TextRuns>

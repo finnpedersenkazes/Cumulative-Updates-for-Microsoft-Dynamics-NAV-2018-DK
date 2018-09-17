@@ -2,9 +2,9 @@ OBJECT Table 472 Job Queue Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -376,6 +376,12 @@ OBJECT Table 472 Job Queue Entry
     END;
 
     [External]
+    PROCEDURE IsReadyToStart@60() : Boolean;
+    BEGIN
+      EXIT(Status IN [Status::Ready,Status::"In Process"]);
+    END;
+
+    [External]
     PROCEDURE GetErrorMessage@1() : Text;
     VAR
       TextMgt@1000 : Codeunit 41;
@@ -547,26 +553,12 @@ OBJECT Table 472 Job Queue Entry
 
     [External]
     PROCEDURE ScheduleTask@36() : GUID;
-    VAR
-      NullGUID@1001 : GUID;
     BEGIN
-      CLEAR(NullGUID);
-      IF HasSheduledTask THEN
-        EXIT(NullGUID);
-
       EXIT(
         TASKSCHEDULER.CREATETASK(
           CODEUNIT::"Job Queue Dispatcher",
           CODEUNIT::"Job Queue Error Handler",
           TRUE,COMPANYNAME,"Earliest Start Date/Time",RECORDID));
-    END;
-
-    LOCAL PROCEDURE HasSheduledTask@55() : Boolean;
-    VAR
-      ScheduledTask@1000 : Record 2000000175;
-    BEGIN
-      ScheduledTask.SETRANGE(Record,RECORDID);
-      EXIT(NOT ScheduledTask.ISEMPTY);
     END;
 
     LOCAL PROCEDURE Reschedule@31();

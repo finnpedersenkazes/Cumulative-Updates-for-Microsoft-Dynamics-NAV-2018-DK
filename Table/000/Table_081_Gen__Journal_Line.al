@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -598,6 +598,8 @@ OBJECT Table 81 Gen. Journal Line
                                                    CaptionClass='1,2,2' }
     { 26  ;   ;Salespers./Purch. Code;Code20      ;TableRelation=Salesperson/Purchaser;
                                                    OnValidate=BEGIN
+                                                                ValidateSalesPersonPurchaserCode(Rec);
+
                                                                 CreateDim(
                                                                   DATABASE::"Salesperson/Purchaser","Salespers./Purch. Code",
                                                                   DimMgt.TypeToTableID1("Account Type"),"Account No.",
@@ -2278,6 +2280,7 @@ OBJECT Table 81 Gen. Journal Line
       Job@1060 : Record 167;
       SourceCodeSetup@1017 : Record 242;
       TempJobJnlLine@1059 : TEMPORARY Record 210;
+      SalespersonPurchaser@1932 : Record 13;
       NoSeriesMgt@1040 : Codeunit 396;
       CustCheckCreditLimit@1041 : Codeunit 312;
       SalesTaxCalculate@1042 : Codeunit 398;
@@ -2310,6 +2313,9 @@ OBJECT Table 81 Gen. Journal Line
       CalcPostDateMsg@1169 : TextConst 'DAN=Behandler betalingskladdelinjer #1##########;ENU=Processing payment journal lines #1##########';
       NoEntriesToVoidErr@1018 : TextConst 'DAN=Der er ingen poster at annullere.;ENU=There are no entries to void.';
       OnlyLocalCurrencyForEmployeeErr@1030 : TextConst 'DAN=Der skal ikke angives en v‘rdi i feltet Valutakode. Finanskladdelinjer i fremmedvaluta underst›ttes ikke for medarbejderkontotypen.;ENU=The value of the Currency Code field must be empty. General journal lines in foreign currency are not supported for employee account type.';
+      SalespersonPurchPrivacyBlockErr@1933 : TextConst '@@@="%1 = salesperson / purchaser code.";DAN=Beskyttelse af personlige oplysninger sp‘rret m† ikke v‘re g‘ldende for s‘lgeren/indk›beren %1.;ENU=Privacy Blocked must not be true for Salesperson / Purchaser %1.';
+      BlockedErr@1033 : TextConst '@@@="%1=Blocked field value,%2=Account Type,%3=Account No.";DAN=Feltet Blokeret m† ikke v‘re %1 for %2 %3.;ENU=The Blocked field must not be %1 for %2 %3.';
+      BlockedEmplErr@1032 : TextConst '@@@="%1 = Employee no. ";DAN=Du kan ikke eksportere filen, fordi medarbejderen %1 er blokeret p† grund af beskyttelse af personlige oplysninger.;ENU=You cannot export file because employee %1 is blocked due to privacy.';
 
     [External]
     PROCEDURE EmptyLine@5() : Boolean;
@@ -4946,7 +4952,7 @@ OBJECT Table 81 Gen. Journal Line
       "Payment Method Code" := Cust."Payment Method Code";
       VALIDATE("Recipient Bank Account",Cust."Preferred Bank Account Code");
       "Posting Group" := Cust."Customer Posting Group";
-      "Salespers./Purch. Code" := Cust."Salesperson Code";
+      SetSalespersonPurchaserCode(Cust."Salesperson Code","Salespers./Purch. Code");
       "Payment Terms Code" := Cust."Payment Terms Code";
       VALIDATE("Bill-to/Pay-to No.","Account No.");
       VALIDATE("Sell-to/Buy-from No.","Account No.");
@@ -4978,7 +4984,7 @@ OBJECT Table 81 Gen. Journal Line
       "Payment Method Code" := Cust."Payment Method Code";
       VALIDATE("Recipient Bank Account",Cust."Preferred Bank Account Code");
       "Posting Group" := Cust."Customer Posting Group";
-      "Salespers./Purch. Code" := Cust."Salesperson Code";
+      SetSalespersonPurchaserCode(Cust."Salesperson Code","Salespers./Purch. Code");
       "Payment Terms Code" := Cust."Payment Terms Code";
       VALIDATE("Bill-to/Pay-to No.","Bal. Account No.");
       VALIDATE("Sell-to/Buy-from No.","Bal. Account No.");
@@ -5013,7 +5019,7 @@ OBJECT Table 81 Gen. Journal Line
 
       VALIDATE("Recipient Bank Account",Vend."Preferred Bank Account Code");
       "Posting Group" := Vend."Vendor Posting Group";
-      "Salespers./Purch. Code" := Vend."Purchaser Code";
+      SetSalespersonPurchaserCode(Vend."Purchaser Code","Salespers./Purch. Code");
       "Payment Terms Code" := Vend."Payment Terms Code";
       VALIDATE("Bill-to/Pay-to No.","Account No.");
       VALIDATE("Sell-to/Buy-from No.","Account No.");
@@ -5038,9 +5044,10 @@ OBJECT Table 81 Gen. Journal Line
       Employee@1000 : Record 5200;
     BEGIN
       Employee.GET("Account No.");
+      Employee.CheckBlockedEmployeeOnJnls(FALSE);
       UpdateDescriptionWithEmployeeName(Employee);
       "Posting Group" := Employee."Employee Posting Group";
-      "Salespers./Purch. Code" := Employee."Salespers./Purch. Code";
+      SetSalespersonPurchaserCode(Employee."Salespers./Purch. Code","Salespers./Purch. Code");
       "Currency Code" := '';
       ClearPostingGroups;
 
@@ -5059,7 +5066,7 @@ OBJECT Table 81 Gen. Journal Line
       "Payment Method Code" := Vend."Payment Method Code";
       VALIDATE("Recipient Bank Account",Vend."Preferred Bank Account Code");
       "Posting Group" := Vend."Vendor Posting Group";
-      "Salespers./Purch. Code" := Vend."Purchaser Code";
+      SetSalespersonPurchaserCode(Vend."Purchaser Code","Salespers./Purch. Code");
       "Payment Terms Code" := Vend."Payment Terms Code";
       VALIDATE("Bill-to/Pay-to No.","Bal. Account No.");
       VALIDATE("Sell-to/Buy-from No.","Bal. Account No.");
@@ -5086,10 +5093,11 @@ OBJECT Table 81 Gen. Journal Line
       Employee@1000 : Record 5200;
     BEGIN
       Employee.GET("Bal. Account No.");
+      Employee.CheckBlockedEmployeeOnJnls(FALSE);
       IF "Account No." = '' THEN
         UpdateDescriptionWithEmployeeName(Employee);
       "Posting Group" := Employee."Employee Posting Group";
-      "Salespers./Purch. Code" := Employee."Salespers./Purch. Code";
+      SetSalespersonPurchaserCode(Employee."Salespers./Purch. Code","Salespers./Purch. Code");
       "Currency Code" := '';
       ClearBalancePostingGroups;
 
@@ -5379,6 +5387,60 @@ OBJECT Table 81 Gen. Journal Line
         IF "Bal. Account Type" = "Bal. Account Type"::"Bank Account" THEN
           VoidTransmitElecPmnts.SetBankAccountNo("Bal. Account No.");
       VoidTransmitElecPmnts.RUNMODAL;
+    END;
+
+    LOCAL PROCEDURE SetSalespersonPurchaserCode@933(SalesperPurchCodeToCheck@1000 : Code[20];VAR SalesperPuchCodeToAssign@1001 : Code[20]);
+    BEGIN
+      IF SalesperPurchCodeToCheck <> '' THEN
+        IF SalespersonPurchaser.GET(SalesperPurchCodeToCheck) THEN
+          IF SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN
+            SalesperPuchCodeToAssign := ''
+          ELSE
+            SalesperPuchCodeToAssign := SalesperPurchCodeToCheck;
+    END;
+
+    PROCEDURE ValidateSalesPersonPurchaserCode@298(GenJournalLine2@1000 : Record 81);
+    BEGIN
+      IF GenJournalLine2."Salespers./Purch. Code" <> '' THEN
+        IF SalespersonPurchaser.GET(GenJournalLine2."Salespers./Purch. Code") THEN
+          IF SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN
+            ERROR(SalespersonPurchPrivacyBlockErr,GenJournalLine2."Salespers./Purch. Code");
+    END;
+
+    PROCEDURE CheckIfPrivacyBlocked@208();
+    VAR
+      Customer@1002 : Record 18;
+      Vendor@1001 : Record 23;
+      Employee@1000 : Record 5200;
+    BEGIN
+      IF FIND('-') THEN BEGIN
+        REPEAT
+          CASE "Account Type" OF
+            "Account Type"::Customer:
+              BEGIN
+                Customer.GET("Account No.");
+                IF Customer."Privacy Blocked" THEN
+                  ERROR(Customer.GetPrivacyBlockedGenericErrorText(Customer));
+                IF Customer.Blocked = Customer.Blocked::All THEN
+                  ERROR(BlockedErr,Customer.Blocked,Customer.TABLECAPTION,Customer."No.");
+              END;
+            "Account Type"::Vendor:
+              BEGIN
+                Vendor.GET("Account No.");
+                IF Vendor."Privacy Blocked" THEN
+                  ERROR(Vendor.GetPrivacyBlockedGenericErrorText(Vendor));
+                IF Vendor.Blocked IN [Vendor.Blocked::All,Vendor.Blocked::Payment] THEN
+                  ERROR(BlockedErr,Vendor.Blocked,Vendor.TABLECAPTION,Vendor."No.");
+              END;
+            "Account Type"::Employee:
+              BEGIN
+                Employee.GET("Account No.");
+                IF Employee."Privacy Blocked" THEN
+                  ERROR(BlockedEmplErr,Employee."No.");
+              END;
+          END;
+        UNTIL NEXT <= 0;
+      END;
     END;
 
     [Integration]

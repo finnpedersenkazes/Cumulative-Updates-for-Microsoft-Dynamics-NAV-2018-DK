@@ -2,9 +2,9 @@ OBJECT Page 76 Resource Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -437,6 +437,13 @@ OBJECT Page 76 Resource Card
                            ENU=Specifies that the related record is blocked from being posted in transactions, for example a customer that is declared insolvent or an item that is placed in quarantine.];
                 ApplicationArea=#Jobs;
                 SourceExpr=Blocked }
+
+    { 120 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, om adgangen til data skal begr‘nses for dataemnet i den daglige drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om de indeholder personlige oplysninger.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#Jobs;
+                SourceExpr="Privacy Blocked";
+                Importance=Additional }
 
     { 28  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver datoen for, hvorn†r oplysningerne i vinduet Ressourcekort sidst blev ‘ndret.;

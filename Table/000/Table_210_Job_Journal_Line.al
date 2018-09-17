@@ -2,9 +2,9 @@ OBJECT Table 210 Job Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -858,6 +858,7 @@ OBJECT Table 210 Job Journal Line
       Resource@1000 : Record 156;
     BEGIN
       Resource.GET("No.");
+      Resource.CheckResourcePrivacyBlocked(FALSE);
       Resource.TESTFIELD(Blocked,FALSE);
       Description := Resource.Name;
       "Description 2" := Resource."Name 2";

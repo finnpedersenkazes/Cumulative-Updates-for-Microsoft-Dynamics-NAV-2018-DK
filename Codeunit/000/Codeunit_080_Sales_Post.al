@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -246,6 +246,8 @@ OBJECT Codeunit 80 Sales-Post
       RemQtyToBeInvoicedBase@1112 : Decimal;
       RemAmt@1136 : Decimal;
       RemDiscAmt@1137 : Decimal;
+      TotalChargeAmt@1056 : Decimal;
+      TotalChargeAmtLCY@1052 : Decimal;
       LastLineRetrieved@1116 : Boolean;
       RoundingLineInserted@1117 : Boolean;
       DropShipOrder@1119 : Boolean;
@@ -582,6 +584,8 @@ OBJECT Codeunit 80 Sales-Post
             SalesHeader,TotalSalesLine,TotalSalesLineLCY,GenJnlLineDocType,GenJnlLineDocNo,GenJnlLineExtDocNo,SrcCode);
         END;
       END;
+
+      OnAfterPostGLAndCustomer(SalesHeader,GenJnlPostLine,TotalSalesLine,TotalSalesLineLCY);
     END;
 
     LOCAL PROCEDURE PostGLAccICLine@160(SalesHeader@1000 : Record 36;SalesLine@1003 : Record 37;VAR ICGenJnlLineNo@1002 : Integer);
@@ -599,8 +603,13 @@ OBJECT Codeunit 80 Sales-Post
     LOCAL PROCEDURE PostItemLine@170(SalesHeader@1000 : Record 36;VAR SalesLine@1001 : Record 37;VAR TempDropShptPostBuffer@1002 : TEMPORARY Record 223;VAR TempPostedATOLink@1003 : TEMPORARY Record 914);
     VAR
       DummyTrackingSpecification@1004 : Record 336;
+      QtyToInvoice@1005 : Decimal;
+      QtyToInvoiceBase@1006 : Decimal;
     BEGIN
       ItemLedgShptEntryNo := 0;
+      QtyToInvoice := RemQtyToBeInvoiced;
+      QtyToInvoiceBase := RemQtyToBeInvoicedBase;
+
       WITH SalesHeader DO BEGIN
         IF (SalesLine."Qty. to Ship" <> 0) AND (SalesLine."Purch. Order Line No." <> 0) THEN BEGIN
           TempDropShptPostBuffer."Order No." := SalesLine."Purchase Order No.";
@@ -617,31 +626,31 @@ OBJECT Codeunit 80 Sales-Post
         TempPostedATOLink.SETRANGE("Order No.",SalesLine."Document No.");
         TempPostedATOLink.SETRANGE("Order Line No.",SalesLine."Line No.");
         IF TempPostedATOLink.FINDFIRST THEN
-          PostATOAssocItemJnlLine(SalesHeader,SalesLine,TempPostedATOLink,RemQtyToBeInvoiced,RemQtyToBeInvoicedBase);
+          PostATOAssocItemJnlLine(SalesHeader,SalesLine,TempPostedATOLink,QtyToInvoice,QtyToInvoiceBase);
 
-        IF RemQtyToBeInvoiced <> 0 THEN
+        IF QtyToInvoice <> 0 THEN
           ItemLedgShptEntryNo :=
             PostItemJnlLine(
               SalesHeader,SalesLine,
-              RemQtyToBeInvoiced,RemQtyToBeInvoicedBase,
-              RemQtyToBeInvoiced,RemQtyToBeInvoicedBase,
+              QtyToInvoice,QtyToInvoiceBase,
+              QtyToInvoice,QtyToInvoiceBase,
               0,'',DummyTrackingSpecification,FALSE);
 
         IF SalesLine.IsCreditDocType THEN BEGIN
-          IF ABS(SalesLine."Return Qty. to Receive") > ABS(RemQtyToBeInvoiced) THEN
+          IF ABS(SalesLine."Return Qty. to Receive") > ABS(QtyToInvoice) THEN
             ItemLedgShptEntryNo :=
               PostItemJnlLine(
                 SalesHeader,SalesLine,
-                SalesLine."Return Qty. to Receive" - RemQtyToBeInvoiced,
-                SalesLine."Return Qty. to Receive (Base)" - RemQtyToBeInvoicedBase,
+                SalesLine."Return Qty. to Receive" - QtyToInvoice,
+                SalesLine."Return Qty. to Receive (Base)" - QtyToInvoiceBase,
                 0,0,0,'',DummyTrackingSpecification,FALSE);
         END ELSE BEGIN
-          IF ABS(SalesLine."Qty. to Ship") > ABS(RemQtyToBeInvoiced) + ABS(TempPostedATOLink."Assembled Quantity") THEN
+          IF ABS(SalesLine."Qty. to Ship") > ABS(QtyToInvoice) + ABS(TempPostedATOLink."Assembled Quantity") THEN
             ItemLedgShptEntryNo :=
               PostItemJnlLine(
                 SalesHeader,SalesLine,
-                SalesLine."Qty. to Ship" - TempPostedATOLink."Assembled Quantity" - RemQtyToBeInvoiced,
-                SalesLine."Qty. to Ship (Base)" - TempPostedATOLink."Assembled Quantity (Base)" - RemQtyToBeInvoicedBase,
+                SalesLine."Qty. to Ship" - TempPostedATOLink."Assembled Quantity" - QtyToInvoice,
+                SalesLine."Qty. to Ship (Base)" - TempPostedATOLink."Assembled Quantity (Base)" - QtyToInvoiceBase,
                 0,0,0,'',DummyTrackingSpecification,FALSE);
         END;
       END;
@@ -831,6 +840,7 @@ OBJECT Codeunit 80 Sales-Post
           END;
 
           OriginalItemJnlLine := ItemJnlLine;
+          OnBeforeItemJnlPostLine(ItemJnlLine,SalesLine);
           ItemJnlPostLine.RunWithCheck(ItemJnlLine);
 
           IF IsATO THEN
@@ -1663,7 +1673,7 @@ OBJECT Codeunit 80 Sales-Post
         END;
         IF NOT InvtPickPutaway THEN
           COMMIT;
-        ClearPostBuffers;
+
         Window.CLOSE;
         IF Invoice AND ("Bill-to IC Partner Code" <> '') THEN
           IF "Document Type" IN ["Document Type"::Order,"Document Type"::Invoice] THEN
@@ -1672,6 +1682,8 @@ OBJECT Codeunit 80 Sales-Post
             ICInboxOutboxMgt.CreateOutboxSalesCrMemoTrans(SalesCrMemoHeader);
 
         OnAfterFinalizePosting(SalesHeader,SalesShptHeader,SalesInvHeader,SalesCrMemoHeader,ReturnRcptHeader,GenJnlPostLine);
+
+        ClearPostBuffers;
       END;
     END;
 
@@ -3134,8 +3146,6 @@ OBJECT Codeunit 80 Sales-Post
       DummyTrackingSpecification@1000 : Record 336;
       SalesLineToPost@1006 : Record 37;
       CurrExchRate@1007 : Record 330;
-      TotalChargeAmt@1008 : Decimal;
-      TotalChargeAmtLCY@1009 : Decimal;
     BEGIN
       WITH TempItemChargeAssgntSales DO BEGIN
         SalesLineToPost := SalesLine;
@@ -3684,7 +3694,8 @@ OBJECT Codeunit 80 Sales-Post
         IF ((TotalRoundingAmount[2] <> 0) OR FinalInvoice) AND (TotalRoundingAmount[1] = 0) THEN BEGIN
           IF ("Prepayment %" = 100) AND ("Prepmt. Amount Inv. (LCY)" = 0) THEN
             Prepmt100PctVATRoundingAmt += TotalRoundingAmount[2];
-          TotalRoundingAmount[2] := 0;
+          IF ("Prepayment %" = 100) OR FinalInvoice THEN
+            TotalRoundingAmount[2] := 0;
         END;
 
         IF (PricesInclVATRoundingAmount[2] <> 0) AND (TotalRoundingAmount[2] = 0) THEN BEGIN
@@ -4282,15 +4293,25 @@ OBJECT Codeunit 80 Sales-Post
     END;
 
     LOCAL PROCEDURE CheckPostRestrictions@115(SalesHeader@1000 : Record 36);
+    VAR
+      Contact@1001 : Record 5050;
     BEGIN
       WITH SalesHeader DO BEGIN
         IF NOT PreviewMode THEN
           OnCheckSalesPostRestrictions;
 
         CheckCustBlockage(SalesHeader,"Sell-to Customer No.",TRUE);
+        ValidateSalesPersonOnSalesHeader(SalesHeader,TRUE,TRUE);
 
         IF "Bill-to Customer No." <> "Sell-to Customer No." THEN
           CheckCustBlockage(SalesHeader,"Bill-to Customer No.",FALSE);
+
+        IF "Sell-to Contact No." <> '' THEN
+          IF Contact.GET("Sell-to Contact No.") THEN
+            Contact.CheckIfPrivacyBlocked(TRUE);
+        IF "Bill-to Contact No." <> '' THEN
+          IF Contact.GET("Bill-to Contact No.") THEN
+            Contact.CheckIfPrivacyBlocked(TRUE);
       END;
     END;
 
@@ -5276,6 +5297,15 @@ OBJECT Codeunit 80 Sales-Post
               SalesCrMemoHeader.SETRECFILTER;
               PostedSalesDocumentVariant := SalesCrMemoHeader;
             END;
+          "Document Type"::"Return Order":
+            IF Invoice THEN BEGIN
+              IF "Last Posting No." = '' THEN
+                SalesCrMemoHeader.GET("No.")
+              ELSE
+                SalesCrMemoHeader.GET("Last Posting No.");
+              SalesCrMemoHeader.SETRECFILTER;
+              PostedSalesDocumentVariant := SalesCrMemoHeader;
+            END;
           ELSE
             ERROR(STRSUBSTNO(NotSupportedDocumentTypeErr,"Document Type"));
         END;
@@ -5320,6 +5350,15 @@ OBJECT Codeunit 80 Sales-Post
             END;
           "Document Type"::"Credit Memo":
             BEGIN
+              IF "Last Posting No." = '' THEN
+                SalesCrMemoHeader.GET("No.")
+              ELSE
+                SalesCrMemoHeader.GET("Last Posting No.");
+              SalesCrMemoHeader.SETRECFILTER;
+              SalesCrMemoHeader.SendProfile(DocumentSendingProfile);
+            END;
+          "Document Type"::"Return Order":
+            IF Invoice THEN BEGIN
               IF "Last Posting No." = '' THEN
                 SalesCrMemoHeader.GET("No.")
               ELSE
@@ -6159,6 +6198,11 @@ OBJECT Codeunit 80 Sales-Post
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnBeforeItemJnlPostLine@227(VAR ItemJournalLine@1000 : Record 83;SalesLine@1001 : Record 37);
+    BEGIN
+    END;
+
+    [Integration]
     LOCAL PROCEDURE OnBeforeSalesShptHeaderInsert@183(VAR SalesShptHeader@1001 : Record 110;SalesHeader@1000 : Record 36);
     BEGIN
     END;
@@ -6225,6 +6269,11 @@ OBJECT Codeunit 80 Sales-Post
 
     [Integration]
     LOCAL PROCEDURE OnAfterPostUpdateOrderLineModifyTempLine@1010(SalesLine@1000 : Record 37;WhseShip@1001 : Boolean;WhseReceive@1002 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterPostGLAndCustomer@218(VAR SalesHeader@1000 : Record 36;VAR GenJnlPostLine@1001 : Codeunit 12;TotalSalesLine@1003 : Record 37;TotalSalesLineLCY@1004 : Record 37);
     BEGIN
     END;
 

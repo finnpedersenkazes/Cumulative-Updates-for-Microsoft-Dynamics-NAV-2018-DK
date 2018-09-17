@@ -2,9 +2,9 @@ OBJECT Table 951 Time Sheet Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -13,6 +13,7 @@ OBJECT Table 951 Time Sheet Line
                Resource@1000 : Record 156;
              BEGIN
                GetTimeSheetResource(Resource);
+               CheckResourcePrivacyBlocked(Resource);
                Resource.TESTFIELD(Blocked,FALSE);
 
                UpdateApproverID;
@@ -23,6 +24,7 @@ OBJECT Table 951 Time Sheet Line
                Resource@1000 : Record 156;
              BEGIN
                GetTimeSheetResource(Resource);
+               CheckResourcePrivacyBlocked(Resource);
                Resource.TESTFIELD(Blocked,FALSE);
 
                UpdateDetails;
@@ -35,6 +37,7 @@ OBJECT Table 951 Time Sheet Line
                TestStatus;
 
                GetTimeSheetResource(Resource);
+               CheckResourcePrivacyBlocked(Resource);
                Resource.TESTFIELD(Blocked,FALSE);
 
                TimeSheetDetail.SETRANGE("Time Sheet No.","Time Sheet No.");
@@ -233,6 +236,7 @@ OBJECT Table 951 Time Sheet Line
       Text002@1006 : TextConst 'DAN="Status skal vëre èben eller Afvist i overensstemmelse med timeseddelnr. ''%1'', linjenr.=''%2''.";ENU="Status must be Open or Rejected in line with Time Sheet No.=''%1'', Line No.=''%2''."';
       Text003@1007 : TextConst 'DAN=Serviceordre %1 til debitor %2;ENU=Service order %1 for customer %2';
       Text005@1009 : TextConst 'DAN=Vëlg en type, fõr du indtaster en aktivitet.;ENU=Select a type before you enter an activity.';
+      PrivacyBlockedErr@1008 : TextConst '@@@="%1=resource no.";DAN=Du kan ikke anvende ressourcen %1, fordi de er markeret som blokeret pga. beskyttelse af personlige oplysninger.;ENU=You cannot use resource %1 because they are marked as blocked due to privacy.';
 
     [External]
     PROCEDURE TestStatus@3();
@@ -359,6 +363,12 @@ OBJECT Table 951 Time Sheet Line
         EXIT((FldNo IN [FIELDNO("Work Type Code"),FIELDNO(Chargeable)]) AND (Status = Status::Submitted));
 
       EXIT(Status IN [Status::Open,Status::Rejected]);
+    END;
+
+    LOCAL PROCEDURE CheckResourcePrivacyBlocked@7(Resource@1000 : Record 156);
+    BEGIN
+      IF Resource."Privacy Blocked" THEN
+        ERROR(PrivacyBlockedErr,Resource."No.");
     END;
 
     BEGIN

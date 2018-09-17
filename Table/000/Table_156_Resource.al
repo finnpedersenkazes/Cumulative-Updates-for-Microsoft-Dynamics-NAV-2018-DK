@@ -2,9 +2,9 @@ OBJECT Table 156 Resource
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -293,7 +293,18 @@ OBJECT Table 156 Resource
                                                    CaptionML=[DAN=Bem‘rkning;
                                                               ENU=Comment];
                                                    Editable=No }
-    { 38  ;   ;Blocked             ;Boolean       ;CaptionML=[DAN=Sp‘rret;
+    { 38  ;   ;Blocked             ;Boolean       ;OnValidate=BEGIN
+                                                                IF NOT Blocked AND "Privacy Blocked" THEN
+                                                                  IF GUIALLOWED THEN
+                                                                    IF CONFIRM(ConfirmBlockedPrivacyBlockedQst) THEN
+                                                                      "Privacy Blocked" := FALSE
+                                                                    ELSE
+                                                                      ERROR('')
+                                                                  ELSE
+                                                                    ERROR(CanNotChangeBlockedDueToPrivacyBlockedErr);
+                                                              END;
+
+                                                   CaptionML=[DAN=Sp‘rret;
                                                               ENU=Blocked] }
     { 39  ;   ;Date Filter         ;Date          ;FieldClass=FlowFilter;
                                                    CaptionML=[DAN=Datofilter;
@@ -433,6 +444,15 @@ OBJECT Table 156 Resource
                                                               ENU=IC Partner Purch. G/L Acc. No.] }
     { 140 ;   ;Image               ;Media         ;CaptionML=[DAN=Grafik;
                                                               ENU=Image] }
+    { 150 ;   ;Privacy Blocked     ;Boolean       ;OnValidate=BEGIN
+                                                                IF "Privacy Blocked" THEN
+                                                                  Blocked := TRUE
+                                                                ELSE
+                                                                  Blocked := FALSE;
+                                                              END;
+
+                                                   CaptionML=[DAN=Beskyttelse af personlige oplysninger sp‘rret;
+                                                              ENU=Privacy Blocked] }
     { 900 ;   ;Qty. on Assembly Order;Decimal     ;FieldClass=FlowField;
                                                    CalcFormula=Sum("Assembly Line"."Remaining Quantity (Base)" WHERE (Document Type=CONST(Order),
                                                                                                                       Type=CONST(Resource),
@@ -541,6 +561,10 @@ OBJECT Table 156 Resource
       BaseUnitOfMeasureQtyMustBeOneErr@1026 : TextConst '@@@="%1 Name of Unit of measure (e.g. BOX, PCS, KG...), %2 Qty. of %1 per base unit of measure ";DAN=Antallet pr. basisenhed skal v‘re 1. %1 er konfigureret med %2 pr. enhed.;ENU=The quantity per base unit of measure must be 1. %1 is set up with %2 per unit of measure.';
       CannotDeleteResourceErr@1027 : TextConst '@@@="%1 = Resource No.";DAN=Du kan ikke slette ressourcen %1, fordi den bruges i en eller flere sagsplanl‘gningslinjer.;ENU=You cannot delete resource %1 because it is used in one or more job planning lines.';
       SalesDocumentExistsErr@1028 : TextConst '@@@="%1 = Resource No.";DAN=Du kan ikke slette ressourcen %1, fordi der er en eller flere udest†ende %2, der medtager denne ressource.;ENU=You cannot delete resource %1 because there are one or more outstanding %2 that include this resource.';
+      PrivacyBlockedPostErr@1000 : TextConst '@@@="%1=resource no.";DAN=Du kan ikke bogf›re denne linje, fordi ressourcen %1 er blokeret p† grund af beskyttelse af personlige oplysninger.;ENU=You cannot post this line because resource %1 is blocked due to privacy.';
+      PrivacyBlockedErr@1021 : TextConst '@@@="%1=resource no.";DAN=Du kan ikke oprette denne linje, fordi ressourcen %1 er blokeret p† grund af beskyttelse af personlige oplysninger.;ENU=You cannot create this line because resource %1 is blocked due to privacy.';
+      ConfirmBlockedPrivacyBlockedQst@1030 : TextConst 'DAN=Hvis du ‘ndrer feltet Sp‘rret, ‘ndres feltet Beskyttelse af personlige oplysninger sp‘rret til Nej. Vil du forts‘tte?;ENU=If you change the Blocked field, the Privacy Blocked field is changed to No. Do you want to continue?';
+      CanNotChangeBlockedDueToPrivacyBlockedErr@1029 : TextConst 'DAN=Feltet Sp‘rret kan ikke ‘ndres, fordi brugeren er blokeret af sikkerhedsm‘ssige †rsager.;ENU=The Blocked field cannot be changed because the user is blocked for privacy reasons.';
 
     [External]
     PROCEDURE AssistEdit@2(OldRes@1000 : Record 156) : Boolean;
@@ -650,6 +674,16 @@ OBJECT Table 156 Resource
       JobPlanningLine.SETRANGE("No.","No.");
       IF NOT JobPlanningLine.ISEMPTY THEN
         ERROR(CannotDeleteResourceErr,"No.");
+    END;
+
+    [External]
+    PROCEDURE CheckResourcePrivacyBlocked@6(IsPosting@1000 : Boolean);
+    BEGIN
+      IF "Privacy Blocked" THEN BEGIN
+        IF IsPosting THEN
+          ERROR(PrivacyBlockedPostErr,"No.");
+        ERROR(PrivacyBlockedErr,"No.");
+      END;
     END;
 
     BEGIN

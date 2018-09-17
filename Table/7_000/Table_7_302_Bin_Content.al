@@ -2,9 +2,9 @@ OBJECT Table 7302 Bin Content
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -1032,8 +1032,8 @@ OBJECT Table 7302 Bin Content
       WarehouseActivityLine.SETRANGE("ATO Component",TRUE);
       WarehouseActivityLine.SETFILTER("Lot No.",GETFILTER("Lot No. Filter"));
       WarehouseActivityLine.SETFILTER("Serial No.",GETFILTER("Serial No. Filter"));
-      WarehouseActivityLine.CALCSUMS("Qty. (Base)");
-      EXIT(WarehouseActivityLine."Qty. (Base)");
+      WarehouseActivityLine.CALCSUMS("Qty. Outstanding (Base)");
+      EXIT(WarehouseActivityLine."Qty. Outstanding (Base)");
     END;
 
     BEGIN

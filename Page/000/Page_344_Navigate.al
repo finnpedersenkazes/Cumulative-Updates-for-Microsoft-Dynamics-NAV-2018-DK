@@ -2,9 +2,9 @@ OBJECT Page 344 Navigate
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -1645,6 +1645,8 @@ OBJECT Page 344 Navigate
           TempRecordBuffer.SETRANGE("Table No.");
         UNTIL TempRecordBuffer.NEXT = 0;
 
+      OnAfterNavigateFindTrackingRecords(Rec,SerialNoFilter,LotNoFilter);
+
       DocExists := FIND('-');
 
       UpdateFormAfterFindRecords;
@@ -1793,13 +1795,16 @@ OBJECT Page 344 Navigate
     END;
 
     [Integration]
-    [External]
     LOCAL PROCEDURE OnAfterNavigateFindRecords@31(VAR DocumentEntry@1000 : Record 265;DocNoFilter@1001 : Text;PostingDateFilter@1002 : Text);
     BEGIN
     END;
 
     [Integration]
-    [External]
+    LOCAL PROCEDURE OnAfterNavigateFindTrackingRecords@33(VAR DocumentEntry@1000 : Record 265;SerialNoFilter@1001 : Text;LotNoFilter@1002 : Text);
+    BEGIN
+    END;
+
+    [Integration]
     LOCAL PROCEDURE OnAfterNavigateShowRecords@32(TableID@1001 : Integer;DocNoFilter@1002 : Text;PostingDateFilter@1003 : Text;ItemTrackingSearch@1000 : Boolean);
     BEGIN
     END;

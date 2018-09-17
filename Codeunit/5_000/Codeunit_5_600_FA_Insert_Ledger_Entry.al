@@ -2,9 +2,9 @@ OBJECT Codeunit 5600 FA Insert Ledger Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -109,6 +109,10 @@ OBJECT Codeunit 5600 FA Insert Ledger Entry
         FALedgEntry2."Canceled from FA No." := FALedgEntry2."FA No.";
         FALedgEntry2."FA No." := '';
         FALedgEntry."FA No." := '';
+        IF FALedgEntry.Amount = 0 THEN BEGIN
+          FALedgEntry2."Transaction No." := 0;
+          FALedgEntry."Transaction No." := 0;
+        END;
         FALedgEntry2.MODIFY;
         FALedgEntry.MODIFY;
         FALedgEntry."FA No." := FALedgEntry3."FA No.";

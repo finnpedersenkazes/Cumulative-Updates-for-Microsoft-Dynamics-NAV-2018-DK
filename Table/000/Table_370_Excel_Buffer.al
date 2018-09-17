@@ -2,9 +2,9 @@ OBJECT Table 370 Excel Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -203,6 +203,24 @@ OBJECT Table 370 Excel Buffer
       IF XlWrkBkReader.HasWorksheet(SheetName) THEN BEGIN
         XlWrkShtReader := XlWrkBkReader.GetWorksheetByName(SheetName);
       END ELSE BEGIN
+        QuitExcel;
+        ERROR(Text004,SheetName);
+      END;
+    END;
+
+    [External]
+    PROCEDURE OpenBookStream@44(FileStream@1000 : InStream;SheetName@1001 : Text) : Text;
+    BEGIN
+      IF SheetName = '' THEN
+        EXIT(Text002);
+
+      IF SheetName = 'G/L Account' THEN
+        SheetName := 'GL Account';
+
+      XlWrkBkReader := XlWrkBkReader.Open(FileStream);
+      IF XlWrkBkReader.HasWorksheet(SheetName) THEN
+        XlWrkShtReader := XlWrkBkReader.GetWorksheetByName(SheetName)
+      ELSE BEGIN
         QuitExcel;
         ERROR(Text004,SheetName);
       END;
@@ -953,6 +971,18 @@ OBJECT Table 370 Excel Buffer
       XlWrkBk := XlHelper.CallOpen(XlApp,FileName);
 
       PostOpenExcel;
+    END;
+
+    [Internal]
+    PROCEDURE OpenExcelWithName@99(FileName@1000 : Text);
+    BEGIN
+      IF FileName = '' THEN
+        ERROR(Text001);
+
+      IF OpenUsingDocumentService(FileName) THEN
+        EXIT;
+
+      FileManagement.DownloadHandler(FileNameServer,'','',Text034,FileName);
     END;
 
     LOCAL PROCEDURE OpenUsingDocumentService@21(FileName@1000 : Text) : Boolean;

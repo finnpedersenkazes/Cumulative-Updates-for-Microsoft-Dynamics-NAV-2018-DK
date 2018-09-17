@@ -2,9 +2,9 @@ OBJECT Codeunit 99000845 Reservation Management
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -95,8 +95,8 @@ OBJECT Codeunit 99000845 Reservation Management
       QtyReservedOnPickShip@1069 : Decimal;
       AssemblyTxt@1076 : TextConst 'DAN=Montage;ENU=Assembly';
       DeleteDocLineWithItemReservQst@1064 : TextConst '@@@="%1 = Document Type, %2 = Document No.";DAN=%1 %2 har varereservation. Vil du slette den alligevel?;ENU=%1 %2 has item reservation. Do you want to delete it anyway?';
-      DeleteTransLineWithItemReservQst@1079 : TextConst '@@@="%1 = Document No.";DAN=Transfer order %1 has item reservation. Do you want to delete it anyway?;ENU=Transfer order %1 has item reservation. Do you want to delete it anyway?';
-      DeleteProdOrderLineWithItemReservQst@1080 : TextConst '@@@="%1 = Status, %2 = Prod. Order No.";DAN=%1 production order %2 has item reservation. Do you want to delete it anyway?;ENU=%1 production order %2 has item reservation. Do you want to delete it anyway?';
+      DeleteTransLineWithItemReservQst@1079 : TextConst '@@@="%1 = Document No.";DAN=Overf›rselsordren %1 har varereservation. Vil du slette den alligevel?;ENU=Transfer order %1 has item reservation. Do you want to delete it anyway?';
+      DeleteProdOrderLineWithItemReservQst@1080 : TextConst '@@@="%1 = Status, %2 = Prod. Order No.";DAN=%1 produktionsordren %2 har varereservation. Vil du slette den alligevel?;ENU=%1 production order %2 has item reservation. Do you want to delete it anyway?';
 
     [External]
     PROCEDURE IsPositive@18() : Boolean;
@@ -1194,10 +1194,7 @@ OBJECT Codeunit 99000845 Reservation Management
               CalcReservEntry."Source Type",CalcReservEntry."Source Subtype",
               CalcReservEntry."Source ID",CalcReservEntry."Source Ref. No.",
               CalcReservEntry."Source Prod. Order Line") -
-            CalcCurrLineReservQtyOnPicksShips(
-              CalcReservEntry."Source Type",CalcReservEntry."Source Subtype",
-              CalcReservEntry."Source ID",CalcReservEntry."Source Ref. No.",
-              CalcReservEntry."Source Prod. Order Line");
+            CalcCurrLineReservQtyOnPicksShips(CalcReservEntry);
           IF AllocationsChanged THEN
             CalcReservedQtyOnPick(TotalAvailQty,QtyAllocInWhse); // If allocations have changed we must recalculate
         END;
@@ -3736,23 +3733,25 @@ OBJECT Codeunit 99000845 Reservation Management
       END;
     END;
 
-    LOCAL PROCEDURE CalcCurrLineReservQtyOnPicksShips@118(SourceType@1002 : Integer;SourceSubtype@1003 : Option;SourceID@1005 : Code[20];SourceRefNo@1006 : Integer;SourceProdOrderLine@1007 : Integer) : Decimal;
+    LOCAL PROCEDURE CalcCurrLineReservQtyOnPicksShips@118(ReservationEntry@1002 : Record 337) : Decimal;
     VAR
       ReservEntry@1000 : Record 337;
       WhseActivLine@1001 : Record 5767;
       WhseAvailMgt@1004 : Codeunit 7314;
+      PickQty@1003 : Decimal;
     BEGIN
       WITH ReservEntry DO BEGIN
-        SetSourceFilter(SourceType,SourceSubtype,SourceID,SourceRefNo,FALSE);
-        SETRANGE("Source Prod. Order Line",SourceProdOrderLine);
+        PickQty := WhseAvailMgt.CalcRegisteredAndOutstandingPickQty(ReservationEntry,WhseActivLine);
+
+        SetSourceFilter(
+          ReservationEntry."Source Type",ReservationEntry."Source Subtype",
+          ReservationEntry."Source ID",ReservationEntry."Source Ref. No.",FALSE);
+        SETRANGE("Source Prod. Order Line",ReservationEntry."Source Prod. Order Line");
         SETRANGE("Reservation Status","Reservation Status"::Reservation);
         CALCSUMS("Quantity (Base)");
-        EXIT(
-          WhseAvailMgt.CalcLineReservQtyOnPicksShips(
-            SourceType,SourceSubtype,
-            SourceID,SourceRefNo,
-            SourceProdOrderLine,"Quantity (Base)",
-            WhseActivLine));
+        IF -"Quantity (Base)" > PickQty THEN
+          EXIT(PickQty);
+        EXIT(-"Quantity (Base)");
       END;
     END;
 

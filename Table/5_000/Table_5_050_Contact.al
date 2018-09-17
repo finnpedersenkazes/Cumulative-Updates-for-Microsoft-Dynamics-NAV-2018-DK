@@ -2,9 +2,9 @@ OBJECT Table 5050 Contact
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -260,6 +260,10 @@ OBJECT Table 5050 Contact
                                                    CaptionML=[DAN=Sprogkode;
                                                               ENU=Language Code] }
     { 29  ;   ;Salesperson Code    ;Code20        ;TableRelation=Salesperson/Purchaser;
+                                                   OnValidate=BEGIN
+                                                                ValidateSalesPerson;
+                                                              END;
+
                                                    CaptionML=[DAN=S‘lgerkode;
                                                               ENU=Salesperson Code] }
     { 35  ;   ;Country/Region Code ;Code10        ;TableRelation=Country/Region;
@@ -332,6 +336,28 @@ OBJECT Table 5050 Contact
     { 140 ;   ;Image               ;Media         ;ExtendedDatatype=Person;
                                                    CaptionML=[DAN=Grafik;
                                                               ENU=Image] }
+    { 150 ;   ;Privacy Blocked     ;Boolean       ;OnValidate=BEGIN
+                                                                IF NOT "Privacy Blocked" THEN
+                                                                  IF Minor THEN
+                                                                    IF NOT "Parental Consent Received" THEN
+                                                                      ERROR(ParentalConsentReceivedErr,"No.");
+                                                              END;
+
+                                                   CaptionML=[DAN=Beskyttelse af personlige oplysninger sp‘rret;
+                                                              ENU=Privacy Blocked] }
+    { 151 ;   ;Minor               ;Boolean       ;OnValidate=BEGIN
+                                                                IF Minor THEN
+                                                                  VALIDATE("Privacy Blocked",TRUE);
+                                                              END;
+
+                                                   CaptionML=[DAN=Mindre†rig;
+                                                              ENU=Minor] }
+    { 152 ;   ;Parental Consent Received;Boolean  ;OnValidate=BEGIN
+                                                                VALIDATE("Privacy Blocked",TRUE);
+                                                              END;
+
+                                                   CaptionML=[DAN=For‘ldresamtykke modtaget;
+                                                              ENU=Parental Consent Received] }
     { 5050;   ;Type                ;Option        ;OnValidate=BEGIN
                                                                 IF (CurrFieldNo <> 0) AND ("No." <> '') THEN BEGIN
                                                                   TypeChange;
@@ -758,6 +784,7 @@ OBJECT Table 5050 Contact
       RelatedRecordIsCreatedMsg@1009 : TextConst '@@@=The Customer record has been created.;DAN=Recorden %1 er blevet oprettet.;ENU=The %1 record has been created.';
       Text010@1010 : TextConst 'DAN=Recorden %2 i %1 er ikke knyttet til andre tabeller.;ENU=The %2 record of the %1 is not linked with any other table.';
       RMSetup@1012 : Record 5079;
+      Salesperson@1927 : Record 13;
       DuplMgt@1015 : Codeunit 5060;
       NoSeriesMgt@1016 : Codeunit 396;
       UpdateCustVendBank@1017 : Codeunit 5055;
@@ -773,6 +800,11 @@ OBJECT Table 5050 Contact
       SelectContactErr@1004 : TextConst 'DAN=Du skal v‘lge en eksisterende kontakt.;ENU=You must select an existing contact.';
       AlreadyExistErr@1024 : TextConst '@@@="%1=Contact table caption;%2=Contact number;%3=Contact Business Relation table caption;%4=Contact Business Relation Link to Table value;%5=Contact Business Relation number";DAN=%1 %2 har allerede en %3 til %4 %5.;ENU=%1 %2 already has a %3 with %4 %5.';
       HideValidationDialog@1025 : Boolean;
+      PrivacyBlockedPostErr@1013 : TextConst '@@@="%1=contact no.";DAN=Du kan ikke bogf›re denne bilagstype, fordi kontakten %1 er blokeret p† grund af beskyttelse af personlige oplysninger.;ENU=You cannot post this type of document because contact %1 is blocked due to privacy.';
+      PrivacyBlockedCreateErr@1011 : TextConst '@@@="%1=contact no.";DAN=Du kan ikke oprette denne bilagstype, fordi kontakten %1 er blokeret p† grund af beskyttelse af personlige oplysninger.;ENU=You cannot create this type of document because contact %1 is blocked due to privacy.';
+      PrivacyBlockedGenericErr@1014 : TextConst '@@@="%1=contact no.";DAN=Du kan ikke anvende kontakten %1, fordi de er markeret som blokeret pga. beskyttelse af personlige oplysninger.;ENU=You cannot use contact %1 because they are marked as blocked due to privacy.';
+      ParentalConsentReceivedErr@1026 : TextConst '@@@="%1=contact no.";DAN=Beskyttelse af personlige oplysninger sp‘rret kan ikke slettes, f›r For‘ldresamtykke modtaget indstilles til Sand for mindre†rig kontakt %1.;ENU=Privacy Blocked cannot be cleared until Parental Consent Received is set to true for minor contact %1.';
+      ProfileForMinorErr@1027 : TextConst 'DAN=Du kan ikke bruge profiler for kontakter, der er markeret som Mindre†rig.;ENU=You cannot use profiles for contacts marked as Minor.';
 
     [External]
     PROCEDURE OnModify@4(xRec@1005 : Record 5050);
@@ -1016,6 +1048,7 @@ OBJECT Table 5050 Contact
       OfficeMgt@1002 : Codeunit 1630;
     BEGIN
       CheckForExistingRelationships(ContBusRel."Link to Table"::Customer);
+      CheckIfPrivacyBlockedGeneric;
       RMSetup.GET;
       RMSetup.TESTFIELD("Bus. Rel. Code for Customers");
 
@@ -1104,6 +1137,7 @@ OBJECT Table 5050 Contact
       OfficeMgt@1002 : Codeunit 1630;
     BEGIN
       CheckForExistingRelationships(ContBusRel."Link to Table"::Vendor);
+      CheckIfPrivacyBlockedGeneric;
       TESTFIELD("Company No.");
       RMSetup.GET;
       RMSetup.TESTFIELD("Bus. Rel. Code for Vendors");
@@ -1166,6 +1200,8 @@ OBJECT Table 5050 Contact
       ContBusRel."No." := BankAcc."No.";
       ContBusRel.INSERT(TRUE);
 
+      CheckIfPrivacyBlockedGeneric;
+
       UpdateCustVendBank.UpdateBankAccount(ContComp,ContBusRel);
 
       IF NOT HideValidationDialog THEN
@@ -1179,6 +1215,7 @@ OBJECT Table 5050 Contact
       ContBusRel@1000 : Record 5054;
     BEGIN
       CheckForExistingRelationships(ContBusRel."Link to Table"::Customer);
+      CheckIfPrivacyBlockedGeneric;
       RMSetup.GET;
       RMSetup.TESTFIELD("Bus. Rel. Code for Customers");
       CreateLink(
@@ -1200,6 +1237,7 @@ OBJECT Table 5050 Contact
       ContBusRel@1001 : Record 5054;
     BEGIN
       CheckForExistingRelationships(ContBusRel."Link to Table"::Vendor);
+      CheckIfPrivacyBlockedGeneric;
       TESTFIELD("Company No.");
       RMSetup.GET;
       RMSetup.TESTFIELD("Bus. Rel. Code for Vendors");
@@ -1214,6 +1252,7 @@ OBJECT Table 5050 Contact
     VAR
       ContBusRel@1001 : Record 5054;
     BEGIN
+      CheckIfPrivacyBlockedGeneric;
       TESTFIELD("Company No.");
       RMSetup.GET;
       RMSetup.TESTFIELD("Bus. Rel. Code for Bank Accs.");
@@ -1240,6 +1279,7 @@ OBJECT Table 5050 Contact
     VAR
       TempSegmentLine@1000 : TEMPORARY Record 5077;
     BEGIN
+      CheckIfPrivacyBlockedGeneric;
       TempSegmentLine.CreateInteractionFromContact(Rec);
     END;
 
@@ -1890,6 +1930,7 @@ OBJECT Table 5050 Contact
     VAR
       SalesHeader@1001 : Record 36;
     BEGIN
+      CheckIfPrivacyBlockedGeneric;
       SalesHeader.INIT;
       SalesHeader.VALIDATE("Document Type",SalesHeader."Document Type"::Quote);
       SalesHeader.INSERT(TRUE);
@@ -1908,6 +1949,35 @@ OBJECT Table 5050 Contact
       ContBusRel.SETRANGE("Contact No.","No.");
       ContBusRel.SETRANGE("Link to Table",ContBusRel."Link to Table"::Customer);
       EXIT(ContBusRel.FINDFIRST);
+    END;
+
+    PROCEDURE CheckIfMinorForProfiles@52();
+    BEGIN
+      IF Minor THEN
+        ERROR(ProfileForMinorErr);
+    END;
+
+    PROCEDURE CheckIfPrivacyBlocked@48(IsPosting@1000 : Boolean);
+    BEGIN
+      IF "Privacy Blocked" THEN BEGIN
+        IF IsPosting THEN
+          ERROR(PrivacyBlockedPostErr,"No.");
+        ERROR(PrivacyBlockedCreateErr,"No.");
+      END;
+    END;
+
+    PROCEDURE CheckIfPrivacyBlockedGeneric@50();
+    BEGIN
+      IF "Privacy Blocked" THEN
+        ERROR(PrivacyBlockedGenericErr,"No.");
+    END;
+
+    LOCAL PROCEDURE ValidateSalesPerson@433();
+    BEGIN
+      IF "Salesperson Code" <> '' THEN
+        IF Salesperson.GET("Salesperson Code") THEN
+          IF Salesperson.VerifySalesPersonPurchaserPrivacyBlocked(Salesperson) THEN
+            ERROR(Salesperson.GetPrivacyBlockedGenericText(Salesperson,TRUE))
     END;
 
     [Integration(TRUE)]

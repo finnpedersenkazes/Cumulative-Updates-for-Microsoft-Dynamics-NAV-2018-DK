@@ -2,9 +2,9 @@ OBJECT Table 5740 Transfer Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -619,7 +619,8 @@ OBJECT Table 5740 Transfer Header
       HideValidationDialog := NewHideValidationDialog;
     END;
 
-    LOCAL PROCEDURE ValidateShortcutDimCode@19(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
+    [External]
+    PROCEDURE ValidateShortcutDimCode@19(FieldNumber@1000 : Integer;VAR ShortcutDimCode@1001 : Code[20]);
     VAR
       OldDimSetID@1002 : Integer;
     BEGIN
@@ -641,7 +642,7 @@ OBJECT Table 5740 Transfer Header
       END;
     END;
 
-    LOCAL PROCEDURE UpdateTransLines@15(TransferHeader@1002 : Record 5740;FieldRef@1000 : Integer);
+    LOCAL PROCEDURE UpdateTransLines@15(TransferHeader@1002 : Record 5740;FieldID@1000 : Integer);
     VAR
       TransferLine@1001 : Record 5741;
     BEGIN
@@ -650,7 +651,7 @@ OBJECT Table 5740 Transfer Header
       IF TransferLine.FINDSET THEN BEGIN
         TransferLine.LOCKTABLE;
         REPEAT
-          CASE FieldRef OF
+          CASE FieldID OF
             FIELDNO("In-Transit Code"):
               TransferLine.VALIDATE("In-Transit Code",TransferHeader."In-Transit Code");
             FIELDNO("Transfer-from Code"):
@@ -720,6 +721,8 @@ OBJECT Table 5740 Transfer Header
                 TransferLine.VALIDATE("In-Transit Code",TransferHeader."In-Transit Code");
                 TransferLine.VALIDATE("Item No.",TransferLine."Item No.");
               END;
+            ELSE
+              OnUpdateTransLines(TransferLine,TransferHeader,FieldID);
           END;
           TransferLine.MODIFY(TRUE);
         UNTIL TransferLine.NEXT = 0;
@@ -917,6 +920,11 @@ OBJECT Table 5740 Transfer Header
       TransferLine.SETRANGE("Document No.","No.");
       TransferLine.SETFILTER("Item No.",'<>%1','');
       EXIT(NOT TransferLine.ISEMPTY);
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnUpdateTransLines@12(VAR TransferLine@1000 : Record 5741;TransferHeader@1001 : Record 5740;FieldID@1002 : Integer);
+    BEGIN
     END;
 
     [External]

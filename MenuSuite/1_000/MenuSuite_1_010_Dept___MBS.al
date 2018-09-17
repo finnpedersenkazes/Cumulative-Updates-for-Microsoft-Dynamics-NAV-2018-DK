@@ -2,9 +2,9 @@ OBJECT MenuSuite 1010 Dept - MBS
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -18785,7 +18785,7 @@ OBJECT MenuSuite 1010 Dept - MBS
                                                                 MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
                                                                 ParentNodeID=[{F92B71B3-1719-40AA-B896-ACFA2FA993F8}];
                                                                 Visible=Yes;
-                                                                NextNodeID=[{399DBF58-9482-4693-9719-DE17917E7022}];
+                                                                NextNodeID=[{BF800C60-E030-4889-BE36-EEE707EB966C}];
                                                                 FirstChild=[{82D0E3A5-B866-401C-84CD-6368353E35B5}] }
     { MenuItem       ;[{82D0E3A5-B866-401C-84CD-6368353E35B5}] ;Name=Extension Management;
                                                                 CaptionML=[DAN=Udvidelsesstyring;
@@ -19273,6 +19273,18 @@ OBJECT MenuSuite 1010 Dept - MBS
                                                                 ParentNodeID=[{F1BC557C-C9E0-4E0D-B5F1-C57CD3BDA1E7}];
                                                                 Visible=Yes;
                                                                 NextNodeID=[{44624DCD-BEC3-4EEB-B09D-E1DBD0FA2266}];
+                                                                DepartmentCategory=Administration }
+    { MenuItem       ;[{BF800C60-E030-4889-BE36-EEE707EB966C}] ;Name=Data Classification Worksheet;
+                                                                AccessByPermission=TableData 2000000159=R;
+                                                                CaptionML=[DAN=Regneark til dataklassificering;
+                                                                           ENU=Data Classification Worksheet];
+                                                                ApplicationArea=#All;
+                                                                MemberOfMenu=[{19A352FE-D90D-424E-B85F-CF3B8E98CF0E}];
+                                                                RunObjectType=Page;
+                                                                RunObjectID=1751;
+                                                                ParentNodeID=[{F92B71B3-1719-40AA-B896-ACFA2FA993F8}];
+                                                                Visible=Yes;
+                                                                NextNodeID=[{399DBF58-9482-4693-9719-DE17917E7022}];
                                                                 DepartmentCategory=Administration }
   }
 }

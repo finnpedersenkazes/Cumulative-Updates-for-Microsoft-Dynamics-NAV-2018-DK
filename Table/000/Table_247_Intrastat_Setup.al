@@ -2,9 +2,9 @@ OBJECT Table 247 Intrastat Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -30,14 +30,14 @@ OBJECT Table 247 Intrastat Setup
                                                                   VALIDATE("Intrastat Contact No.",'');
                                                               END;
 
-                                                   CaptionML=[DAN=Intrastat Contact Type;
+                                                   CaptionML=[DAN=Intrastat-kontakttype;
                                                               ENU=Intrastat Contact Type];
-                                                   OptionCaptionML=[DAN=" ,Contact,Vendor";
+                                                   OptionCaptionML=[DAN=" ,Kontakt,Kreditor";
                                                                     ENU=" ,Contact,Vendor"];
                                                    OptionString=[ ,Contact,Vendor] }
     { 7   ;   ;Intrastat Contact No.;Code20       ;TableRelation=IF (Intrastat Contact Type=CONST(Contact)) Contact.No.
                                                                  ELSE IF (Intrastat Contact Type=CONST(Vendor)) Vendor.No.;
-                                                   CaptionML=[DAN=Intrastat Contact No.;
+                                                   CaptionML=[DAN=Intrastat-kontaktnr.;
                                                               ENU=Intrastat Contact No.] }
   }
   KEYS
@@ -50,8 +50,8 @@ OBJECT Table 247 Intrastat Setup
   CODE
   {
     VAR
-      OnDelIntrastatContactErr@1008 : TextConst '@@@=1 - Contact No;DAN=You cannot delete contact number %1 because it is set up as an Intrastat contact in the Intrastat Setup window.;ENU=You cannot delete contact number %1 because it is set up as an Intrastat contact in the Intrastat Setup window.';
-      OnDelVendorIntrastatContactErr@1009 : TextConst '@@@=1 - Vendor No;DAN=You cannot delete vendor number %1 because it is set up as an Intrastat contact in the Intrastat Setup window.;ENU=You cannot delete vendor number %1 because it is set up as an Intrastat contact in the Intrastat Setup window.';
+      OnDelIntrastatContactErr@1008 : TextConst '@@@=1 - Contact No;DAN=Du kan ikke slette kontaktnummeret %1 fordi det er konfigureret som en Intrastat-kontakt i vinduet Intrastat-ops‘tning.;ENU=You cannot delete contact number %1 because it is set up as an Intrastat contact in the Intrastat Setup window.';
+      OnDelVendorIntrastatContactErr@1009 : TextConst '@@@=1 - Vendor No;DAN=Du kan ikke slette kreditornummeret %1 fordi det er konfigureret som en Intrastat-kontakt i vinduet Intrastat-ops‘tning.;ENU=You cannot delete vendor number %1 because it is set up as an Intrastat contact in the Intrastat Setup window.';
 
     [External]
     PROCEDURE CheckDeleteIntrastatContact@21(ContactType@1000 : Option;ContactNo@1001 : Code[20]);

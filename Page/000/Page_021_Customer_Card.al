@@ -2,9 +2,9 @@ OBJECT Page 21 Customer Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348,NAVDK11.00.00.20348;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -1249,6 +1249,13 @@ OBJECT Page 21 Customer Card
                            ENU=Specifies which transactions with the customer that cannot be blocked, for example, because the customer is insolvent.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=Blocked }
+
+    { 200 ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, om adgangen til data skal begr‘nses for dataemnet i den daglige drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om de indeholder personlige oplysninger.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="Privacy Blocked";
+                Importance=Additional }
 
     { 24  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver en kode for den s‘lger, der normalt h†ndterer denne debitorkonto.;

@@ -2,9 +2,9 @@ OBJECT Table 477 Report Inbox
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -82,7 +82,11 @@ OBJECT Table 477 Report Inbox
         MESSAGE(ReportIsEmptyMsg);
         EXIT;
       END;
-      FileName := DELCHR("Report Name",'=','\/:*?"<>|') + Suffix;
+      IF "Report Name" <> '' THEN
+        FileName := DELCHR("Report Name",'=','/:*?"<>|') + Suffix
+      ELSE
+        FileName := DELCHR(Description,'=','/:*?"<>|') + Suffix;
+
       "Report Output".CREATEINSTREAM(Instr);
       Downloaded := DOWNLOADFROMSTREAM(Instr,FileDownLoadTxt,'','',FileName);
 

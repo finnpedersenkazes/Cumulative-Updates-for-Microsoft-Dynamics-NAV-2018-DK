@@ -2,9 +2,9 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -104,7 +104,7 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
             IF Location."Bin Mandatory" THEN
               RegisterWhseJnlLine(WhseActivLine);
             CreateRegActivLine(WhseActivLine);
-            OnAfterCreateRegActivLine(WhseActivLine);
+            OnAfterCreateRegActivLine(WhseActivLine,RegisteredWhseActivLine,RegisteredInvtMovementLine);
           UNTIL WhseActivLine.NEXT = 0;
         END;
 
@@ -1684,7 +1684,7 @@ OBJECT Codeunit 7307 Whse.-Activity-Register
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnAfterCreateRegActivLine@1003(VAR WarehouseActivityLine@1000 : Record 5767);
+    LOCAL PROCEDURE OnAfterCreateRegActivLine@1003(VAR WarehouseActivityLine@1000 : Record 5767;VAR RegisteredWhseActivLine@1002 : Record 5773;VAR RegisteredInvtMovementLine@1001 : Record 7345);
     BEGIN
     END;
 

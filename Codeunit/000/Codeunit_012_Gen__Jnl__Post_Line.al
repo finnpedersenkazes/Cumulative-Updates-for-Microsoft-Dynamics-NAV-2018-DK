@@ -2,9 +2,9 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -914,6 +914,7 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
     BEGIN
       WITH GenJnlLine DO BEGIN
         Employee.GET("Account No.");
+        Employee.CheckBlockedEmployeeOnJnls(TRUE);
 
         IF "Posting Group" = '' THEN BEGIN
           Employee.TESTFIELD("Employee Posting Group");
@@ -4122,6 +4123,7 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
       ReadGLSetup(GLSetup);
 
       Employee.GET(DtldEmplLedgEntry."Employee No.");
+      Employee.CheckBlockedEmployeeOnJnls(TRUE);
       EmployeePostingGroup.GET(GenJnlLine."Posting Group");
       EmployeePostingGroup.GetPayablesAccount;
 

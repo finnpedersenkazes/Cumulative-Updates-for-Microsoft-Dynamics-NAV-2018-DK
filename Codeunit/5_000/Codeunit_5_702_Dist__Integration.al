@@ -2,9 +2,9 @@ OBJECT Codeunit 5702 Dist. Integration
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -195,8 +195,6 @@ OBJECT Codeunit 5702 Dist. Integration
     VAR
       Item@1002 : Record 27;
       ItemCrossReference2@1001 : Record 5717;
-      Vend@1003 : Record 23;
-      ItemTranslation@1004 : Record 30;
     BEGIN
       ItemCrossReference2.RESET;
       ItemCrossReference2.SETRANGE("Item No.",ItemVend."Item No.");
@@ -211,14 +209,10 @@ OBJECT Codeunit 5702 Dist. Integration
         ItemCrossReference2.VALIDATE("Cross-Reference Type",ItemCrossReference2."Cross-Reference Type"::Vendor);
         ItemCrossReference2.VALIDATE("Cross-Reference Type No.",ItemVend."Vendor No.");
         ItemCrossReference2."Cross-Reference No." := ItemVend."Vendor Item No.";
-        Item.GET(ItemVend."Item No.");
-        ItemCrossReference2.Description := Item.Description;
-        IF Vend.GET(ItemVend."Vendor No.") THEN
-          IF Vend."Language Code" <> '' THEN
-            IF ItemTranslation.GET(Item."No.",ItemVend."Variant Code",Vend."Language Code") THEN
-              ItemCrossReference2.Description := ItemTranslation.Description;
-        IF ItemCrossReference2."Unit of Measure" = '' THEN
+        IF ItemCrossReference2."Unit of Measure" = '' THEN BEGIN
+          Item.GET(ItemVend."Item No.");
           ItemCrossReference2.VALIDATE("Unit of Measure",Item."Base Unit of Measure");
+        END;
         ItemCrossReference2.INSERT;
       END;
     END;

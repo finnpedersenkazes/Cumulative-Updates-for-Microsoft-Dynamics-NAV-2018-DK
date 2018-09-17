@@ -2,9 +2,9 @@ OBJECT Codeunit 96 Purch.-Quote to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -26,6 +26,8 @@ OBJECT Codeunit 96 Purch.-Quote to Order
 
             Vend.GET("Buy-from Vendor No.");
             Vend.CheckBlockedVendOnDocs(Vend,FALSE);
+
+            ValidatePurchaserOnPurchHeader(Rec,TRUE,FALSE);
 
             CreatePurchHeader(Rec,Vend."Prepayment %");
 
@@ -52,6 +54,8 @@ OBJECT Codeunit 96 Purch.-Quote to Order
 
                 PurchLineReserve.VerifyQuantity(PurchOrderLine,PurchQuoteLine);
               UNTIL PurchQuoteLine.NEXT = 0;
+
+            OnAfterInsertAllPurchOrderLines(PurchOrderLine,Rec);
 
             PurchSetup.GET;
             IF PurchSetup."Archive Quotes and Orders" THEN
@@ -158,6 +162,11 @@ OBJECT Codeunit 96 Purch.-Quote to Order
 
     [Integration]
     LOCAL PROCEDURE OnAfterInsertPurchOrderLine@9(VAR PurchaseQuoteLine@1000 : Record 39;VAR PurchaseOrderLine@1001 : Record 39);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterInsertAllPurchOrderLines@4(VAR PurchOrderLine@1001 : Record 39;PurchQuoteHeader@1000 : Record 38);
     BEGIN
     END;
 

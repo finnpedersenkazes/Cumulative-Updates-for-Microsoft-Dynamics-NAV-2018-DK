@@ -2,9 +2,9 @@ OBJECT Page 7002 Sales Prices
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -309,8 +309,7 @@ OBJECT Page 7002 Sales Prices
                 ToolTipML=[DAN=Angiver den dato, som salgsprisen er gyldig fra.;
                            ENU=Specifies the date from which the sales price is valid.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Starting Date";
-                Editable=StartingDateControlEditable }
+                SourceExpr="Starting Date" }
 
     { 2   ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver den kalenderdato, hvor salgsprisaftalen slutter.;
@@ -379,7 +378,6 @@ OBJECT Page 7002 Sales Prices
       IsLookupMode@1017 : Boolean;
       SalesTypeControlEditable@1012 : Boolean;
       SalesCodeControlEditable@1013 : Boolean;
-      StartingDateControlEditable@1015 : Boolean;
       CurrencyCodeControlEditable@1016 : Boolean;
       MultipleCustomersSelectedErr@1018 : TextConst 'DAN=Mere end ‚n debitor bruger salgspriserne. Hvis du vil kopiere priser, m† feltet Salgskodefilter kun indeholde ‚n debitor.;ENU=More than one customer uses these sales prices. To copy prices, the Sales Code Filter field must contain one customer only.';
       IncorrectSalesTypeToCopyPricesErr@1010 : TextConst 'DAN=Hvis du vil kopiere salgspriser, skal feltet Salgstypefilter indeholde debitor.;ENU=To copy sales prices, The Sales Type Filter field must contain Customer.';
@@ -581,7 +579,6 @@ OBJECT Page 7002 Sales Prices
       SalesTypeControlEditable := GETFILTER("Sales Type") = '';
       SalesCodeControlEditable :=
         SalesCodeControlEditable AND (GETFILTER("Sales Code") = '');
-      StartingDateControlEditable := GETFILTER("Starting Date") = '';
       CurrencyCodeControlEditable := GETFILTER("Currency Code") = '';
     END;
 

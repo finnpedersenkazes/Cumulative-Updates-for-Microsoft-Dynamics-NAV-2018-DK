@@ -2,9 +2,9 @@ OBJECT Codeunit 41 TextManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -35,9 +35,10 @@ OBJECT Codeunit 41 TextManagement
       CompanyText@1017 : TextConst '@@@=Must be uppercase;DAN=VIRKSOMHED;ENU=COMPANY';
       OverflowMsg@1008 : TextConst 'DAN=Filteret indeholder mere end 2000 tal og er blevet afkortet.;ENU=The filter contains more than 2000 numbers and has been truncated.';
       UnincrementableStringErr@1019 : TextConst 'DAN=%1 indeholder ikke noget nummer og kan derfor ikke for›ges.;ENU=%1 contains no number and cannot be incremented.';
+      FilterType@1020 : 'DateTime,Date,Time';
 
     [External]
-    PROCEDURE MakeDateTimeText@1(VAR DateTimeText@1000 : Text[250]) : Integer;
+    PROCEDURE MakeDateTimeText@1(VAR DateTimeText@1000 : Text) : Integer;
     VAR
       Date@1001 : Date;
       Time@1002 : Time;
@@ -53,7 +54,7 @@ OBJECT Codeunit 41 TextManagement
     END;
 
     [External]
-    PROCEDURE GetSeparateDateTime@2(DateTimeText@1000 : Text[250];VAR Date@1005 : Date;VAR Time@1006 : Time) : Boolean;
+    PROCEDURE GetSeparateDateTime@2(DateTimeText@1000 : Text;VAR Date@1005 : Date;VAR Time@1006 : Time) : Boolean;
     VAR
       DateText@1001 : Text[250];
       TimeText@1002 : Text[250];
@@ -86,10 +87,10 @@ OBJECT Codeunit 41 TextManagement
     END;
 
     [External]
-    PROCEDURE MakeDateText@3(VAR DateText@1000 : Text[250]) : Integer;
+    PROCEDURE MakeDateText@3(VAR DateText@1000 : Text) : Integer;
     VAR
       Date@1002 : Date;
-      PartOfText@1001 : Text[250];
+      PartOfText@1001 : Text;
       Position@1004 : Integer;
       Length@1003 : Integer;
     BEGIN
@@ -116,7 +117,7 @@ OBJECT Codeunit 41 TextManagement
     END;
 
     [External]
-    PROCEDURE MakeTimeText@4(VAR TimeText@1000 : Text[250]) : Integer;
+    PROCEDURE MakeTimeText@4(VAR TimeText@1000 : Text) : Integer;
     VAR
       PartOfText@1001 : Text[132];
       Position@1004 : Integer;
@@ -138,7 +139,7 @@ OBJECT Codeunit 41 TextManagement
     END;
 
     [External]
-    PROCEDURE MakeText@5(VAR Text@1000 : Text[250]) : Integer;
+    PROCEDURE MakeText@5(VAR Text@1000 : Text) : Integer;
     VAR
       StandardText@1002 : Record 7;
       PartOfText@1001 : Text[132];
@@ -221,40 +222,15 @@ OBJECT Codeunit 41 TextManagement
     [External]
     PROCEDURE MakeDateTimeFilter@6(VAR DateTimeFilterText@1000 : Text[250]) : Integer;
     VAR
-      Head@1006 : Text[250];
-      Tail@1008 : Text[250];
-      Position@1012 : Integer;
-      Length@1011 : Integer;
+      FilterText@1001 : Text;
     BEGIN
-      DateTimeFilterText := DELCHR(DateTimeFilterText,'<>');
-      Position := 1;
-      Length := STRLEN(DateTimeFilterText);
-      WHILE Length <> 0 DO BEGIN
-        ReadCharacter(' |()',DateTimeFilterText,Position,Length);
-        IF Position > 1 THEN BEGIN
-          Head := Head + COPYSTR(DateTimeFilterText,1,Position - 1);
-          DateTimeFilterText := COPYSTR(DateTimeFilterText,Position);
-          Position := 1;
-          Length := STRLEN(DateTimeFilterText);
-        END;
-        IF Length <> 0 THEN BEGIN
-          ReadUntilCharacter('|()',DateTimeFilterText,Position,Length);
-          IF Position > 1 THEN BEGIN
-            Tail := COPYSTR(DateTimeFilterText,Position);
-            DateTimeFilterText := COPYSTR(DateTimeFilterText,1,Position - 1);
-            MakeDateTimeFilter2(DateTimeFilterText);
-            EVALUATE(Head,Head + DateTimeFilterText);
-            DateTimeFilterText := Tail;
-            Position := 1;
-            Length := STRLEN(DateTimeFilterText);
-          END;
-        END;
-      END;
-      DateTimeFilterText := Head;
+      FilterText := DateTimeFilterText;
+      MakeFilterExpression(FilterType::DateTime,FilterText);
+      DateTimeFilterText := COPYSTR(FilterText,1,MAXSTRLEN(DateTimeFilterText));
       EXIT(0);
     END;
 
-    LOCAL PROCEDURE MakeDateTimeFilter2@7(VAR DateTimeFilterText@1000 : Text[250]);
+    LOCAL PROCEDURE MakeDateTimeFilter2@7(VAR DateTimeFilterText@1000 : Text);
     VAR
       DateTime1@1002 : DateTime;
       DateTime2@1005 : DateTime;
@@ -300,6 +276,12 @@ OBJECT Codeunit 41 TextManagement
 
     [External]
     PROCEDURE MakeDateFilter@8(VAR DateFilterText@1000 : Text) : Integer;
+    BEGIN
+      MakeFilterExpression(FilterType::Date,DateFilterText);
+      EXIT(0);
+    END;
+
+    LOCAL PROCEDURE MakeDateFilterInternal@31(VAR DateFilterText@1000 : Text) : Integer;
     VAR
       Date1@1005 : Date;
       Date2@1004 : Date;
@@ -421,40 +403,15 @@ OBJECT Codeunit 41 TextManagement
     [External]
     PROCEDURE MakeTimeFilter@22(VAR TimeFilterText@1000 : Text[250]) : Integer;
     VAR
-      Head@1006 : Text[250];
-      Tail@1008 : Text[250];
-      Position@1012 : Integer;
-      Length@1011 : Integer;
+      FilterText@1001 : Text;
     BEGIN
-      TimeFilterText := DELCHR(TimeFilterText,'<>');
-      Position := 1;
-      Length := STRLEN(TimeFilterText);
-      WHILE Length <> 0 DO BEGIN
-        ReadCharacter(' |()',TimeFilterText,Position,Length);
-        IF Position > 1 THEN BEGIN
-          Head := Head + COPYSTR(TimeFilterText,1,Position - 1);
-          TimeFilterText := COPYSTR(TimeFilterText,Position);
-          Position := 1;
-          Length := STRLEN(TimeFilterText);
-        END;
-        IF Length <> 0 THEN BEGIN
-          ReadUntilCharacter('|()',TimeFilterText,Position,Length);
-          IF Position > 1 THEN BEGIN
-            Tail := COPYSTR(TimeFilterText,Position);
-            TimeFilterText := COPYSTR(TimeFilterText,1,Position - 1);
-            MakeTimeFilter2(TimeFilterText);
-            EVALUATE(Head,Head + TimeFilterText);
-            TimeFilterText := Tail;
-            Position := 1;
-            Length := STRLEN(TimeFilterText);
-          END;
-        END;
-      END;
-      TimeFilterText := Head;
+      FilterText := TimeFilterText;
+      MakeFilterExpression(FilterType::Time,FilterText);
+      TimeFilterText := COPYSTR(FilterText,1,MAXSTRLEN(TimeFilterText));
       EXIT(0);
     END;
 
-    LOCAL PROCEDURE MakeTimeFilter2@21(VAR TimeFilterText@1000 : Text[250]);
+    LOCAL PROCEDURE MakeTimeFilter2@21(VAR TimeFilterText@1000 : Text);
     VAR
       Time1@1004 : Time;
       Time2@1001 : Time;
@@ -484,6 +441,52 @@ OBJECT Codeunit 41 TextManagement
       TimeFilterText := FORMAT(Time1) + '..' + FORMAT(Time2);
     END;
 
+    LOCAL PROCEDURE MakeFilterExpression@38(TypeOfFilter@1000 : Option;VAR FilterText@1001 : Text);
+    VAR
+      Head@1005 : Text;
+      Tail@1004 : Text;
+      Position@1003 : Integer;
+      Length@1002 : Integer;
+    BEGIN
+      FilterText := DELCHR(FilterText,'<>');
+      Position := 1;
+      Length := STRLEN(FilterText);
+      WHILE Length <> 0 DO BEGIN
+        ReadCharacter(' |()',FilterText,Position,Length);
+        IF Position > 1 THEN BEGIN
+          Head := Head + COPYSTR(FilterText,1,Position - 1);
+          FilterText := COPYSTR(FilterText,Position);
+          Position := 1;
+          Length := STRLEN(FilterText);
+        END;
+        IF Length <> 0 THEN BEGIN
+          ReadUntilCharacter('|()',FilterText,Position,Length);
+          IF Position > 1 THEN BEGIN
+            Tail := COPYSTR(FilterText,Position);
+            FilterText := COPYSTR(FilterText,1,Position - 1);
+            CallMakeFilterFunction(TypeOfFilter,FilterText);
+            EVALUATE(Head,Head + FilterText);
+            FilterText := Tail;
+            Position := 1;
+            Length := STRLEN(FilterText);
+          END;
+        END;
+      END;
+      FilterText := Head;
+    END;
+
+    LOCAL PROCEDURE CallMakeFilterFunction@33(TypeOfFilter@1000 : Option;VAR FilterText@1001 : Text);
+    BEGIN
+      CASE TypeOfFilter OF
+        FilterType::DateTime:
+          MakeDateTimeFilter2(FilterText);
+        FilterType::Date:
+          MakeDateFilterInternal(FilterText);
+        FilterType::Time:
+          MakeTimeFilter2(FilterText);
+      END;
+    END;
+
     [External]
     PROCEDURE EvaluateIncStr@20(StringToIncrement@1000 : Code[20];ErrorHint@1001 : Text);
     BEGIN
@@ -497,7 +500,7 @@ OBJECT Codeunit 41 TextManagement
       EXIT(UnincrementableStringErr)
     END;
 
-    LOCAL PROCEDURE GetTime@16(VAR Time0@1000 : Time;FilterText@1001 : Text[250]) : Boolean;
+    LOCAL PROCEDURE GetTime@16(VAR Time0@1000 : Time;FilterText@1001 : Text) : Boolean;
     BEGIN
       FilterText := DELCHR(FilterText);
       IF FilterText IN [NowText,'NOW'] THEN BEGIN
@@ -587,7 +590,7 @@ OBJECT Codeunit 41 TextManagement
       EXIT(TRUE);
     END;
 
-    LOCAL PROCEDURE FindText@11(VAR PartOfText@1000 : Text[250];Text@1001 : Text;Position@1002 : Integer;Length@1003 : Integer) : Boolean;
+    LOCAL PROCEDURE FindText@11(VAR PartOfText@1000 : Text;Text@1001 : Text;Position@1002 : Integer;Length@1003 : Integer) : Boolean;
     VAR
       Position2@1005 : Integer;
     BEGIN
@@ -632,7 +635,7 @@ OBJECT Codeunit 41 TextManagement
         Position := Position + 1;
     END;
 
-    LOCAL PROCEDURE ReadUntilCharacter@15(Character@1000 : Text[50];Text@1001 : Text[250];VAR Position@1002 : Integer;Length@1003 : Integer);
+    LOCAL PROCEDURE ReadUntilCharacter@15(Character@1000 : Text[50];Text@1001 : Text;VAR Position@1002 : Integer;Length@1003 : Integer);
     BEGIN
       WHILE (Position <= Length) AND (STRPOS(Character,UPPERCASE(COPYSTR(Text,Position,1))) = 0) DO
         Position := Position + 1;

@@ -2,9 +2,9 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -158,10 +158,9 @@ OBJECT Codeunit 21 Item Jnl.-Check Line
         THEN BEGIN
           TESTFIELD("Source No.");
           TESTFIELD("Order Type","Order Type"::Production);
-          IF ("Entry Type" = "Entry Type"::Output) AND
-             CheckFindProdOrderLine(ProdOrderLine,"Order No.","Order Line No.")
-          THEN
-            TESTFIELD("Item No.",ProdOrderLine."Item No.");
+          IF NOT CalledFromAdjustment AND ("Entry Type" = "Entry Type"::Output) THEN
+            IF CheckFindProdOrderLine(ProdOrderLine,"Order No.","Order Line No.") THEN
+              TESTFIELD("Item No.",ProdOrderLine."Item No.");
           IF Subcontracting THEN BEGIN
             WorkCenter.GET("Work Center No.");
             WorkCenter.TESTFIELD("Subcontractor No.");

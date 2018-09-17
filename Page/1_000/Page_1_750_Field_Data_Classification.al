@@ -2,14 +2,14 @@ OBJECT Page 1750 Field Data Classification
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
     Editable=No;
-    CaptionML=[DAN=Field Data Classification;
+    CaptionML=[DAN=Klassificering af feltdata;
                ENU=Field Data Classification];
     InsertAllowed=No;
     DeleteAllowed=No;

@@ -2,15 +2,16 @@ OBJECT Table 950 Time Sheet Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
     OnInsert=BEGIN
                IF "Resource No." <> '' THEN BEGIN
                  Resource.GET("Resource No.");
+                 CheckResourcePrivacyBlocked(Resource);
                  Resource.TESTFIELD(Blocked,FALSE);
                  IF Resource."Time Sheet Owner User ID" <> '' THEN
                    AddToMyTimeSheets(Resource."Time Sheet Owner User ID");
@@ -20,6 +21,7 @@ OBJECT Table 950 Time Sheet Header
     OnModify=BEGIN
                IF "Resource No." <> '' THEN BEGIN
                  Resource.GET("Resource No.");
+                 CheckResourcePrivacyBlocked(Resource);
                  Resource.TESTFIELD(Blocked,FALSE);
                END;
              END;
@@ -29,6 +31,7 @@ OBJECT Table 950 Time Sheet Header
              BEGIN
                IF "Resource No." <> '' THEN BEGIN
                  Resource.GET("Resource No.");
+                 CheckResourcePrivacyBlocked(Resource);
                  Resource.TESTFIELD(Blocked,FALSE);
                END;
 
@@ -45,6 +48,7 @@ OBJECT Table 950 Time Sheet Header
     OnRename=BEGIN
                IF "Resource No." <> '' THEN BEGIN
                  Resource.GET("Resource No.");
+                 CheckResourcePrivacyBlocked(Resource);
                  Resource.TESTFIELD(Blocked,FALSE);
                END;
              END;
@@ -65,6 +69,7 @@ OBJECT Table 950 Time Sheet Header
                                                                 ResourcesSetup.GET;
                                                                 IF "Resource No." <> '' THEN BEGIN
                                                                   Resource.GET("Resource No.");
+                                                                  CheckResourcePrivacyBlocked(Resource);
                                                                   Resource.TESTFIELD(Blocked,FALSE);
                                                                   Resource.TESTFIELD("Time Sheet Owner User ID");
                                                                   Resource.TESTFIELD("Time Sheet Approver User ID");
@@ -175,6 +180,7 @@ OBJECT Table 950 Time Sheet Header
       Text001@1004 : TextConst 'DAN=%1 indeholder ikke linjer.;ENU=%1 does not contain lines.';
       TimeSheetMgt@1005 : Codeunit 950;
       Text002@1006 : TextConst 'DAN=Der er ingen tilg‘ngelige timesedler. Timeseddeladministratoren skal oprette timesedler, f›r du kan f† adgang til dem i dette vindue.;ENU=No time sheets are available. The time sheet administrator must create time sheets before you can access them in this window.';
+      PrivacyBlockedErr@1002 : TextConst '@@@="%1=resource no.";DAN=Du kan ikke anvende ressourcen %1, fordi de er markeret som blokeret pga. beskyttelse af personlige oplysninger.;ENU=You cannot use resource %1 because they are marked as blocked due to privacy.';
 
     [External]
     PROCEDURE CalcQtyWithStatus@1(Status@1000 : 'Open,Submitted,Rejected,Approved') : Decimal;
@@ -243,6 +249,12 @@ OBJECT Table 950 Time Sheet Header
       MyTimeSheets.SETRANGE("Time Sheet No.","No.");
       IF MyTimeSheets.FINDFIRST THEN
         MyTimeSheets.DELETEALL;
+    END;
+
+    LOCAL PROCEDURE CheckResourcePrivacyBlocked@4(Resource@1000 : Record 156);
+    BEGIN
+      IF Resource."Privacy Blocked" THEN
+        ERROR(PrivacyBlockedErr,Resource."No.");
     END;
 
     BEGIN

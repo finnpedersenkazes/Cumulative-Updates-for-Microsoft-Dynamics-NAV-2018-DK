@@ -2,9 +2,9 @@ OBJECT Page 328 Intrastat Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -43,15 +43,15 @@ OBJECT Page 328 Intrastat Setup
                 SourceExpr="Report Shipments" }
 
     { 9   ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the Intrastat contact type.;
+                ToolTipML=[DAN=Angiver Intrastat-kontakttypen.;
                            ENU=Specifies the Intrastat contact type.];
-                OptionCaptionML=[DAN=" ,Contact,Vendor";
+                OptionCaptionML=[DAN=" ,Kontakt,Kreditor";
                                  ENU=" ,Contact,Vendor"];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr="Intrastat Contact Type" }
 
     { 8   ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies the Intrastat contact.;
+                ToolTipML=[DAN=Angiver Intrastat-kontakten.;
                            ENU=Specifies the Intrastat contact.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr="Intrastat Contact No." }

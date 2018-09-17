@@ -2,9 +2,9 @@ OBJECT Table 5900 Service Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -397,7 +397,7 @@ OBJECT Table 5900 Service Header
                                                                 "Invoice Disc. Code" := Cust."Invoice Disc. Code";
                                                                 "Customer Disc. Group" := Cust."Customer Disc. Group";
                                                                 "Language Code" := Cust."Language Code";
-                                                                "Salesperson Code" := Cust."Salesperson Code";
+                                                                SetSalespersonCode(Cust."Salesperson Code","Salesperson Code");
                                                                 Reserve := Cust.Reserve;
                                                                 ValidateServPriceGrOnServItem;
 
@@ -897,6 +897,8 @@ OBJECT Table 5900 Service Header
                                                               ENU=Language Code] }
     { 43  ;   ;Salesperson Code    ;Code20        ;TableRelation=Salesperson/Purchaser;
                                                    OnValidate=BEGIN
+                                                                ValidateSalesPersonOnServiceHeader(Rec,FALSE,FALSE);
+
                                                                 CreateDim(
                                                                   DATABASE::"Salesperson/Purchaser","Salesperson Code",
                                                                   DATABASE::Customer,"Bill-to Customer No.",
@@ -2235,6 +2237,7 @@ OBJECT Table 5900 Service Header
       ServCrMemoHeader@1077 : Record 5994;
       ReservEntry@1076 : Record 337;
       TempReservEntry@1075 : TEMPORARY Record 337;
+      Salesperson@1906 : Record 13;
       ServOrderMgt@1037 : Codeunit 5900;
       DimMgt@1038 : Codeunit 408;
       NoSeriesMgt@1039 : Codeunit 396;
@@ -3581,6 +3584,28 @@ OBJECT Table 5900 Service Header
 
       IF UserSetup."Salespers./Purch. Code" <> '' THEN
         VALIDATE("Salesperson Code",UserSetup."Salespers./Purch. Code");
+    END;
+
+    PROCEDURE ValidateSalesPersonOnServiceHeader@433(ServiceHeader2@1000 : Record 5900;IsTransaction@1001 : Boolean;IsPostAction@1002 : Boolean);
+    BEGIN
+      IF ServiceHeader2."Salesperson Code" <> '' THEN
+        IF Salesperson.GET(ServiceHeader2."Salesperson Code") THEN
+          IF Salesperson.VerifySalesPersonPurchaserPrivacyBlocked(Salesperson) THEN BEGIN
+            IF IsTransaction THEN
+              ERROR(Salesperson.GetPrivacyBlockedTransactionText(Salesperson,IsPostAction,TRUE));
+            IF NOT IsTransaction THEN
+              ERROR(Salesperson.GetPrivacyBlockedGenericText(Salesperson,TRUE));
+          END;
+    END;
+
+    LOCAL PROCEDURE SetSalespersonCode@218(SalesPersonCodeToCheck@1000 : Code[20];VAR SalesPersonCodeToAssign@1001 : Code[20]);
+    BEGIN
+      IF SalesPersonCodeToCheck <> '' THEN
+        IF Salesperson.GET(SalesPersonCodeToCheck) THEN
+          IF Salesperson.VerifySalesPersonPurchaserPrivacyBlocked(Salesperson) THEN
+            SalesPersonCodeToAssign := ''
+          ELSE
+            SalesPersonCodeToAssign := SalesPersonCodeToCheck;
     END;
 
     [Integration]

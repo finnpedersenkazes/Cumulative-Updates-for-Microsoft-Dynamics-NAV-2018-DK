@@ -2,9 +2,9 @@ OBJECT Page 5097 Create Task
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -16,7 +16,9 @@ OBJECT Page 5097 Create Task
     SourceTable=Table5080;
     DataCaptionExpr=Caption;
     PageType=Card;
-    OnInit=BEGIN
+    OnInit=VAR
+             PermissionManager@1000 : Codeunit 9002;
+           BEGIN
              AttachmentEnable := TRUE;
              LanguageCodeEnable := TRUE;
              CalcDueDateFromEnable := TRUE;
@@ -33,6 +35,7 @@ OBJECT Page 5097 Create Task
              WizardCampaignDescriptionEdita := TRUE;
              WizardContactNameEditable := TRUE;
              TeamTaskEditable := TRUE;
+             IsSoftwareAsAService := PermissionManager.SoftwareAsAService;
            END;
 
     OnOpenPage=BEGIN
@@ -97,46 +100,34 @@ OBJECT Page 5097 Create Task
                 GroupType=Group }
 
     { 18  ;2   ;Field     ;
+                Name=TypeSaaS;
+                CaptionML=[DAN=Type;
+                           ENU=Type];
                 ToolTipML=[DAN=Angiver opgavens type.;
                            ENU=Specifies the type of the Task.];
                 OptionCaptionML=[DAN=" ,,Telefonopkald";
                                  ENU=" ,,Phone Call"];
                 ApplicationArea=#RelationshipMgmt;
                 SourceExpr=Type;
+                Visible=IsSoftwareAsAService;
                 OnValidate=BEGIN
-                             IF Type <> xRec.Type THEN
-                               IF Type = Type::Meeting THEN BEGIN
-                                 AssignDefaultAttendeeInfo;
-                                 LoadTempAttachment;
-                                 IF NOT "Team To-do" THEN
-                                   IF "Salesperson Code" = '' THEN BEGIN
-                                     IF Cont.GET("Contact No.") THEN
-                                       VALIDATE("Salesperson Code",Cont."Salesperson Code")
-                                     ELSE
-                                       IF Cont.GET("Contact Company No.") THEN
-                                         VALIDATE("Salesperson Code",Cont."Salesperson Code");
-                                     IF Campaign.GET(GETFILTER("Campaign No.")) THEN
-                                       VALIDATE("Salesperson Code",Campaign."Salesperson Code");
-                                     IF Opp.GET(GETFILTER("Opportunity No.")) THEN
-                                       VALIDATE("Salesperson Code",Opp."Salesperson Code");
-                                     IF SegHeader.GET(GETFILTER("Segment No.")) THEN
-                                       VALIDATE("Salesperson Code",SegHeader."Salesperson Code");
-                                     MODIFY;
-                                   END;
-                                 GetAttendee(AttendeeTemp);
-                                 CurrPage.AttendeeSubform.PAGE.SetAttendee(AttendeeTemp);
-                                 CurrPage.AttendeeSubform.PAGE.SetTaskFilter(SalespersonFilter,ContactFilter);
-                                 CurrPage.AttendeeSubform.PAGE.UpdateForm;
-                               END ELSE BEGIN
-                                 ClearDefaultAttendeeInfo;
-                                 CurrPage.AttendeeSubform.PAGE.GetAttendee(AttendeeTemp);
-                                 SetAttendee(AttendeeTemp);
-                                 SalespersonCodeEnable := FALSE;
-                                 WizardContactNameEnable := TRUE;
-                               END;
-                             IsMeeting := (Type = Type::Meeting);
-                             TypeOnAfterValidate;
-                             CurrPage.UPDATE;
+                             ValidateTypeField;
+                           END;
+                            }
+
+    { 7   ;2   ;Field     ;
+                Name=TypeOnPrem;
+                CaptionML=[DAN=Type;
+                           ENU=Type];
+                ToolTipML=[DAN=Angiver opgavens type.;
+                           ENU=Specifies the type of the Task.];
+                OptionCaptionML=[DAN=" ,M›de,Telefonopkald";
+                                 ENU=" ,Meeting,Phone Call"];
+                ApplicationArea=#RelationshipMgmt;
+                SourceExpr=Type;
+                Visible=NOT IsSoftwareAsAService;
+                OnValidate=BEGIN
+                             ValidateTypeField;
                            END;
                             }
 
@@ -372,6 +363,7 @@ OBJECT Page 5097 Create Task
                 ApplicationArea=#RelationshipMgmt;
                 SourceExpr=Location;
                 Importance=Promoted;
+                Visible=NOT IsSoftwareAsAService;
                 Enabled=LocationEnable }
 
     { 20  ;1   ;Group     ;
@@ -518,6 +510,7 @@ OBJECT Page 5097 Create Task
       CalcDueDateFromEnable@19036769 : Boolean INDATASET;
       LanguageCodeEnable@19042658 : Boolean INDATASET;
       AttachmentEnable@19033701 : Boolean INDATASET;
+      IsSoftwareAsAService@1010 : Boolean;
 
     LOCAL PROCEDURE Caption@1() : Text[260];
     VAR
@@ -570,6 +563,43 @@ OBJECT Page 5097 Create Task
         DurationEnable := FALSE;
         AllDayEventEnable := FALSE;
       END;
+    END;
+
+    LOCAL PROCEDURE ValidateTypeField@3();
+    BEGIN
+      IF Type <> xRec.Type THEN
+        IF Type = Type::Meeting THEN BEGIN
+          AssignDefaultAttendeeInfo;
+          LoadTempAttachment;
+          IF NOT "Team To-do" THEN
+            IF "Salesperson Code" = '' THEN BEGIN
+              IF Cont.GET("Contact No.") THEN
+                VALIDATE("Salesperson Code",Cont."Salesperson Code")
+              ELSE
+                IF Cont.GET("Contact Company No.") THEN
+                  VALIDATE("Salesperson Code",Cont."Salesperson Code");
+              IF Campaign.GET(GETFILTER("Campaign No.")) THEN
+                VALIDATE("Salesperson Code",Campaign."Salesperson Code");
+              IF Opp.GET(GETFILTER("Opportunity No.")) THEN
+                VALIDATE("Salesperson Code",Opp."Salesperson Code");
+              IF SegHeader.GET(GETFILTER("Segment No.")) THEN
+                VALIDATE("Salesperson Code",SegHeader."Salesperson Code");
+              MODIFY;
+            END;
+          GetAttendee(AttendeeTemp);
+          CurrPage.AttendeeSubform.PAGE.SetAttendee(AttendeeTemp);
+          CurrPage.AttendeeSubform.PAGE.SetTaskFilter(SalespersonFilter,ContactFilter);
+          CurrPage.AttendeeSubform.PAGE.UpdateForm;
+        END ELSE BEGIN
+          ClearDefaultAttendeeInfo;
+          CurrPage.AttendeeSubform.PAGE.GetAttendee(AttendeeTemp);
+          SetAttendee(AttendeeTemp);
+          SalespersonCodeEnable := FALSE;
+          WizardContactNameEnable := TRUE;
+        END;
+      IsMeeting := (Type = Type::Meeting);
+      TypeOnAfterValidate;
+      CurrPage.UPDATE;
     END;
 
     LOCAL PROCEDURE TypeOnAfterValidate@19069045();

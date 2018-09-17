@@ -2,9 +2,9 @@ OBJECT Table 295 Reminder Header
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -87,6 +87,8 @@ OBJECT Table 295 Reminder Header
                                                                   EXIT;
                                                                 END;
                                                                 Cust.GET("Customer No.");
+                                                                IF Cust."Privacy Blocked" THEN
+                                                                  Cust.CustPrivacyBlockedErrorMessage(Cust,FALSE);
                                                                 IF Cust.Blocked = Cust.Blocked::All THEN
                                                                   Cust.CustBlockedErrorMessage(Cust,FALSE);
                                                                 Name := Cust.Name;

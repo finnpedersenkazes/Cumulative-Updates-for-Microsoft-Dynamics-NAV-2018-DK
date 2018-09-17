@@ -1,0 +1,54 @@
+OBJECT Codeunit 1181 Prvacy Data Mgmt Excel
+{
+  OBJECT-PROPERTIES
+  {
+    Date=06-04-18;
+    Time=12:00:00;
+    Version List=NAVW111.00.00.21441;
+  }
+  PROPERTIES
+  {
+    TableNo=8613;
+    OnRun=VAR
+            ReportInbox@1004 : Record 477;
+            TempBlob@1005 : Record 99008535;
+            ConfigExcelExchange@1003 : Codeunit 8618;
+            FileManagement@1000 : Codeunit 419;
+            OutStr@1001 : OutStream;
+            FileName@1002 : Text;
+          BEGIN
+            FileName := FileManagement.ServerTempFileName('.xlsx');
+            ConfigExcelExchange.SetFileOnServer(TRUE);
+            IF ConfigExcelExchange.ExportExcel(FileName,Rec,FALSE,FALSE) THEN
+              IF FileManagement.ServerFileExists(FileName) THEN BEGIN
+                FileManagement.BLOBImportFromServerFile(TempBlob,FileName);
+
+                ReportInbox.INIT;
+                ReportInbox."User ID" := USERID;
+                ReportInbox.VALIDATE("Output Type",ReportInbox."Output Type"::Excel);
+                ReportInbox.Description := STRSUBSTNO(PrivacyDataTxt,"Package Code");
+                ReportInbox."Report Name" := STRSUBSTNO(PrivacyDataTxt,"Package Code");
+                ReportInbox."Report Output".CREATEOUTSTREAM(OutStr);
+                ReportInbox."Report Output" := TempBlob.Blob;
+                ReportInbox."Created Date-Time" := ROUNDDATETIME(CURRENTDATETIME,60000);
+                IF NOT ReportInbox.INSERT(TRUE) THEN
+                  ReportInbox.MODIFY(TRUE);
+
+                // IF STRPOS(Rec."Package Code",'*') > 0 THEN BEGIN
+                // ConfigPackage.SETRANGE(Code,Rec."Package Code");
+                // ConfigPackage.DELETE(TRUE);
+                // END;
+              END;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      PrivacyDataTxt@1001 : TextConst '@@@="%1=The name of the package code.";DAN=Beskyttelsesdata for %1;ENU=Privacy Data for %1';
+
+    BEGIN
+    END.
+  }
+}
+

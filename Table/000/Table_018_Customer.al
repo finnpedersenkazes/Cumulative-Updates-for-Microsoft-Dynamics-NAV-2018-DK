@@ -2,9 +2,9 @@ OBJECT Table 18 Customer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -350,6 +350,10 @@ OBJECT Table 18 Customer
                                                    CaptionML=[DAN=Rentebetingelseskode;
                                                               ENU=Fin. Charge Terms Code] }
     { 29  ;   ;Salesperson Code    ;Code20        ;TableRelation=Salesperson/Purchaser;
+                                                   OnValidate=BEGIN
+                                                                ValidateSalesPersonCode;
+                                                              END;
+
                                                    CaptionML=[DAN=S‘lgerkode;
                                                               ENU=Salesperson Code] }
     { 30  ;   ;Shipment Method Code;Code10        ;TableRelation="Shipment Method";
@@ -404,6 +408,15 @@ OBJECT Table 18 Customer
                                                                 AccountingPeriod@1002 : Record 50;
                                                                 IdentityManagement@1000 : Codeunit 9801;
                                                               BEGIN
+                                                                IF (Blocked <> Blocked::All) AND "Privacy Blocked" THEN
+                                                                  IF GUIALLOWED THEN
+                                                                    IF CONFIRM(ConfirmBlockedPrivacyBlockedQst) THEN
+                                                                      "Privacy Blocked" := FALSE
+                                                                    ELSE
+                                                                      ERROR('')
+                                                                  ELSE
+                                                                    ERROR(CanNotChangeBlockedDueToPrivacyBlockedErr);
+
                                                                 IF NOT IdentityManagement.IsInvAppId THEN
                                                                   EXIT;
 
@@ -1058,6 +1071,15 @@ OBJECT Table 18 Customer
     { 140 ;   ;Image               ;Media         ;ExtendedDatatype=Person;
                                                    CaptionML=[DAN=Grafik;
                                                               ENU=Image] }
+    { 150 ;   ;Privacy Blocked     ;Boolean       ;OnValidate=BEGIN
+                                                                IF "Privacy Blocked" THEN
+                                                                  Blocked := Blocked::All
+                                                                ELSE
+                                                                  Blocked := Blocked::" ";
+                                                              END;
+
+                                                   CaptionML=[DAN=Beskyttelse af personlige oplysninger sp‘rret;
+                                                              ENU=Privacy Blocked] }
     { 288 ;   ;Preferred Bank Account Code;Code20 ;TableRelation="Customer Bank Account".Code WHERE (Customer No.=FIELD(No.));
                                                    CaptionML=[DAN=Foretrukken bankkontokode;
                                                               ENU=Preferred Bank Account Code] }
@@ -1459,6 +1481,7 @@ OBJECT Table 18 Customer
       SalesPrepmtPct@1003 : Record 459;
       ServContract@1026 : Record 5965;
       ServiceItem@1027 : Record 5940;
+      SalespersonPurchaser@1060 : Record 13;
       PaymentToleranceMgt@1038 : Codeunit 426;
       NoSeriesMgt@1011 : Codeunit 396;
       MoveEntries@1012 : Codeunit 361;
@@ -1491,6 +1514,10 @@ OBJECT Table 18 Customer
       LookupRequested@1034 : Boolean;
       OverrideImageQst@1045 : TextConst 'DAN=Tilsides‘t grafik?;ENU=Override Image?';
       CannotDeleteBecauseInInvErr@1046 : TextConst '@@@="%1 = the object to be deleted (example: Item, Customer).";DAN=Du kan ikke slette %1, fordi den har †bne fakturaer.;ENU=You cannot delete %1 because it has open invoices.';
+      PrivacyBlockedActionErr@1061 : TextConst '@@@="%1 = action (create or post), %2 = customer code.";DAN=Du kan ikke %1 denne bilagstype, n†r beskyttelse af personlige oplysninger sp‘rret for debitor %2.;ENU=You cannot %1 this type of document when Customer %2 is blocked for privacy.';
+      PrivacyBlockedGenericTxt@1062 : TextConst '@@@="%1 = customer code";DAN=Beskyttelse af personlige oplysninger sp‘rret m† ikke v‘re g‘ldende for debitoren %1.;ENU=Privacy Blocked must not be true for customer %1.';
+      ConfirmBlockedPrivacyBlockedQst@1071 : TextConst 'DAN=Hvis du ‘ndrer feltet Sp‘rret, ‘ndres feltet Beskyttelse af personlige oplysninger sp‘rret til Nej. Vil du forts‘tte?;ENU=If you change the Blocked field, the Privacy Blocked field is changed to No. Do you want to continue?';
+      CanNotChangeBlockedDueToPrivacyBlockedErr@1072 : TextConst 'DAN=Feltet Sp‘rret kan ikke ‘ndres, fordi brugeren er blokeret af sikkerhedsm‘ssige †rsager.;ENU=The Blocked field cannot be changed because the user is blocked for privacy reasons.';
 
     [External]
     PROCEDURE AssistEdit@2(OldCust@1000 : Record 18) : Boolean;
@@ -1561,6 +1588,9 @@ OBJECT Table 18 Customer
     PROCEDURE CheckBlockedCustOnDocs@5(Cust2@1000 : Record 18;DocType@1001 : 'Quote,Order,Invoice,Credit Memo,Blanket Order,Return Order';Shipment@1005 : Boolean;Transaction@1003 : Boolean);
     BEGIN
       WITH Cust2 DO BEGIN
+        IF "Privacy Blocked" THEN
+          CustPrivacyBlockedErrorMessage(Cust2,Transaction);
+
         IF ((Blocked = Blocked::All) OR
             ((Blocked = Blocked::Invoice) AND
              (DocType IN [DocType::Quote,DocType::Order,DocType::Invoice,DocType::"Blanket Order"])) OR
@@ -1577,6 +1607,9 @@ OBJECT Table 18 Customer
     PROCEDURE CheckBlockedCustOnJnls@7(Cust2@1003 : Record 18;DocType@1002 : ' ,Payment,Invoice,Credit Memo,Finance Charge Memo,Reminder,Refund';Transaction@1000 : Boolean);
     BEGIN
       WITH Cust2 DO BEGIN
+        IF "Privacy Blocked" THEN
+          CustPrivacyBlockedErrorMessage(Cust2,Transaction);
+
         IF (Blocked = Blocked::All) OR
            ((Blocked = Blocked::Invoice) AND (DocType IN [DocType::Invoice,DocType::" "]))
         THEN
@@ -1594,6 +1627,25 @@ OBJECT Table 18 Customer
       ELSE
         Action := Text005;
       ERROR(Text006,Action,Cust2."No.",Cust2.Blocked);
+    END;
+
+    [External]
+    PROCEDURE CustPrivacyBlockedErrorMessage@72(Cust2@1001 : Record 18;Transaction@1000 : Boolean);
+    VAR
+      Action@1002 : Text[30];
+    BEGIN
+      IF Transaction THEN
+        Action := Text004
+      ELSE
+        Action := Text005;
+
+      ERROR(PrivacyBlockedActionErr,Action,Cust2."No.");
+    END;
+
+    [Internal]
+    PROCEDURE GetPrivacyBlockedGenericErrorText@73(Cust2@1001 : Record 18) : Text[250];
+    BEGIN
+      EXIT(STRSUBSTNO(PrivacyBlockedGenericTxt,Cust2."No."));
     END;
 
     [Internal]
@@ -2356,6 +2408,14 @@ OBJECT Table 18 Customer
     [Integration]
     LOCAL PROCEDURE OnBeforeIsContactUpdateNeeded@50(Customer@1000 : Record 18;xCustomer@1001 : Record 18;VAR UpdateNeeded@1002 : Boolean);
     BEGIN
+    END;
+
+    LOCAL PROCEDURE ValidateSalesPersonCode@1900();
+    BEGIN
+      IF "Salesperson Code" <> '' THEN
+        IF SalespersonPurchaser.GET("Salesperson Code") THEN
+          IF SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN
+            ERROR(SalespersonPurchaser.GetPrivacyBlockedGenericText(SalespersonPurchaser,TRUE))
     END;
 
     BEGIN

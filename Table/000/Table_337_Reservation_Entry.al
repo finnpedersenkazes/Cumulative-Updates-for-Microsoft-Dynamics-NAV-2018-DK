@@ -2,9 +2,9 @@ OBJECT Table 337 Reservation Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -224,6 +224,7 @@ OBJECT Table 337 Reservation Entry
       TransLine@1001 : Record 5741;
       ServLine@1009 : Record 5902;
       JobJnlLine@1010 : Record 210;
+      ExtensionTextCaption@1008 : Text[255];
     BEGIN
       CASE "Source Type" OF
         DATABASE::"Item Ledger Entry":
@@ -250,8 +251,12 @@ OBJECT Table 337 Reservation Entry
           EXIT(TransLine.TABLECAPTION);
         DATABASE::"Service Line":
           EXIT(ServLine.TABLECAPTION);
-        ELSE
+        ELSE BEGIN
+          OnAfterTextCaption("Source Type",ExtensionTextCaption);
+          IF ExtensionTextCaption <> '' THEN
+            EXIT(ExtensionTextCaption);
           EXIT(Text001);
+        END;
       END;
     END;
 
@@ -602,6 +607,11 @@ OBJECT Table 337 Reservation Entry
                   QtyPerUOM,OldReservEntry,TransferQty);
             UNTIL (OldReservEntry.NEXT = 0) OR (TransferQty = 0);
         END;
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterTextCaption@48(SourceType@1000 : Integer;VAR NewTextCaption@1001 : Text[255]);
+    BEGIN
     END;
 
     BEGIN

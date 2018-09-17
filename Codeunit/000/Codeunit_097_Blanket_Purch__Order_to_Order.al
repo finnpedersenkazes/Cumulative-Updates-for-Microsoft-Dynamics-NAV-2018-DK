@@ -2,9 +2,9 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -22,6 +22,8 @@ OBJECT Codeunit 97 Blanket Purch. Order to Order
 
             Vend.GET("Buy-from Vendor No.");
             Vend.CheckBlockedVendOnDocs(Vend,FALSE);
+
+            ValidatePurchaserOnPurchHeader(Rec,TRUE,FALSE);
 
             IF QtyToReceiveIsZero THEN
               ERROR(Text002);

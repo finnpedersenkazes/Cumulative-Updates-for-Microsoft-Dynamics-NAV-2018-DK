@@ -2,9 +2,9 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783,NAVDK11.00.00.20783;
+    Version List=NAVW111.00.00.21441,NAVDK11.00.00.21441;
   }
   PROPERTIES
   {
@@ -2942,6 +2942,7 @@ OBJECT Table 37 Sales Line
     LOCAL PROCEDURE CopyFromResource@146();
     BEGIN
       Res.GET("No.");
+      Res.CheckResourcePrivacyBlocked(FALSE);
       Res.TESTFIELD(Blocked,FALSE);
       Res.TESTFIELD("Gen. Prod. Posting Group");
       Description := Res.Name;
@@ -3703,7 +3704,8 @@ OBJECT Table 37 Sales Line
       EXIT(Field."Field Caption");
     END;
 
-    LOCAL PROCEDURE GetCaptionClass@34(FieldNumber@1000 : Integer) : Text[80];
+    [External]
+    PROCEDURE GetCaptionClass@34(FieldNumber@1000 : Integer) : Text[80];
     VAR
       SalesHeader2@1565 : Record 36;
     BEGIN
@@ -4107,6 +4109,8 @@ OBJECT Table 37 Sales Line
             END;
           UNTIL NEXT = 0;
       END;
+
+      OnAfterUpdateVATOnLines(SalesHeader,SalesLine,VATAmountLine,QtyType);
     END;
 
     [External]
@@ -4217,6 +4221,8 @@ OBJECT Table 37 Sales Line
           VATAmountLine."Calculated VAT Amount" += TotalVATAmount;
           VATAmountLine.MODIFY;
         END;
+
+      OnAfterCalcVATAmountLines(SalesHeader,SalesLine,VATAmountLine,QtyType);
     END;
 
     [External]
@@ -4721,7 +4727,12 @@ OBJECT Table 37 Sales Line
         EXIT(0);
 
       GetSalesHeader;
-      LineAmount := ROUND(QtyToHandle * "Unit Price",Currency."Amount Rounding Precision");
+      IF "Prepmt Amt to Deduct" = 0 THEN
+        LineAmount := ROUND(QtyToHandle * "Unit Price",Currency."Amount Rounding Precision")
+      ELSE BEGIN
+        LineAmount := ROUND(Quantity * "Unit Price",Currency."Amount Rounding Precision");
+        LineAmount := ROUND(QtyToHandle * LineAmount / Quantity,Currency."Amount Rounding Precision");
+      END;
       LineDiscAmount :=
         ROUND(
           LineAmount * "Line Discount %" / 100,Currency."Amount Rounding Precision");
@@ -5750,6 +5761,11 @@ OBJECT Table 37 Sales Line
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnAfterCalcVATAmountLines@170(VAR SalesHeader@1003 : Record 36;VAR SalesLine@1002 : Record 37;VAR VATAmountLine@1001 : Record 290;QtyType@1000 : 'General,Invoicing,Shipping');
+    BEGIN
+    END;
+
+    [Integration]
     LOCAL PROCEDURE OnAfterUpdateAmounts@152(VAR SalesLine@1000 : Record 37);
     BEGIN
     END;
@@ -5760,7 +5776,12 @@ OBJECT Table 37 Sales Line
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnAfterCreateDimTableIDs@164(VAR SalesLine@1000 : Record 37;FieldNo@1001 : Integer;TableID@1003 : ARRAY [10] OF Integer;No@1002 : ARRAY [10] OF Code[20]);
+    LOCAL PROCEDURE OnAfterUpdateVATOnLines@162(VAR SalesHeader@1002 : Record 36;VAR SalesLine@1001 : Record 37;VAR VATAmountLine@1000 : Record 290;QtyType@1003 : 'General,Invoicing,Shipping');
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterCreateDimTableIDs@164(VAR SalesLine@1000 : Record 37;FieldNo@1001 : Integer;VAR TableID@1003 : ARRAY [10] OF Integer;VAR No@1002 : ARRAY [10] OF Code[20]);
     BEGIN
     END;
 

@@ -2,9 +2,9 @@ OBJECT Codeunit 10 Type Helper
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -563,6 +563,32 @@ OBJECT Codeunit 10 Type Helper
       END;
 
       EXIT(KeyString);
+    END;
+
+    [External]
+    PROCEDURE ConvertValueFromBase64@61(base64Value@1001 : Text) stringValue : Text;
+    VAR
+      Convert@1002 : DotNet "'mscorlib'.System.Convert";
+      Encoding@1000 : DotNet "'mscorlib'.System.Text.Encoding";
+    BEGIN
+      IF base64Value = '' THEN
+        EXIT('');
+
+      stringValue := Encoding.UTF8.GetString(Convert.FromBase64String(base64Value));
+      EXIT(stringValue);
+    END;
+
+    [External]
+    PROCEDURE ConvertValueToBase64@60(stringValue@1001 : Text) base64Value : Text;
+    VAR
+      Convert@1002 : DotNet "'mscorlib'.System.Convert";
+      Encoding@1000 : DotNet "'mscorlib'.System.Text.Encoding";
+    BEGIN
+      IF stringValue = '' THEN
+        EXIT('');
+
+      base64Value := Convert.ToBase64String(Encoding.UTF8.GetBytes(stringValue));
+      EXIT(base64Value);
     END;
 
     [External]

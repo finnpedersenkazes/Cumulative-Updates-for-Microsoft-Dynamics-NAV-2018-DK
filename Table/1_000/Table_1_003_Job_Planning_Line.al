@@ -2,9 +2,9 @@ OBJECT Table 1003 Job Planning Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -151,6 +151,7 @@ OBJECT Table 1003 Job Planning Line
                                                                   Type::Resource:
                                                                     BEGIN
                                                                       Res.GET("No.");
+                                                                      Res.CheckResourcePrivacyBlocked(FALSE);
                                                                       Res.TESTFIELD(Blocked,FALSE);
                                                                       IF Description = '' THEN
                                                                         Description := Res.Name;
@@ -1825,6 +1826,16 @@ OBJECT Table 1003 Job Planning Line
       JobPlanningLine.SETRANGE("Job Task No.",FromJobPlanningLine."Job Task No.");
       IF JobPlanningLine.FINDLAST THEN;
       EXIT(JobPlanningLine."Line No." + 10000);
+    END;
+
+    PROCEDURE IsServiceItem@69() : Boolean;
+    BEGIN
+      IF Type <> Type::Item THEN
+        EXIT(FALSE);
+      IF "No." = '' THEN
+        EXIT(FALSE);
+      GetItem;
+      EXIT(Item.Type = Item.Type::Service);
     END;
 
     BEGIN

@@ -2,9 +2,9 @@ OBJECT Table 246 Requisition Line
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -127,6 +127,7 @@ OBJECT Table 246 Requisition Line
                                                                   Type::Item:
                                                                     BEGIN
                                                                       GetItem;
+                                                                      VALIDATE("Vendor No.",Item."Vendor No.");
                                                                       IF PlanningResiliency AND Item.Blocked THEN
                                                                         TempPlanningErrorLog.SetError(
                                                                           STRSUBSTNO(Text031,Item.TABLECAPTION,Item."No."),
@@ -210,6 +211,13 @@ OBJECT Table 246 Requisition Line
                                                                 CheckActionMessageNew;
                                                                 IF "Vendor No." <> '' THEN
                                                                   IF Vend.GET("Vendor No.") THEN BEGIN
+                                                                    IF Vend."Privacy Blocked" THEN BEGIN
+                                                                      IF PlanningResiliency THEN
+                                                                        TempPlanningErrorLog.SetError(
+                                                                          STRSUBSTNO(Text031,Vend.TABLECAPTION,Vend."No."),
+                                                                          DATABASE::Vendor,Vend.GETPOSITION);
+                                                                      Vend.VendPrivacyBlockedErrorMessage(Vend,FALSE);
+                                                                    END;
                                                                     IF Vend.Blocked = Vend.Blocked::All THEN BEGIN
                                                                       IF PlanningResiliency THEN
                                                                         TempPlanningErrorLog.SetError(
@@ -231,6 +239,12 @@ OBJECT Table 246 Requisition Line
                                                                   END
                                                                 ELSE
                                                                   UpdateDescription;
+
+                                                                IF IsLocationCodeAlterable THEN
+                                                                  IF ("Vendor No." <> '') AND NOT IsDropShipment THEN
+                                                                    "Location Code" := Vend."Location Code"
+                                                                  ELSE
+                                                                    "Location Code" := '';
 
                                                                 "Order Address Code" := '';
 
@@ -338,15 +352,12 @@ OBJECT Table 246 Requisition Line
                                                                   IF Subcontracting THEN
                                                                     TempSKU."Replenishment System" := TempSKU."Replenishment System"::"Prod. Order";
                                                                   VALIDATE("Replenishment System",TempSKU."Replenishment System");
-                                                                  IF "Location Code" <> xRec."Location Code" THEN BEGIN
+                                                                  IF "Location Code" <> xRec."Location Code" THEN
                                                                     IF ("Location Code" <> '') AND ("No." <> '') AND NOT IsDropShipment THEN BEGIN
                                                                       GetLocation("Location Code");
                                                                       IF Location."Bin Mandatory" AND NOT Location."Directed Put-away and Pick" THEN
                                                                         WMSManagement.GetDefaultBin("No.","Variant Code","Location Code","Bin Code");
                                                                     END;
-                                                                    IF "Location Code" = '' THEN
-                                                                      UpdateDescription;
-                                                                  END;
                                                                   IF ItemVend.GET("Vendor No.","No.","Variant Code") THEN
                                                                     "Vendor Item No." := ItemVend."Vendor Item No.";
                                                                 END;
@@ -954,7 +965,7 @@ OBJECT Table 246 Requisition Line
     { 99000895;;Starting Time      ;Time          ;OnValidate=BEGIN
                                                                 TESTFIELD(Type,Type::Item);
                                                                 IF ReqLine.GET("Worksheet Template Name","Journal Batch Name","Line No.") THEN
-                                                                  PlngLnMgt.Recalculate(Rec,0)
+                                                                  PlngLnMgt.RecalculateWithOptionalModify(Rec,0,FALSE)
                                                                 ELSE
                                                                   CalcEndingDate('');
 
@@ -984,7 +995,7 @@ OBJECT Table 246 Requisition Line
     { 99000897;;Ending Time        ;Time          ;OnValidate=BEGIN
                                                                 TESTFIELD(Type,Type::Item);
                                                                 IF ReqLine.GET("Worksheet Template Name","Journal Batch Name","Line No.") THEN
-                                                                  PlngLnMgt.Recalculate(Rec,1)
+                                                                  PlngLnMgt.RecalculateWithOptionalModify(Rec,1,FALSE)
                                                                 ELSE
                                                                   CalcStartingDate('');
 
@@ -1602,14 +1613,6 @@ OBJECT Table 246 Requisition Line
               "Description 2" := ItemTranslation."Description 2";
             END;
         END;
-
-      IF (CurrFieldNo <> 0) AND (CurrFieldNo <> FIELDNO("Location Code")) AND
-         ("Planning Line Origin" = "Planning Line Origin"::" ")
-      THEN
-        IF ("Vendor No." <> '') AND NOT IsDropShipment THEN
-          "Location Code" := Vend."Location Code"
-        ELSE
-          "Location Code" := '';
     END;
 
     [External]
@@ -2758,6 +2761,23 @@ OBJECT Table 246 Requisition Line
         IF SalesLine.GET(SalesLine."Document Type"::Order,"Sales Order No.","Sales Order Line No.") THEN
           EXIT(SalesLine."Drop Shipment");
       EXIT(FALSE);
+    END;
+
+    LOCAL PROCEDURE IsLocationCodeAlterable@66() : Boolean;
+    BEGIN
+      IF (CurrFieldNo = 0) AND (CurrentFieldNo = 0) THEN
+        EXIT(FALSE);
+
+      IF (CurrFieldNo = FIELDNO("Location Code")) OR (CurrentFieldNo = FIELDNO("Location Code")) THEN
+        EXIT(FALSE);
+
+      IF (CurrFieldNo = FIELDNO("Replenishment System")) OR (CurrentFieldNo = FIELDNO("Replenishment System")) THEN
+        EXIT(FALSE);
+
+      IF "Planning Line Origin" <> "Planning Line Origin"::" " THEN
+        EXIT(FALSE);
+
+      EXIT(TRUE);
     END;
 
     LOCAL PROCEDURE GetWorkCenter@71();

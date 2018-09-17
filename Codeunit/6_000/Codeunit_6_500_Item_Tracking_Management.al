@@ -2,9 +2,9 @@ OBJECT Codeunit 6500 Item Tracking Management
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -256,7 +256,9 @@ OBJECT Codeunit 6500 Item Tracking Management
       ReservEntry.SetSourceFilter(
         DATABASE::"Item Journal Line",ItemJnlLine."Entry Type",ItemJnlLine."Journal Template Name",ItemJnlLine."Line No.",TRUE);
       ReservEntry.SetSourceFilter2(ItemJnlLine."Journal Batch Name",0);
+      OnAfterReserveEntryFilter(ItemJnlLine,ReservEntry);
       ReservEntry.SETFILTER("Qty. to Handle (Base)",'<>0');
+
       IF SumUpItemTracking(ReservEntry,TempTrackingSpec,FALSE,TRUE) THEN BEGIN
         ReservEntry.SETRANGE("Reservation Status",ReservEntry."Reservation Status"::Prospect);
         IF NOT ReservEntry.ISEMPTY THEN
@@ -2893,6 +2895,11 @@ OBJECT Codeunit 6500 Item Tracking Management
 
     [Integration]
     LOCAL PROCEDURE OnCopyItemLedgEntryTrkgToDocLine@62(VAR ItemLedgerEntry@1000 : Record 32;VAR ReservationEntry@1001 : Record 337);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnAfterReserveEntryFilter@63(ItemJournalLine@1000 : Record 83;VAR ReservationEntry@1001 : Record 337);
     BEGIN
     END;
 

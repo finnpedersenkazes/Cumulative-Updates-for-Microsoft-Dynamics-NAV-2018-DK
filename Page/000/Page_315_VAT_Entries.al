@@ -2,9 +2,9 @@ OBJECT Page 315 VAT Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -18,7 +18,7 @@ OBJECT Page 315 VAT Entries
                  GeneralLedgerSetup@1000 : Record 98;
                BEGIN
                  IF GeneralLedgerSetup.GET THEN
-                   IsUnrealizedVATEnabled := GeneralLedgerSetup."Unrealized VAT";
+                   IsUnrealizedVATEnabled := GeneralLedgerSetup."Unrealized VAT" OR GeneralLedgerSetup."Prepayment Unrealized VAT";
                END;
 
     OnModifyRecord=BEGIN

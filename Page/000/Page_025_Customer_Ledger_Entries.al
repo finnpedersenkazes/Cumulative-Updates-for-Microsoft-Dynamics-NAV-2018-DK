@@ -2,13 +2,12 @@ OBJECT Page 25 Customer Ledger Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
-    Permissions=TableData 21=rm;
     CaptionML=[DAN=Debitorposter;
                ENU=Customer Ledger Entries];
     InsertAllowed=No;
@@ -537,21 +536,24 @@ OBJECT Page 25 Customer Ledger Entries
                            ENU=Specifies if the entry has been part of a reverse transaction.];
                 ApplicationArea=#Advanced;
                 SourceExpr=Reversed;
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 71  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver nummeret p† den korrigerende post, der erstattede den oprindelige post i den tilbagef›rte transaktion.;
                            ENU=Specifies the number of the correcting entry that replaced the original entry in the reverse transaction.];
                 ApplicationArea=#Advanced;
                 SourceExpr="Reversed by Entry No.";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 75  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver nummeret p† den oprindelige post, der blev annulleret ved tilbagef›rselstransaktionen.;
                            ENU=Specifies the number of the original entry that was undone by the reverse transaction.];
                 ApplicationArea=#Advanced;
                 SourceExpr="Reversed Entry No.";
-                Visible=FALSE }
+                Visible=FALSE;
+                Editable=FALSE }
 
     { 30  ;2   ;Field     ;
                 ToolTipML=[DAN=Angiver nummeret p† posten, som tildeles fra den angivne nummerserie, da posten blev oprettet.;

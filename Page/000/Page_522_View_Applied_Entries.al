@@ -2,9 +2,9 @@ OBJECT Page 522 View Applied Entries
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -556,7 +556,7 @@ OBJECT Page 522 View Applied Entries
     BEGIN
       Applyrec.GET(RecordToShow."Entry No.");
       CurrPage.SETSELECTIONFILTER(TempItemLedgEntry);
-      IF TempItemLedgEntry.FINDSET THEN
+      IF TempItemLedgEntry.FINDSET THEN BEGIN
         REPEAT
           AppliedItemLedgEntry.GET(TempItemLedgEntry."Entry No.");
           IF AppliedItemLedgEntry."Entry No." <> 0 THEN BEGIN
@@ -567,7 +567,8 @@ OBJECT Page 522 View Applied Entries
           END;
         UNTIL TempItemLedgEntry.NEXT = 0;
 
-      BlockItem(Applyrec."Item No.");
+        BlockItem(Applyrec."Item No.");
+      END;
       Show;
     END;
 

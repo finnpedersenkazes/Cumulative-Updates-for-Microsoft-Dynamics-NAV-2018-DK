@@ -2,9 +2,9 @@ OBJECT Table 23 Vendor
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -264,6 +264,10 @@ OBJECT Table 23 Vendor
                                                    CaptionML=[DAN=Rentebetingelseskode;
                                                               ENU=Fin. Charge Terms Code] }
     { 29  ;   ;Purchaser Code      ;Code20        ;TableRelation=Salesperson/Purchaser;
+                                                   OnValidate=BEGIN
+                                                                ValidatePurchaserCode;
+                                                              END;
+
                                                    CaptionML=[DAN=Indk›berkode;
                                                               ENU=Purchaser Code] }
     { 30  ;   ;Shipment Method Code;Code10        ;TableRelation="Shipment Method";
@@ -292,7 +296,18 @@ OBJECT Table 23 Vendor
                                                    CaptionML=[DAN=Bem‘rkning;
                                                               ENU=Comment];
                                                    Editable=No }
-    { 39  ;   ;Blocked             ;Option        ;CaptionML=[DAN=Sp‘rret;
+    { 39  ;   ;Blocked             ;Option        ;OnValidate=BEGIN
+                                                                IF (Blocked <> Blocked::All) AND "Privacy Blocked" THEN
+                                                                  IF GUIALLOWED THEN
+                                                                    IF CONFIRM(ConfirmBlockedPrivacyBlockedQst) THEN
+                                                                      "Privacy Blocked" := FALSE
+                                                                    ELSE
+                                                                      ERROR('')
+                                                                  ELSE
+                                                                    ERROR(CanNotChangeBlockedDueToPrivacyBlockedErr);
+                                                              END;
+
+                                                   CaptionML=[DAN=Sp‘rret;
                                                               ENU=Blocked];
                                                    OptionCaptionML=[DAN=" ,Betaling,Alle";
                                                                     ENU=" ,Payment,All"];
@@ -921,6 +936,15 @@ OBJECT Table 23 Vendor
     { 140 ;   ;Image               ;Media         ;ExtendedDatatype=Person;
                                                    CaptionML=[DAN=Grafik;
                                                               ENU=Image] }
+    { 150 ;   ;Privacy Blocked     ;Boolean       ;OnValidate=BEGIN
+                                                                IF "Privacy Blocked" THEN
+                                                                  Blocked := Blocked::All
+                                                                ELSE
+                                                                  Blocked := Blocked::" ";
+                                                              END;
+
+                                                   CaptionML=[DAN=Beskyttelse af personlige oplysninger sp‘rret;
+                                                              ENU=Privacy Blocked] }
     { 170 ;   ;Creditor No.        ;Code20        ;CaptionML=[DAN=Kreditornr.;
                                                               ENU=Creditor No.];
                                                    Numeric=Yes }
@@ -1195,6 +1219,7 @@ OBJECT Table 23 Vendor
       ItemCrossReference@1016 : Record 5717;
       RMSetup@1020 : Record 5079;
       ServiceItem@1024 : Record 5940;
+      SalespersonPurchaser@1050 : Record 13;
       NoSeriesMgt@1011 : Codeunit 396;
       MoveEntries@1012 : Codeunit 361;
       UpdateContFromVend@1013 : Codeunit 5057;
@@ -1215,6 +1240,10 @@ OBJECT Table 23 Vendor
       VendNotRegisteredTxt@1128 : TextConst 'DAN=Denne kreditor er ikke registreret. V‘lg en af f›lgende muligheder for at forts‘tte:;ENU=This vendor is not registered. To continue, choose one of the following options:';
       SelectVendTxt@1118 : TextConst 'DAN=V‘lg en eksisterende kreditor.;ENU=Select an existing vendor.';
       InsertFromTemplate@1018 : Boolean;
+      PrivacyBlockedActionErr@1061 : TextConst '@@@="%1 = action (create or post), %2 = vendor code.";DAN=Du kan ikke %1 denne bilagstype, n†r beskyttelse af personlige oplysninger sp‘rret for kreditor %2.;ENU=You cannot %1 this type of document when Vendor %2 is blocked for privacy.';
+      PrivacyBlockedGenericTxt@1062 : TextConst '@@@="%1 = vendor code";DAN=Beskyttelse af personlige oplysninger sp‘rret m† ikke v‘re g‘ldende for kreditoren %1.;ENU=Privacy Blocked must not be true for vendor %1.';
+      ConfirmBlockedPrivacyBlockedQst@1030 : TextConst 'DAN=Hvis du ‘ndrer feltet Sp‘rret, ‘ndres feltet Beskyttelse af personlige oplysninger sp‘rret til Nej. Vil du forts‘tte?;ENU=If you change the Blocked field, the Privacy Blocked field is changed to No. Do you want to continue?';
+      CanNotChangeBlockedDueToPrivacyBlockedErr@1029 : TextConst 'DAN=Feltet Sp‘rret kan ikke ‘ndres, fordi brugeren er blokeret af sikkerhedsm‘ssige †rsager.;ENU=The Blocked field cannot be changed because the user is blocked for privacy reasons.';
 
     [External]
     PROCEDURE AssistEdit@2(OldVend@1000 : Record 23) : Boolean;
@@ -1282,6 +1311,9 @@ OBJECT Table 23 Vendor
     [External]
     PROCEDURE CheckBlockedVendOnDocs@4(Vend2@1003 : Record 23;Transaction@1000 : Boolean);
     BEGIN
+      IF Vend2."Privacy Blocked" THEN
+        VendPrivacyBlockedErrorMessage(Vend2,Transaction);
+
       IF Vend2.Blocked = Vend2.Blocked::All THEN
         VendBlockedErrorMessage(Vend2,Transaction);
     END;
@@ -1290,6 +1322,9 @@ OBJECT Table 23 Vendor
     PROCEDURE CheckBlockedVendOnJnls@5(Vend2@1005 : Record 23;DocType@1004 : ' ,Payment,Invoice,Credit Memo,Finance Charge Memo,Reminder,Refund';Transaction@1003 : Boolean);
     BEGIN
       WITH Vend2 DO BEGIN
+        IF "Privacy Blocked" THEN
+          VendPrivacyBlockedErrorMessage(Vend2,Transaction);
+
         IF (Blocked = Blocked::All) OR
            (Blocked = Blocked::Payment) AND (DocType = DocType::Payment)
         THEN
@@ -1343,6 +1378,25 @@ OBJECT Table 23 Vendor
       ELSE
         Action := Text006;
       ERROR(Text007,Action,Vend2."No.",Vend2.Blocked);
+    END;
+
+    [External]
+    PROCEDURE VendPrivacyBlockedErrorMessage@62(Vend2@1001 : Record 23;Transaction@1002 : Boolean);
+    VAR
+      Action@1000 : Text[30];
+    BEGIN
+      IF Transaction THEN
+        Action := Text005
+      ELSE
+        Action := Text006;
+
+      ERROR(PrivacyBlockedActionErr,Action,Vend2."No.");
+    END;
+
+    [Internal]
+    PROCEDURE GetPrivacyBlockedGenericErrorText@73(Vend2@1001 : Record 23) : Text[250];
+    BEGIN
+      EXIT(STRSUBSTNO(PrivacyBlockedGenericTxt,Vend2."No."));
     END;
 
     [Internal]
@@ -1761,6 +1815,14 @@ OBJECT Table 23 Vendor
       END;
 
       VALIDATE("Payment Method Code",PaymentMethod.Code);
+    END;
+
+    LOCAL PROCEDURE ValidatePurchaserCode@690();
+    BEGIN
+      IF "Purchaser Code" <> '' THEN
+        IF SalespersonPurchaser.GET("Purchaser Code") THEN
+          IF SalespersonPurchaser.VerifySalesPersonPurchaserPrivacyBlocked(SalespersonPurchaser) THEN
+            ERROR(SalespersonPurchaser.GetPrivacyBlockedGenericText(SalespersonPurchaser,FALSE))
     END;
 
     [Integration]

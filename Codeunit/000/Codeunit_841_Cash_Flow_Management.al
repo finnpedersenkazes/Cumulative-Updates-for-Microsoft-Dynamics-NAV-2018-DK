@@ -2,9 +2,9 @@ OBJECT Codeunit 841 Cash Flow Management
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -510,7 +510,7 @@ OBJECT Codeunit 841 Cash Flow Management
       CashFlowForecast.INSERT;
     END;
 
-    LOCAL PROCEDURE CreateCashFlowNoSeries@40() : Code[10];
+    LOCAL PROCEDURE CreateCashFlowNoSeries@40() : Code[20];
     VAR
       NoSeries@1009 : Record 308;
       NoSeriesLine@1010 : Record 309;

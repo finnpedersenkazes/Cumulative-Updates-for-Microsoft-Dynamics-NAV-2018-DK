@@ -2,9 +2,9 @@ OBJECT Page 5052 Contact List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=06-04-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.21441;
   }
   PROPERTIES
   {
@@ -750,6 +750,30 @@ OBJECT Page 5052 Contact List
                            ENU=Specifies an alternate name that you can use to search for the record in question when you cannot remember the value in the Name field.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr="Search Name";
+                Visible=FALSE }
+
+    { 95  ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, om adgangen til data skal begr‘nses for dataemnet i den daglige drift. Dette er eksempelvis nyttigt, n†r du vil beskytte data mod ‘ndringer, mens det kontrolleres, om de indeholder personlige oplysninger.;
+                           ENU=Specifies whether to limit access to data for the data subject during daily operations. This is useful, for example, when protecting data from changes while it is under privacy review.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="Privacy Blocked";
+                Importance=Additional;
+                Visible=FALSE }
+
+    { 96  ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, at personens alder er lavere end den myndighedsalder, som lovgivningen foreskriver. Data for mindre†rige blokeres, indtil en for‘lder eller v‘rge giver for‘ldresamtykke. Du kan oph‘ve blokeringen af data ved at markere afkrydsningsfeltet For‘ldresamtykke modtaget.;
+                           ENU=Specifies that the person's age is below the definition of adulthood as recognized by law. Data for minors is blocked until a parent or guardian of the minor provides parental consent. You unblock the data by selecting the Parental Consent Received check box.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=Minor;
+                Importance=Additional;
+                Visible=FALSE }
+
+    { 97  ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver, at den mindre†riges for‘ldre eller v‘rge har givet samtykke til, at den mindre†rige m† bruge denne tjeneste. N†r dette afkrydsningsfelt er markeret, kan data til den mindre†rige behandles.;
+                           ENU=Specifies that a parent or guardian of the minor has provided their consent to allow the minor to use this service. When this check box is selected, data for the minor can be processed.];
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr="Parental Consent Received";
+                Importance=Additional;
                 Visible=FALSE }
 
     { 1900000007;0;Container;
