@@ -2,9 +2,9 @@ OBJECT Page 22 Customer List
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 22 Customer List
     PageType=List;
     CardPageID=Customer Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Nyt bilag,Anmod om godkendelse,Debitor;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Nyt bilag,Anmod om godkendelse,Debitor;
                                 ENU=New,Process,Report,Approve,New Document,Request Approval,Customer];
     OnInit=BEGIN
              SetCustomerNoVisibilityOnFactBoxes;

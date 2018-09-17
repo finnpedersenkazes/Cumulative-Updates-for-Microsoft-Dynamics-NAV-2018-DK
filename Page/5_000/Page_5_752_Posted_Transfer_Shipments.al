@@ -2,9 +2,9 @@ OBJECT Page 5752 Posted Transfer Shipments
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 5752 Posted Transfer Shipments
     SourceTable=Table5744;
     PageType=List;
     CardPageID=Posted Transfer Shipment;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Leverance;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Leverance;
                                 ENU=New,Process,Report,Shipment];
     ActionList=ACTIONS
     {

@@ -2,9 +2,9 @@ OBJECT Page 1625 Office Contact Associations
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 1625 Office Contact Associations
     SourceTable=Table1625;
     PageType=List;
     SourceTableTemporary=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Relaterede oplysninger;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Relaterede oplysninger;
                                 ENU=New,Process,Report,Related Information];
     ShowFilter=No;
     OnAfterGetRecord=BEGIN

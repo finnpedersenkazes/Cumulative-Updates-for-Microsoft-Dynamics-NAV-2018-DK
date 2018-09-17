@@ -2,9 +2,9 @@ OBJECT Page 9302 Sales Credit Memos
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 9302 Sales Credit Memos
     PageType=List;
     CardPageID=Sales Credit Memo;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Frigiv,Bogf›ring,Kreditnota,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Frigiv,Bogf›ring,Kreditnota,Anmod om godkendelse;
                                 ENU=New,Process,Report,Release,Posting,Credit Memo,Request Approval];
     OnOpenPage=VAR
                  SalesSetup@1000 : Record 311;

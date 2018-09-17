@@ -2,9 +2,9 @@ OBJECT Page 255 Cash Receipt Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -16,7 +16,7 @@ OBJECT Page 255 Cash Receipt Journal
     DelayedInsert=Yes;
     PageType=Worksheet;
     AutoSplitKey=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Side;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Side;
                                 ENU=New,Process,Report,Approve,Page];
     OnInit=BEGIN
              TotalBalanceVisible := TRUE;

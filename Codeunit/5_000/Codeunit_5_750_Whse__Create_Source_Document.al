@@ -2,9 +2,9 @@ OBJECT Codeunit 5750 Whse.-Create Source Document
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -373,6 +373,8 @@ OBJECT Codeunit 5750 Whse.-Create Source Document
     [External]
     PROCEDURE CheckIfFromSalesLine2ShptLine@19(SalesLine@1001 : Record 37) : Boolean;
     BEGIN
+      IF SalesLine.IsServiceItem THEN
+        EXIT(FALSE);
       SalesLine.CALCFIELDS("Whse. Outstanding Qty. (Base)");
       EXIT(ABS(SalesLine."Outstanding Qty. (Base)") > ABS(SalesLine."Whse. Outstanding Qty. (Base)"));
     END;
@@ -391,6 +393,8 @@ OBJECT Codeunit 5750 Whse.-Create Source Document
     VAR
       WhseReceiptLine@1002 : Record 7317;
     BEGIN
+      IF SalesLine.IsServiceItem THEN
+        EXIT(FALSE);
       WITH WhseReceiptLine DO BEGIN
         SetSourceFilter(DATABASE::"Sales Line",SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.",FALSE);
         CALCSUMS("Qty. Outstanding (Base)");
@@ -403,6 +407,8 @@ OBJECT Codeunit 5750 Whse.-Create Source Document
     VAR
       WhseShptLine@1000 : Record 7321;
     BEGIN
+      IF PurchLine.IsServiceItem THEN
+        EXIT(FALSE);
       WITH WhseShptLine DO BEGIN
         SetSourceFilter(DATABASE::"Purchase Line",PurchLine."Document Type",PurchLine."Document No.",PurchLine."Line No.",FALSE);
         CALCSUMS("Qty. Outstanding (Base)");
@@ -413,6 +419,8 @@ OBJECT Codeunit 5750 Whse.-Create Source Document
     [External]
     PROCEDURE CheckIfPurchLine2ReceiptLine@16(PurchLine@1001 : Record 39) : Boolean;
     BEGIN
+      IF PurchLine.IsServiceItem THEN
+        EXIT(FALSE);
       PurchLine.CALCFIELDS("Whse. Outstanding Qty. (Base)");
       EXIT(ABS(PurchLine."Outstanding Qty. (Base)") > ABS(PurchLine."Whse. Outstanding Qty. (Base)"));
     END;

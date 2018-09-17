@@ -2,9 +2,9 @@ OBJECT Codeunit 900 Assembly-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -591,7 +591,7 @@ OBJECT Codeunit 900 Assembly-Post
         ItemJnlLine.VALIDATE("Location Code","Location Code");
         ItemJnlLine."Bin Code" := "Bin Code";
         ItemJnlLine."Indirect Cost %" := "Indirect Cost %";
-        ItemJnlLine."Overhead Rate" := "Overhead Rate" / "Qty. per Unit of Measure";
+        ItemJnlLine."Overhead Rate" := "Overhead Rate";
         ItemJnlLine."Unit Cost" := "Unit Cost";
         ItemJnlLine.VALIDATE("Unit Amount",
           ROUND(("Unit Cost" - "Overhead Rate") / (1 + "Indirect Cost %" / 100),

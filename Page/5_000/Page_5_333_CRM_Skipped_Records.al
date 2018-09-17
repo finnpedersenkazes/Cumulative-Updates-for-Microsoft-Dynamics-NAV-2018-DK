@@ -2,9 +2,9 @@ OBJECT Page 5333 CRM Skipped Records
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 5333 CRM Skipped Records
     SourceTableView=SORTING(Skipped,Table ID)
                     WHERE(Skipped=CONST(Yes));
     PageType=List;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Synkronisering;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Synkronisering;
                                 ENU=New,Process,Report,Synchronization];
     OnAfterGetCurrRecord=BEGIN
                            AreRecordsExist := TRUE;

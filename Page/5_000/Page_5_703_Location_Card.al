@@ -2,9 +2,9 @@ OBJECT Page 5703 Location Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -12,7 +12,7 @@ OBJECT Page 5703 Location Card
                ENU=Location Card];
     SourceTable=Table14;
     PageType=Card;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Lokation;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Lokation;
                                 ENU=New,Process,Report,Location];
     OnInit=BEGIN
              UseCrossDockingEnable := TRUE;

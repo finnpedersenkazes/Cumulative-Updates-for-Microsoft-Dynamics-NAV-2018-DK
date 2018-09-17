@@ -2,9 +2,9 @@ OBJECT Page 6640 Purchase Return Order
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 6640 Purchase Return Order
     SourceTableView=WHERE(Document Type=FILTER(Return Order));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,RapportÇr,Godkend,Frigiv,Bogfõring,Forbered,Faktura,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Frigiv,Bogfõring,Forbered,Faktura,Anmod om godkendelse;
                                 ENU=New,Process,Report,Approve,Release,Posting,Prepare,Invoice,Request Approval];
     OnInit=VAR
              PurchasesPayablesSetup@1000 : Record 312;
@@ -935,6 +935,8 @@ OBJECT Page 6640 Purchase Return Order
                            ENU=Ship-to];
                 ToolTipML=[DAN=Angiver den adresse, som produkter i kõbsbilaget skal leveres til. Standard (firmaadresse): Det samme som den firmaadresse, der er angivet i vinduet Virksomhedsoplysninger. Lokation: ên af virksomhedens lokationsadresser. Brugerdefineret adresse: En vilkÜrlig leveringsadresse, som du angiver i nedenstÜende felter.;
                            ENU=Specifies the address that the products on the purchase document are shipped to. Default (Company Address): The same as the company address specified in the Company Information window. Location: One of the company's location addresses. Custom Address: Any ship-to address that you specify in the fields below.];
+                OptionCaptionML=[DAN=Standard (kreditoradresse),alternativ kreditoradresse,brugerdefineret adresse;
+                                 ENU=Default (Vendor Address),Alternate Vendor Address,Custom Address];
                 ApplicationArea=#PurchReturnOrder;
                 SourceExpr=ShipToOptions;
                 OnValidate=BEGIN

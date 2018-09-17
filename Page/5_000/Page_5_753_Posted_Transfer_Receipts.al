@@ -2,9 +2,9 @@ OBJECT Page 5753 Posted Transfer Receipts
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 5753 Posted Transfer Receipts
     SourceTable=Table5746;
     PageType=List;
     CardPageID=Posted Transfer Receipt;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Modtagelse;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Modtagelse;
                                 ENU=New,Process,Report,Receipt];
     ActionList=ACTIONS
     {

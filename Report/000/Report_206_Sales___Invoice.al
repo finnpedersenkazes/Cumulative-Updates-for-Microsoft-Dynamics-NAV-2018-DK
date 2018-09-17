@@ -2,9 +2,9 @@ OBJECT Report 206 Sales - Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -66,6 +66,9 @@ OBJECT Report 206 Sales - Invoice
 
                                   OnAfterGetRecordSalesInvoiceHeader("Sales Invoice Header");
                                   OnGetReferenceText("Sales Invoice Header",ReferenceText,Handled);
+
+                                  Handled := FALSE;
+                                  OnGetDocumentReferenceText("Sales Invoice Header",DocumentReference,DocumentReferenceTxt,Handled);
                                 END;
 
                ReqFilterFields=No.,Sell-to Customer No.,No. Printed }
@@ -1488,6 +1491,11 @@ OBJECT Report 206 Sales - Invoice
 
     [Integration]
     PROCEDURE OnGetReferenceText@1214(SalesInvoiceHeader@1000 : Record 112;VAR ReferenceText@1001 : Text[80];VAR Handled@1002 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    PROCEDURE OnGetDocumentReferenceText@1060000(SalesInvoiceHeader@1060000 : Record 112;VAR DocumentReference@1060001 : Text;VAR DocumentReferenceText@1060002 : Text;VAR Handled@1060003 : Boolean);
     BEGIN
     END;
 

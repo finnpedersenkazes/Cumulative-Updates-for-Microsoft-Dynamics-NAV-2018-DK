@@ -2,9 +2,9 @@ OBJECT Page 43 Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292,NAVDK11.00.00.22292;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 43 Sales Invoice
     SourceTableView=WHERE(Document Type=FILTER(Invoice));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Bogf›ring,Forbered,Faktura,Frigiv,Anmod om godkendelse,Vis;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Bogf›ring,Forbered,Faktura,Frigiv,Anmod om godkendelse,Vis;
                                 ENU=New,Process,Report,Approve,Posting,Prepare,Invoice,Release,Request Approval,View];
     OnInit=VAR
              SalesReceivablesSetup@1001 : Record 311;

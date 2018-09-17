@@ -2,9 +2,9 @@ OBJECT Page 344 Navigate
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -18,7 +18,7 @@ OBJECT Page 344 Navigate
     DataCaptionExpr=GetCaptionText;
     PageType=Worksheet;
     SourceTableTemporary=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,S›g efter;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,S›g efter;
                                 ENU=New,Process,Report,Find By];
     OnInit=BEGIN
              SourceNameEnable := TRUE;

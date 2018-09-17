@@ -2,9 +2,9 @@ OBJECT Table 17 G/L Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -434,7 +434,7 @@ OBJECT Table 17 G/L Entry
     END;
 
     [External]
-    PROCEDURE CopyFromDeferralPostBuffer@46(DeferralPostBuffer@1001 : Record 1703);
+    PROCEDURE CopyFromDeferralPostBuffer@46(DeferralPostBuffer@1001 : Record 1706);
     BEGIN
       "System-Created Entry" := DeferralPostBuffer."System-Created Entry";
       "Gen. Posting Type" := DeferralPostBuffer."Gen. Posting Type";

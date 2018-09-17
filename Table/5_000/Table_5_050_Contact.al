@@ -2,9 +2,9 @@ OBJECT Table 5050 Contact
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -1864,6 +1864,22 @@ OBJECT Table 5050 Contact
       IF Type = Type::Person THEN
         CompanyDetails.EDITABLE := FALSE;
       CompanyDetails.RUNMODAL;
+    END;
+
+    PROCEDURE LookupCustomerTemplate@53() : Code[20];
+    VAR
+      CustomerTemplate@1001 : Record 5105;
+      CustomerTemplateList@1000 : Page 5156;
+    BEGIN
+      CustomerTemplate.FILTERGROUP(2);
+      CustomerTemplate.SETRANGE("Contact Type",Type);
+      CustomerTemplate.FILTERGROUP(0);
+      CustomerTemplateList.LOOKUPMODE := TRUE;
+      CustomerTemplateList.SETTABLEVIEW(CustomerTemplate);
+      IF CustomerTemplateList.RUNMODAL = ACTION::LookupOK THEN BEGIN
+        CustomerTemplateList.GETRECORD(CustomerTemplate);
+        EXIT(CustomerTemplate.Code);
+      END;
     END;
 
     LOCAL PROCEDURE CheckForExistingRelationships@20(LinkToTable@1000 : ' ,Customer,Vendor,Bank Account');

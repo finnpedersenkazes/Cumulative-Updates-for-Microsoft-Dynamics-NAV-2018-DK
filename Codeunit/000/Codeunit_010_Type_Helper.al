@@ -2,9 +2,9 @@ OBJECT Codeunit 10 Type Helper
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -245,7 +245,7 @@ OBJECT Codeunit 10 Type Helper
 
     LOCAL PROCEDURE OptionsAreEqual@18(Value@1000 : Text;CurrentOption@1001 : Text) : Boolean;
     BEGIN
-      EXIT((Value = CurrentOption) OR ((Value = '') AND (DELCHR(CurrentOption,'=',' ') = '')));
+      EXIT(((Value <> '') AND (Value = CurrentOption)) OR ((Value = '') AND (CurrentOption = ' ')));
     END;
 
     [External]

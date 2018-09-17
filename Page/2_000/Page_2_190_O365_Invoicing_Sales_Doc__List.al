@@ -2,9 +2,9 @@ OBJECT Page 2190 O365 Invoicing Sales Doc. List
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -18,7 +18,7 @@ OBJECT Page 2190 O365 Invoicing Sales Doc. List
     PageType=List;
     SourceTableTemporary=Yes;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Fakturer;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Fakturer;
                                 ENU=New,Process,Report,Invoice];
     OnInit=BEGIN
              SetSortByDocDate;

@@ -2,14 +2,15 @@ OBJECT Page 7138 Purchase Budget Overview
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
     CaptionML=[DAN=Oversigt over k›bsbudget;
                ENU=Purchase Budget Overview];
+    SaveValues=Yes;
     InsertAllowed=No;
     DeleteAllowed=No;
     LinksAllowed=No;

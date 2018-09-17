@@ -2,9 +2,9 @@ OBJECT Codeunit 1605 PEPPOL Management
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -282,6 +282,24 @@ OBJECT Codeunit 1605 PEPPOL Management
       ActualDeliveryDate := '';
       DeliveryID := '';
       DeliveryIDSchemeID := '';
+    END;
+
+    [External]
+    PROCEDURE GetGLNDeliveryInfo@43(SalesHeader@1000 : Record 36;VAR ActualDeliveryDate@1003 : Text;VAR DeliveryID@1001 : Text;VAR DeliveryIDSchemeID@1002 : Text);
+    VAR
+      Customer@1004 : Record 18;
+    BEGIN
+      ActualDeliveryDate := FORMAT(SalesHeader."Shipment Date",0,9);
+
+      IF Customer.GET(SalesHeader."Sell-to Customer No.") THEN
+        DeliveryID := Customer.GLN
+      ELSE
+        DeliveryID := '';
+
+      IF DeliveryID <> '' THEN
+        DeliveryIDSchemeID := '0088'
+      ELSE
+        DeliveryIDSchemeID := '';
     END;
 
     [External]

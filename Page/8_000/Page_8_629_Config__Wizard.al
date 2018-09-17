@@ -2,9 +2,9 @@ OBJECT Page 8629 Config. Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 8629 Config. Wizard
     LinksAllowed=No;
     SourceTable=Table8627;
     PageType=Card;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Trin 4,Trin 5;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Trin 4,Trin 5;
                                 ENU=New,Process,Report,Step 4,Step 5];
     ShowFilter=No;
     OnInit=VAR

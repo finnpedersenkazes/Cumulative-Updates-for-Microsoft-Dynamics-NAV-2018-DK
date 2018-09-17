@@ -2,9 +2,9 @@ OBJECT Table 81 Gen. Journal Line
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -2244,7 +2244,7 @@ OBJECT Table 81 Gen. Journal Line
     {    ;Journal Template Name,Journal Batch Name,Posting Date,Document No.;
                                                    MaintainSQLIndex=No }
     {    ;Account Type,Account No.,Applies-to Doc. Type,Applies-to Doc. No. }
-    {    ;Document No.                            ;MaintainSQLIndex=No }
+    {    ;Document No.                             }
     {    ;Incoming Document Entry No.              }
   }
   FIELDGROUPS
@@ -3588,7 +3588,7 @@ OBJECT Table 81 Gen. Journal Line
       ToCurrencyCode := GetShowCurrencyCode(NewCurrencyCode);
       IF NOT CONFIRM(STRSUBSTNO(ChangeCurrencyQst,FromCurrencyCode,ToCurrencyCode),TRUE) THEN
         ERROR(UpdateInterruptedErr);
-      VALIDATE("Currency Code",CurrencyCode);
+      VALIDATE("Currency Code",NewCurrencyCode);
     END;
 
     LOCAL PROCEDURE SetAppliesToFields@140(DocType@1000 : Option;DocNo@1001 : Code[20];ExtDocNo@1002 : Code[35]);
@@ -3599,7 +3599,6 @@ OBJECT Table 81 Gen. Journal Line
          ("Document Type" = "Document Type"::Payment)
       THEN
         "External Document No." := ExtDocNo;
-      "Bal. Account Type" := "Bal. Account Type"::"G/L Account";
     END;
 
     LOCAL PROCEDURE CustVendAccountNosModified@32() : Boolean;

@@ -2,9 +2,9 @@ OBJECT Table 121 Purch. Rcpt. Line
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -215,13 +215,13 @@ OBJECT Table 121 Purch. Rcpt. Line
                                                    AutoFormatType=2;
                                                    AutoFormatExpr=GetCurrencyCodeFromHeader }
     { 107 ;   ;IC Partner Ref. Type;Option        ;DataClassification=CustomerContent;
-                                                   CaptionML=[DAN=IC Partner Ref. Type;
+                                                   CaptionML=[DAN=Ref.type for IC-partner;
                                                               ENU=IC Partner Ref. Type];
-                                                   OptionCaptionML=[DAN=" ,G/L Account,Item,,,Charge (Item),Cross reference,Common Item No.";
+                                                   OptionCaptionML=[DAN=" ,Finanskonto,Vare,,,Gebyr (vare),Varereference,F‘lles varenr.";
                                                                     ENU=" ,G/L Account,Item,,,Charge (Item),Cross reference,Common Item No."];
                                                    OptionString=[ ,G/L Account,Item,,,Charge (Item),Cross reference,Common Item No.] }
     { 108 ;   ;IC Partner Reference;Code20        ;DataClassification=CustomerContent;
-                                                   CaptionML=[DAN=IC Partner Reference;
+                                                   CaptionML=[DAN=Reference for IC-partner;
                                                               ENU=IC Partner Reference] }
     { 131 ;   ;Posting Date        ;Date          ;CaptionML=[DAN=Bogf›ringsdato;
                                                               ENU=Posting Date] }

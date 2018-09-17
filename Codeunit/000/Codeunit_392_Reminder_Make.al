@@ -2,9 +2,9 @@ OBJECT Codeunit 392 Reminder-Make
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -22,7 +22,7 @@ OBJECT Codeunit 392 Reminder-Make
       ReminderTerms@1003 : Record 292;
       ReminderHeaderReq@1005 : Record 295;
       ReminderHeader@1006 : Record 295;
-      ReminderLine@1007 : Record 296;
+      ReminderLine@1100 : Record 296;
       ReminderEntry@1008 : Record 300;
       Text0000@1023 : TextConst 'DAN=De Übne poster er ikke forfaldne;ENU=Open Entries Not Due';
       CustLedgEntryOnHoldTEMP@1011 : TEMPORARY Record 21;
@@ -32,10 +32,12 @@ OBJECT Codeunit 392 Reminder-Make
       HeaderExists@1010 : Boolean;
       IncludeEntriesOnHold@1102601000 : Boolean;
       Text0001@1102601002 : TextConst 'DAN=èbne afventende poster;ENU=Open Entries On Hold';
+      CustLedgEntryLastIssuedReminderLevelFilter@1007 : Text;
 
     [Internal]
     PROCEDURE Code@7() RetVal : Boolean;
     BEGIN
+      CustLedgEntryLastIssuedReminderLevelFilter := CustLedgEntry.GETFILTER("Last Issued Reminder Level");
       WITH ReminderHeader DO
         IF "No." <> '' THEN BEGIN
           HeaderExists := TRUE;
@@ -345,6 +347,10 @@ OBJECT Codeunit 392 Reminder-Make
       ReminderLevel3@1000 : Record 293;
       LastLevel@1002 : Boolean;
     BEGIN
+      IF SkipCurrentReminderLevel(ReminderLevel2."No.") THEN BEGIN
+        CustLedgEntry.SETRANGE("Last Issued Reminder Level",-1);
+        EXIT;
+      END;
       ReminderLevel3 := ReminderLevel2;
       ReminderLevel3.COPYFILTERS(ReminderLevel2);
       IF ReminderLevel3.NEXT = 0 THEN
@@ -366,6 +372,24 @@ OBJECT Codeunit 392 Reminder-Make
           CustLedgEntry.SETRANGE("Last Issued Reminder Level",ReminderLevel2."No." - 1);
     END;
 
+    LOCAL PROCEDURE SkipCurrentReminderLevel@32(ReminderLevelNo@1000 : Integer) : Boolean;
+    VAR
+      Integer@1002 : Record 2000000026;
+    BEGIN
+      IF CustLedgEntryLastIssuedReminderLevelFilter = '' THEN
+        EXIT(FALSE);
+
+      Integer.SETFILTER(Number,CustLedgEntryLastIssuedReminderLevelFilter);
+      Integer.FINDSET;
+      IF Integer.Number > ReminderLevelNo - 1 THEN
+        EXIT(TRUE);
+      REPEAT
+        IF Integer.Number = ReminderLevelNo - 1 THEN
+          EXIT(FALSE)
+      UNTIL Integer.NEXT = 0;
+      EXIT(TRUE);
+    END;
+
     LOCAL PROCEDURE FilterCustLedgEntryReminderLevel@10(VAR CustLedgEntry@1000 : Record 21;VAR ReminderLevel@1001 : Record 293;CurrencyCode@1002 : Code[10]);
     BEGIN
       WITH Cust DO BEGIN
@@ -373,7 +397,6 @@ OBJECT Codeunit 392 Reminder-Make
         CustLedgEntry.SETRANGE(Open,TRUE);
         CustLedgEntry.SETRANGE("Customer No.","No.");
         CustLedgEntry.SETRANGE("Due Date");
-        CustLedgEntry.SETRANGE("Last Issued Reminder Level");
         CustLedgEntry.SETRANGE("Currency Code",CurrencyCode);
         ReminderLevel.SETRANGE("Reminder Terms Code",ReminderTerms.Code);
       END;

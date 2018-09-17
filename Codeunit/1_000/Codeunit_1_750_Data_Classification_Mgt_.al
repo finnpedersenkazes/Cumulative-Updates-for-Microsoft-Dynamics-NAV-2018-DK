@@ -2,9 +2,9 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -39,6 +39,12 @@ OBJECT Codeunit 1750 Data Classification Mgt.
       WrongFormatExcelFileErr@1025 : TextConst 'DAN=Det lader til, at det angivne Excel-regneark ikke er formateret korrekt.;ENU=Looks like the Excel worksheet you provided is not formatted correctly.';
       WrongSensitivityValueErr@1024 : TextConst '@@@="%1=Given Sensitivity %2=Available Options";DAN=%1 er ikke en gyldig klassificering. Klassificeringer kan v‘re %2.;ENU=%1 is not a valid classification. Classifications can be %2.';
       LegalDisclaimerTxt@1016 : TextConst 'DAN=Microsoft tilbyder kun denne funktion til dataklassificering for at g›re tingene nemmere for dig. Du har selv ansvaret for at klassificere dataene korrekt og overholde de love og regler, der g‘lder for dig. Microsoft fraskriver sig ethvert ansvar i forbindelse med krav vedr›rende din klassificering af dataene.;ENU=Microsoft is providing this Data Classification feature as a matter of convenience only. It''s your responsibility to classify the data appropriately and comply with any laws and regulations that are applicable to you. Microsoft disclaims all responsibility towards any claims related to your classification of the data.';
+      SyncFieldsReminderNotificationTxt@1026 : TextConst 'DAN=P†mindelse om synkronisering af dataklassificeringer;ENU=Data Classifications sync reminder';
+      SyncFieldsReminderNotificationDescriptionTxt@1027 : TextConst 'DAN=P†mind mig for at finde ikke-klassificerede felter hver 30. dag;ENU=Remind me to find unclassified fields every 30 days';
+      UnclassifiedFieldsNotificationTxt@1028 : TextConst 'DAN=Der mangler dataf›lsomheder;ENU=Data Sensitivities are missing';
+      UnclassifiedFieldsNotificationDescriptionTxt@1029 : TextConst 'DAN=Vis en advarsel, n†r der er felter med manglende dataf›lsomhed;ENU=Show a warning when there are fields with missing Data Sensitivity';
+      ReviewPrivacySettingsNotificationTxt@1030 : TextConst 'DAN=Gennemse din p†mindelse om indstillinger for beskyttelse af personlige oplysninger;ENU=Review your privacy settings reminder';
+      ReviewPrivacySettingsNotificationDescriptionTxt@1031 : TextConst 'DAN=Vis en advarsel om at gennemse dine indstillinger for beskyttelse af personlige oplysninger, n†r der findes personer fra EU i systemet.;ENU=Show a warning to review your privacy settings when persons from EU are found in your system';
 
     PROCEDURE FillDataSensitivityTable@12();
     VAR
@@ -349,8 +355,11 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 
     LOCAL PROCEDURE FireDataClassificationNotification@15(EntityName@1001 : Text);
     VAR
+      MyNotifications@1002 : Record 1518;
       DataClassNotification@1000 : Notification;
     BEGIN
+      IF NOT MyNotifications.IsEnabled(GetDataClassificationNotificationId) THEN
+        EXIT;
       DataClassNotification.ID := GetDataClassificationNotificationId;
       DataClassNotification.ADDACTION(DataClassNotifActionTxt,CODEUNIT::"Data Classification Mgt.",'OpenDataClassificationWizard');
       DataClassNotification.MESSAGE(STRSUBSTNO(DataClassNotifMessageMsg,EntityName));
@@ -360,8 +369,11 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 
     LOCAL PROCEDURE FireSyncFieldsNotification@21(DaysSinceLastSync@1003 : Integer);
     VAR
+      MyNotifications@1001 : Record 1518;
       SyncFieldsNotification@1000 : Notification;
     BEGIN
+      IF NOT MyNotifications.IsEnabled(GetSyncFieldsNotificationId) THEN
+        EXIT;
       SyncFieldsNotification.ID := GetSyncFieldsNotificationId;
       SyncFieldsNotification.MESSAGE := STRSUBSTNO(SyncFieldsInFieldTableMsg,DaysSinceLastSync);
       SyncFieldsNotification.ADDACTION(SyncAllFieldsTxt,CODEUNIT::"Data Classification Mgt.",'SyncAllFieldsFromNotification');
@@ -371,8 +383,11 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 
     LOCAL PROCEDURE FireUnclassifiedFieldsNotification@27();
     VAR
+      MyNotifications@1001 : Record 1518;
       Notification@1000 : Notification;
     BEGIN
+      IF NOT MyNotifications.IsEnabled(GetUnclassifiedFieldsNotificationId) THEN
+        EXIT;
       Notification.ID := GetUnclassifiedFieldsNotificationId;
       Notification.MESSAGE := UnclassifiedFieldsExistMsg;
       Notification.ADDACTION(OpenWorksheetActionLbl,CODEUNIT::"Data Classification Mgt.",'OpenClassificationWorksheetPage');
@@ -646,8 +661,8 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 
       IF TempDataSensitivity.FINDSET THEN
         REPEAT
-          IF TempDataSensitivity."Data Sensitivity" = DataSensitivity."Data Sensitivity"::Unclassified THEN BEGIN
-            DataSensitivity.GET(TempDataSensitivity."Company Name",DataSensitivity."Table No",DataSensitivity."Field No");
+          IF TempDataSensitivity."Data Sensitivity" = TempDataSensitivity."Data Sensitivity"::Unclassified THEN BEGIN
+            DataSensitivity.GET(TempDataSensitivity."Company Name",TempDataSensitivity."Table No",TempDataSensitivity."Field No");
             DataSensitivity.DELETE;
           END;
         UNTIL TempDataSensitivity.NEXT = 0;
@@ -679,14 +694,10 @@ OBJECT Codeunit 1750 Data Classification Mgt.
       Employee@1005 : Record 5200;
       Contact@1006 : Record 5050;
       Resource@1007 : Record 156;
-      DataClassNotifSetup@1008 : Record 1751;
       CompanyInformation@1009 : Record 79;
       IdentityManagement@1002 : Codeunit 9801;
     BEGIN
       IF IdentityManagement.IsInvAppId THEN
-        EXIT;
-
-      IF NOT DataClassNotifSetup.ShowNotifications THEN
         EXIT;
 
       IF NOT DataSensitivity.WRITEPERMISSION THEN
@@ -756,21 +767,38 @@ OBJECT Codeunit 1750 Data Classification Mgt.
 
     PROCEDURE DisableNotifications@33(Notification@1000 : Notification);
     VAR
-      DataClassNotifSetup@1001 : Record 1751;
+      MyNotifications@1001 : Record 1518;
     BEGIN
-      DataClassNotifSetup.DisableNotifications;
+      CASE Notification.ID OF
+        GetDataClassificationNotificationId:
+          MyNotifications.InsertDefault(
+            Notification.ID,
+            ReviewPrivacySettingsNotificationTxt,
+            ReviewPrivacySettingsNotificationDescriptionTxt,
+            FALSE);
+        GetSyncFieldsNotificationId:
+          MyNotifications.InsertDefault(
+            Notification.ID,
+            SyncFieldsReminderNotificationTxt,
+            SyncFieldsReminderNotificationDescriptionTxt,
+            FALSE);
+        GetUnclassifiedFieldsNotificationId:
+          MyNotifications.InsertDefault(
+            Notification.ID,
+            UnclassifiedFieldsNotificationTxt,
+            UnclassifiedFieldsNotificationDescriptionTxt,
+            FALSE);
+      END;
+
+      MyNotifications.Disable(Notification.ID);
     END;
 
     PROCEDURE ShowSyncFieldsNotification@28();
     VAR
       FieldsSyncStatus@1001 : Record 1750;
       CompanyInformation@1002 : Record 79;
-      DataClassNotifSetup@1008 : Record 1751;
       DaysSinceLastSync@1000 : Integer;
     BEGIN
-      IF NOT DataClassNotifSetup.ShowNotifications THEN
-        EXIT;
-
       IF NOT FieldsSyncStatus.WRITEPERMISSION THEN
         EXIT;
 

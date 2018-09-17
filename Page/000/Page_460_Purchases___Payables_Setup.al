@@ -2,9 +2,9 @@ OBJECT Page 460 Purchases & Payables Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -194,7 +194,7 @@ OBJECT Page 460 Purchases & Payables Setup
                 Importance=Additional }
 
     { 37  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies if changes to addresses made on purchase documents are copied to the vendor card. By default, changes are copied to the vendor card.;
+                ToolTipML=[DAN=Angiver, om adresse‘ndringer, der er foretaget p† k›bsbilag, kopieres til kreditorkortet. Som standard kopieres ‘ndringer til kreditorkortet.;
                            ENU=Specifies if changes to addresses made on purchase documents are copied to the vendor card. By default, changes are copied to the vendor card.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr="Ignore Updated Addresses" }

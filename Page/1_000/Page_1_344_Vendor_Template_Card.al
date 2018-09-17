@@ -2,9 +2,9 @@ OBJECT Page 1344 Vendor Template Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -16,7 +16,7 @@ OBJECT Page 1344 Vendor Template Card
     SourceTableTemporary=Yes;
     CardPageID=Vendor Template Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚rer,Stamdata;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapporter,Stamdata;
                                 ENU=New,Process,Reports,Master Data];
     OnOpenPage=BEGIN
                  IF Vendor."No." <> '' THEN

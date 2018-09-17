@@ -2,9 +2,9 @@ OBJECT Page 137 Posted Purchase Rcpt. Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -47,6 +47,7 @@ OBJECT Page 137 Posted Purchase Rcpt. Subform
                       ToolTipML=[DAN=Annuller antalsbogf›ringen p† den valgte bogf›rte modtagelseslinje. Der inds‘ttes en rettelseslinje under den valgte modtagelseslinje. Hvis antallet blev modtaget i en lagermodtagelse, inds‘ttes en rettelseslinje i den bogf›rte lagermodtagelse. Felterne Modtaget (antal) og Modt. antal (ufakt.) p† den relaterede k›bsordre indstilles til nul.;
                                  ENU=Cancel the quantity posting on the selected posted receipt line. A corrective line is inserted under the selected receipt line. If the quantity was received in a warehouse receipt, then a corrective line is inserted in the posted warehouse receipt. The Quantity Received and Qty. Rcd. Not Invoiced fields on the related purchase order are set to zero.];
                       ApplicationArea=#Suite;
+                      Image=Undo;
                       OnAction=BEGIN
                                  UndoReceiptLine;
                                END;

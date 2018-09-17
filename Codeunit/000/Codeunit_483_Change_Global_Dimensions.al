@@ -2,9 +2,9 @@ OBJECT Codeunit 483 Change Global Dimensions
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -62,51 +62,38 @@ OBJECT Codeunit 483 Change Global Dimensions
                 TableData 6651=rm,
                 TableData 6660=rm,
                 TableData 6661=rm;
-    OnRun=VAR
-            ExpectedDelay@1000 : Duration;
-          BEGIN
-            ExpectedDelay := FindConcurrentTaskInProgress("Table ID");
-            IF ExpectedDelay > 0 THEN
-              ScheduleJobForTable(Rec,CURRENTDATETIME + ExpectedDelay + 2000)
-            ELSE
-              IF RunTask THEN
-                DeleteAllEntriesIfAllCompleted;
+    OnRun=BEGIN
+            IF ChangeGlobalDimLogMgt.IsBufferClear THEN
+              ChangeGlobalDimLogMgt.FillBuffer;
+            BINDSUBSCRIPTION(ChangeGlobalDimLogMgt);
+            IF RunTask(Rec) THEN BEGIN
+              DeleteEntry(Rec);
+              IF ChangeGlobalDimLogMgt.IsBufferClear THEN
+                ResetState;
+            END;
           END;
 
   }
   CODE
   {
     VAR
+      ChangeGlobalDimHeader@1001 : Record 484;
       GeneralLedgerSetup@1000 : Record 98;
-      BlockTableOpsSubscriber@1010 : Codeunit 484;
-      ChangeType@1002 : ARRAY [2] OF 'None,Blank,Replace,New';
-      NewGlobalDimCode@1001 : ARRAY [2] OF Code[20];
-      CurrentGlobalDimCode@1003 : ARRAY [2] OF Code[20];
-      DimIsUsedInGLSetupErr@1006 : TextConst '@@@=%1 - a dimension code, like PROJECT;DAN=Dimensionen %1 bruges i vinduet Ops‘tning af Finans som en genvejsdimension.;ENU=The dimension %1 is used in General Ledger Setup window as a shortcut dimension.';
-      BindNotificationIDTok@1009 : TextConst '@@@={Locked};DAN=CACDC1FF-2352-4B9D-9575-8BA4D85E64A0;ENU=CACDC1FF-2352-4B9D-9575-8BA4D85E64A0';
-      BindNotificationMsg@1011 : TextConst 'DAN=Du skal genstarte den aktuelle session.;ENU=You must restart the current session.';
+      ChangeGlobalDimLogMgt@1010 : Codeunit 484;
+      Window@1005 : Dialog;
       CloseActiveSessionsMsg@1012 : TextConst 'DAN=Luk alle andre sessioner, der er aktive.;ENU=Close all other active sessions.';
       CloseSessionNotificationTok@1013 : TextConst '@@@={Locked};DAN=A2C57B69-B056-4B3B-8D0F-C0D997145EE7;ENU=A2C57B69-B056-4B3B-8D0F-C0D997145EE7';
+      CurrRecord@1008 : Integer;
+      NoOfRecords@1007 : Integer;
+      ProgressMsg@1014 : TextConst '@@@="#1-Table Id and Name;#2 - progress bar.";DAN=Opdaterer #1#####\@2@@@@@@@@@@;ENU=Updating #1#####\@2@@@@@@@@@@';
+      IsWindowOpen@1015 : Boolean;
 
     [External]
-    PROCEDURE ActivateBlock@23();
+    PROCEDURE ResetIfAllCompleted@20();
     BEGIN
-      IF BlockTableOpsSubscriber.IsClear THEN
-        IF BlockTableOpsSubscriber.FindTablesToBlock THEN
-          BINDSUBSCRIPTION(BlockTableOpsSubscriber);
-    END;
-
-    LOCAL PROCEDURE DeleteAllEntriesIfAllCompleted@20();
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
-    BEGIN
-      WITH ChangeGlobalDimLogEntry DO BEGIN
-        SETFILTER(Status,'<>%1',Status::Completed);
-        IF ISEMPTY THEN BEGIN
-          RESET;
-          DELETEALL;
-        END;
-      END;
+      ChangeGlobalDimLogMgt.FillBuffer;
+      IF ChangeGlobalDimLogMgt.AreAllCompleted THEN
+        ResetState;
     END;
 
     LOCAL PROCEDURE GetDelayInScheduling@19() : Integer;
@@ -116,50 +103,158 @@ OBJECT Codeunit 483 Change Global Dimensions
     END;
 
     PROCEDURE Prepare@10();
-    VAR
-      IsListEmpty@1000 : Boolean;
     BEGIN
-      IF IsPrepareEnabled THEN
-        IF IsCurrentSessionActiveOnly THEN BEGIN
-          IsListEmpty := NOT InitTableList;
-          IF IsListEmpty THEN BEGIN
-            UpdateGLSetup;
-            InitNewGlobalDimCodes;
-          END;
-        END ELSE
-          SendCloseSessionsNotification;
+      ChangeGlobalDimHeader.GET;
+      IF IsPrepareEnabled(ChangeGlobalDimHeader) AND ChangeGlobalDimHeader."Parallel Processing" THEN
+        IF IsCurrentSessionActiveOnly THEN
+          PrepareTableList
+        ELSE
+          SendCloseSessionsNotification
     END;
 
-    PROCEDURE Reset@47();
+    LOCAL PROCEDURE PrepareTableList@59() IsListFilled : Boolean;
+    BEGIN
+      IsListFilled := InitTableList;
+      IF NOT IsListFilled THEN BEGIN
+        UpdateGLSetup;
+        RefreshHeader;
+      END;
+    END;
+
+    LOCAL PROCEDURE ProcessTableList@61();
     VAR
       ChangeGlobalDimLogEntry@1000 : Record 483;
     BEGIN
-      ChangeGlobalDimLogEntry.DELETEALL;
+      WITH ChangeGlobalDimLogEntry DO BEGIN
+        RESET;
+        SETFILTER("Table ID",'>0');
+        SETRANGE("Parent Table ID",0);
+        IF IsWindowOpen THEN BEGIN
+          CurrRecord := 0;
+          CALCSUMS("Total Records");
+          NoOfRecords := "Total Records";
+        END;
+        IF FINDSET(TRUE) THEN
+          REPEAT
+            IF IsWindowOpen THEN
+              Window.UPDATE(1,STRSUBSTNO('%1 %2',"Table ID","Table Name"));
+            IF RunTask(ChangeGlobalDimLogEntry) THEN
+              DeleteEntry(ChangeGlobalDimLogEntry);
+          UNTIL NEXT = 0;
+        ResetIfAllCompleted;
+      END;
+    END;
+
+    PROCEDURE RemoveHeader@16();
+    VAR
+      ChangeGlobalDimHeader@1000 : Record 484;
+      ChangeGlobalDimLogEntry@1001 : Record 483;
+    BEGIN
+      IF ChangeGlobalDimLogEntry.ISEMPTY THEN
+        ChangeGlobalDimHeader.DELETEALL;
+    END;
+
+    PROCEDURE ResetState@47();
+    VAR
+      ChangeGlobalDimLogEntry@1000 : Record 483;
+    BEGIN
+      ChangeGlobalDimLogEntry.DELETEALL(TRUE);
       CLEARALL;
-      BlockTableOpsSubscriber.ClearState;
-      UNBINDSUBSCRIPTION(BlockTableOpsSubscriber);
-      InitNewGlobalDimCodes;
+      ChangeGlobalDimLogMgt.ClearBuffer;
+      RefreshHeader;
+    END;
+
+    [External]
+    PROCEDURE Rerun@54(VAR ChangeGlobalDimLogEntry@1001 : Record 483);
+    BEGIN
+      ChangeGlobalDimLogEntry.LOCKTABLE;
+      ChangeGlobalDimLogEntry.UpdateStatus;
+      IF ChangeGlobalDimLogMgt.FillBuffer THEN
+        RerunEntry(ChangeGlobalDimLogEntry);
+    END;
+
+    LOCAL PROCEDURE RunTask@52(VAR ChangeGlobalDimLogEntry@1001 : Record 483) Completed : Boolean;
+    BEGIN
+      ChangeGlobalDimLogEntry.SetSessionInProgress;
+      IF ChangeGlobalDimHeader."Parallel Processing" THEN
+        COMMIT;
+      Completed := ChangeDimsOnTable(ChangeGlobalDimLogEntry);
     END;
 
     PROCEDURE Start@27();
     BEGIN
-      IF IsStartEnabled THEN
-        IF BlockTableOpsSubscriber.IsSubscribed THEN BEGIN
+      ChangeGlobalDimHeader.GET;
+      IF IsStartEnabled THEN BEGIN
+        CompleteEmptyTables;
+        UpdateGLSetup;
+        ScheduleJobs(GetDelayInScheduling);
+        RefreshHeader;
+      END;
+    END;
+
+    PROCEDURE StartSequential@58();
+    BEGIN
+      ChangeGlobalDimHeader.GET;
+      IF IsPrepareEnabled(ChangeGlobalDimHeader) AND NOT ChangeGlobalDimHeader."Parallel Processing" THEN BEGIN
+        WindowOpen;
+        IF PrepareTableList THEN BEGIN
           CompleteEmptyTables;
           UpdateGLSetup;
-          ScheduleJobs(GetDelayInScheduling);
-          InitNewGlobalDimCodes;
-        END ELSE
-          SendBindNotification;
+          ProcessTableList;
+          RefreshHeader;
+        END;
+        WindowClose;
+      END;
     END;
 
     LOCAL PROCEDURE CompleteEmptyTables@12();
     VAR
       ChangeGlobalDimLogEntry@1000 : Record 483;
+      RecRef@1001 : RecordRef;
     BEGIN
+      ChangeGlobalDimLogEntry.SETFILTER("Table ID",'>0');
       ChangeGlobalDimLogEntry.SETRANGE("Total Records",0);
-      ChangeGlobalDimLogEntry.MODIFYALL(Progress,10000);
-      ChangeGlobalDimLogEntry.MODIFYALL(Status,ChangeGlobalDimLogEntry.Status::Completed);
+      IF ChangeGlobalDimLogEntry.FINDSET(TRUE) THEN
+        REPEAT
+          RecRef.OPEN(ChangeGlobalDimLogEntry."Table ID");
+          RecRef.LOCKTABLE(TRUE);
+          ChangeGlobalDimLogEntry."Total Records" := RecRef.COUNT;
+          IF ChangeGlobalDimLogEntry."Total Records" = 0 THEN
+            DeleteEntry(ChangeGlobalDimLogEntry)
+          ELSE
+            ChangeGlobalDimLogEntry.MODIFY;
+          RecRef.CLOSE;
+        UNTIL ChangeGlobalDimLogEntry.NEXT = 0;
+    END;
+
+    PROCEDURE FillBuffer@4();
+    BEGIN
+      ChangeGlobalDimLogMgt.FillBuffer;
+    END;
+
+    LOCAL PROCEDURE FindChildTableNo@1(ChangeGlobalDimLogEntry@1000 : Record 483) : Integer;
+    BEGIN
+      IF ChangeGlobalDimLogEntry."Is Parent Table" THEN
+        EXIT(ChangeGlobalDimLogMgt.FindChildTable(ChangeGlobalDimLogEntry."Table ID"));
+      EXIT(0);
+    END;
+
+    LOCAL PROCEDURE FindDependentTableNo@23(VAR ChangeGlobalDimLogEntry@1003 : Record 483;ParentChangeGlobalDimLogEntry@1000 : Record 483;VAR DependentRecRef@1001 : RecordRef) : Boolean;
+    VAR
+      ChildTableNo@1002 : Integer;
+    BEGIN
+      WITH ChangeGlobalDimLogEntry DO BEGIN
+        ChildTableNo := FindChildTableNo(ParentChangeGlobalDimLogEntry);
+        IF ChildTableNo > 0 THEN
+          IF GET(ChildTableNo) THEN BEGIN
+            DependentRecRef.OPEN("Table ID");
+            DependentRecRef.LOCKTABLE(TRUE);
+            "Total Records" := DependentRecRef.COUNT;
+            "Session ID" := SESSIONID;
+            "Server Instance ID" := SERVICEINSTANCEID;
+            EXIT("Total Records" > 0);
+          END;
+      END;
     END;
 
     PROCEDURE FindTablesForScheduling@31(VAR ChangeGlobalDimLogEntry@1000 : Record 483) : Boolean;
@@ -184,7 +279,7 @@ OBJECT Codeunit 483 Change Global Dimensions
         RecordsWithinCommit := GetMinCommitSize;
     END;
 
-    PROCEDURE ChangeDimsOnTable@39(VAR ChangeGlobalDimLogEntry@1001 : Record 483) Completed : Boolean;
+    LOCAL PROCEDURE ChangeDimsOnTable@39(VAR ChangeGlobalDimLogEntry@1001 : Record 483) Completed : Boolean;
     VAR
       DependentChangeGlobalDimLogEntry@1003 : Record 483;
       RecRef@1002 : RecordRef;
@@ -194,6 +289,7 @@ OBJECT Codeunit 483 Change Global Dimensions
       RecordsWithinCommit@1000 : Integer;
       StartedFromRecord@1007 : Integer;
       StartedFromDependentRecord@1010 : Integer;
+      DependentEntryCompleted@1008 : Boolean;
     BEGIN
       RecRef.OPEN(ChangeGlobalDimLogEntry."Table ID");
       RecRef.LOCKTABLE(TRUE);
@@ -203,7 +299,7 @@ OBJECT Codeunit 483 Change Global Dimensions
         ChangeGlobalDimLogEntry."Total Records" := RecRef.COUNT;
         RecordsWithinCommit := CalcRecordsWithinCommit(ChangeGlobalDimLogEntry."Total Records");
         IF RecRef.FINDSET(TRUE) THEN BEGIN
-          IF DependentChangeGlobalDimLogEntry.FindDependentTableNo(ChangeGlobalDimLogEntry,DependentRecRef) THEN BEGIN
+          IF FindDependentTableNo(DependentChangeGlobalDimLogEntry,ChangeGlobalDimLogEntry,DependentRecRef) THEN BEGIN
             DependentChangeGlobalDimLogEntry.SetSessionInProgress;
             DependentRecNo := DependentChangeGlobalDimLogEntry."Completed Records";
             StartedFromDependentRecord := DependentRecNo;
@@ -220,18 +316,29 @@ OBJECT Codeunit 483 Change Global Dimensions
 
             IF CurrentRecNo >= (ChangeGlobalDimLogEntry."Completed Records" + RecordsWithinCommit) THEN BEGIN
               DependentChangeGlobalDimLogEntry.Update(DependentRecNo,StartedFromDependentRecord);
-              Completed := ChangeGlobalDimLogEntry.UpdateWithCommit(CurrentRecNo,StartedFromRecord);
+              Completed := UpdateWithCommit(ChangeGlobalDimLogEntry,CurrentRecNo,StartedFromRecord);
               IF DependentRecNo > 0 THEN
                 DependentRecRef.LOCKTABLE;
               RecRef.LOCKTABLE;
+            END;
+            IF IsWindowOpen THEN BEGIN
+              CurrRecord += 1;
+              IF CurrRecord MOD ROUND(NoOfRecords / 100,1,'>') = 1 THEN
+                Window.UPDATE(2,ROUND(CurrRecord / NoOfRecords * 10000,1));
             END;
           UNTIL RecRef.NEXT = 0;
         END;
         IF DependentRecNo > 0 THEN BEGIN
           DependentRecRef.CLOSE;
           DependentChangeGlobalDimLogEntry.Update(DependentRecNo,StartedFromDependentRecord);
+          IF DependentChangeGlobalDimLogEntry.Status = DependentChangeGlobalDimLogEntry.Status::Completed THEN
+            DependentEntryCompleted := DeleteEntry(DependentChangeGlobalDimLogEntry);
+          IF NOT DependentEntryCompleted THEN BEGIN
+            DependentChangeGlobalDimLogEntry.Update(0,0);
+            CurrentRecNo := 0; // set the parent to Incomplete
+          END;
         END;
-        Completed := ChangeGlobalDimLogEntry.UpdateWithCommit(CurrentRecNo,StartedFromRecord);
+        Completed := UpdateWithCommit(ChangeGlobalDimLogEntry,CurrentRecNo,StartedFromRecord);
       END;
       RecRef.CLOSE;
     END;
@@ -277,14 +384,14 @@ OBJECT Codeunit 483 Change Global Dimensions
       END;
     END;
 
-    PROCEDURE Rerun@38(ChangeGlobalDimLogEntry@1000 : Record 483);
+    LOCAL PROCEDURE RerunEntry@38(ChangeGlobalDimLogEntry@1000 : Record 483);
     BEGIN
       WITH ChangeGlobalDimLogEntry DO
-        IF Status IN [Status::" ",Status::Incomplete] THEN BEGIN
+        IF Status IN [Status::" ",Status::Incomplete,Status::Scheduled] THEN BEGIN
           IF "Parent Table ID" <> 0 THEN
             RescheduleParentTable("Parent Table ID")
           ELSE
-            ScheduleJobForTable(ChangeGlobalDimLogEntry,CURRENTDATETIME);
+            ScheduleJobForTable(ChangeGlobalDimLogEntry,CURRENTDATETIME + 2000);
         END;
     END;
 
@@ -320,10 +427,13 @@ OBJECT Codeunit 483 Change Global Dimensions
         OnBeforeScheduleTask("Table ID",DoNotScheduleTask,TaskID);
         IF DoNotScheduleTask THEN
           "Task ID" := TaskID
-        ELSE
+        ELSE BEGIN
+          CancelTask;
           "Task ID" :=
             TASKSCHEDULER.CREATETASK(
-              CODEUNIT::"Change Global Dimensions",0,TRUE,COMPANYNAME,StartNotBefore,RECORDID);
+              CODEUNIT::"Change Global Dimensions",CODEUNIT::"Change Global Dim Err. Handler",
+              TRUE,COMPANYNAME,StartNotBefore,RECORDID);
+        END;
         IF ISNULLGUID("Task ID") THEN
           Status := Status::" "
         ELSE
@@ -368,147 +478,45 @@ OBJECT Codeunit 483 Change Global Dimensions
       EXIT(ActiveSession.ISEMPTY);
     END;
 
-    LOCAL PROCEDURE FindConcurrentTaskInProgress@53(TableID@1000 : Integer) RemainingDuration : Duration;
-    VAR
-      ChangeGlobalDimLogEntry@1001 : Record 483;
-    BEGIN
-      ChangeGlobalDimLogEntry.SETFILTER("Table ID",GetConcurrentTableFilter(TableID));
-      ChangeGlobalDimLogEntry.SETRANGE(Status,ChangeGlobalDimLogEntry.Status::"In Progress");
-      IF ChangeGlobalDimLogEntry.FINDFIRST THEN
-        RemainingDuration := ChangeGlobalDimLogEntry."Remaining Duration";
-    END;
-
-    LOCAL PROCEDURE GetConcurrentTableFilter@55(TableID@1000 : Integer) : Text;
-    BEGIN
-      CASE TableID OF
-        DATABASE::"Sales Header",
-        DATABASE::"Sales Line":
-          EXIT('36|37');
-        DATABASE::"Purchase Header",
-        DATABASE::"Purchase Line":
-          EXIT('38|39');
-        DATABASE::"Cust. Ledger Entry",
-        DATABASE::"Sales Invoice Header",
-        DATABASE::"Sales Invoice Line",
-        DATABASE::"Sales Cr.Memo Header",
-        DATABASE::"Sales Cr.Memo Line":
-          EXIT('21|112|113|114|115');
-        DATABASE::"Vendor Ledger Entry",
-        DATABASE::"Purch. Inv. Header",
-        DATABASE::"Purch. Inv. Line",
-        DATABASE::"Purch. Cr. Memo Hdr.",
-        DATABASE::"Purch. Cr. Memo Line":
-          EXIT('25|122|123|124|125');
-      END;
-    END;
-
     PROCEDURE IsDimCodeEnabled@8() : Boolean;
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
     BEGIN
-      EXIT(ChangeGlobalDimLogEntry.ISEMPTY);
+      EXIT(ChangeGlobalDimLogMgt.IsBufferClear);
     END;
 
     [External]
-    PROCEDURE IsPrepareEnabled@5() : Boolean;
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
+    PROCEDURE IsPrepareEnabled@5(VAR ChangeGlobalDimHeader@1000 : Record 484) : Boolean;
     BEGIN
-      EXIT(
-        ((ChangeType[1] <> ChangeType[1]::None) OR (ChangeType[2] <> ChangeType[2]::None)) AND
-        ChangeGlobalDimLogEntry.ISEMPTY);
+      WITH ChangeGlobalDimHeader DO
+        EXIT(
+          (("Change Type 1" <> "Change Type 1"::None) OR ("Change Type 2" <> "Change Type 2"::None)) AND
+          ChangeGlobalDimLogMgt.IsBufferClear);
     END;
 
     PROCEDURE IsStartEnabled@28() : Boolean;
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
     BEGIN
-      IF ChangeGlobalDimLogEntry.ISEMPTY THEN
+      IF ChangeGlobalDimLogMgt.IsBufferClear THEN
         EXIT(FALSE);
-      EXIT(NOT IsStarted);
-    END;
-
-    LOCAL PROCEDURE IsStarted@32() : Boolean;
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
-    BEGIN
-      ChangeGlobalDimLogEntry.SETFILTER(Status,'<>%1',ChangeGlobalDimLogEntry.Status::" ");
-      EXIT(NOT ChangeGlobalDimLogEntry.ISEMPTY);
+      EXIT(NOT ChangeGlobalDimLogMgt.IsStarted);
     END;
 
     [External]
-    PROCEDURE Initialize@33();
+    PROCEDURE RefreshHeader@3();
     BEGIN
-      InitNewGlobalDimCodes;
-      IF IsStartEnabled THEN
-        RestoreNewDimCodes;
+      IF ChangeGlobalDimHeader.GET THEN BEGIN
+        ChangeGlobalDimHeader.Refresh;
+        ChangeGlobalDimHeader.MODIFY;
+      END ELSE BEGIN
+        ChangeGlobalDimHeader.Refresh;
+        ChangeGlobalDimHeader.INSERT;
+      END
     END;
 
     [External]
-    PROCEDURE InitNewGlobalDimCodes@3();
+    PROCEDURE SetParallelProcessing@56(NewParallelProcessing@1000 : Boolean);
     BEGIN
-      GeneralLedgerSetup.GET;
-      CurrentGlobalDimCode[1] := GeneralLedgerSetup."Global Dimension 1 Code";
-      CurrentGlobalDimCode[2] := GeneralLedgerSetup."Global Dimension 2 Code";
-      NewGlobalDimCode[1] := CurrentGlobalDimCode[1];
-      NewGlobalDimCode[2] := CurrentGlobalDimCode[2];
-      CLEAR(ChangeType);
-    END;
-
-    [External]
-    PROCEDURE GetCurrentGlobalDimCodes@16(VAR GlobalDimCode@1000 : ARRAY [2] OF Code[20]);
-    BEGIN
-      COPYARRAY(GlobalDimCode,CurrentGlobalDimCode,1);
-    END;
-
-    [External]
-    PROCEDURE GetNewGlobalDimCodes@4(VAR GlobalDimCode@1000 : ARRAY [2] OF Code[20]) : Boolean;
-    BEGIN
-      COPYARRAY(GlobalDimCode,NewGlobalDimCode,1);
-      EXIT(IsPrepareEnabled);
-    END;
-
-    [External]
-    PROCEDURE SetNewGlobalDim1Code@1(NewCode@1000 : Code[20]);
-    BEGIN
-      ValidateDimCode(NewCode,NewGlobalDimCode[1]);
-      IF NewGlobalDimCode[1] = NewGlobalDimCode[2] THEN BEGIN
-        NewGlobalDimCode[2] := '';
-        ChangeType[2] := ChangeType[2]::Blank
-      END;
-      CalcChangeType(1);
-    END;
-
-    [External]
-    PROCEDURE SetNewGlobalDim2Code@2(NewCode@1000 : Code[20]);
-    BEGIN
-      ValidateDimCode(NewCode,NewGlobalDimCode[2]);
-      IF NewGlobalDimCode[2] = NewGlobalDimCode[1] THEN BEGIN
-        NewGlobalDimCode[1] := '';
-        ChangeType[1] := ChangeType[1]::Blank
-      END;
-      CalcChangeType(2);
-    END;
-
-    LOCAL PROCEDURE CalcChangeType@13(DimNo@1002 : Integer);
-    BEGIN
-      IF NewGlobalDimCode[DimNo] = CurrentGlobalDimCode[GetOtherDimNo(DimNo)] THEN
-        ChangeType[DimNo] := ChangeType[DimNo]::Replace
-      ELSE
-        IF NewGlobalDimCode[DimNo] = CurrentGlobalDimCode[DimNo] THEN
-          ChangeType[DimNo] := ChangeType[DimNo]::None
-        ELSE
-          IF NewGlobalDimCode[DimNo] = '' THEN
-            ChangeType[DimNo] := ChangeType[DimNo]::Blank
-          ELSE
-            ChangeType[DimNo] := ChangeType[DimNo]::New
-    END;
-
-    LOCAL PROCEDURE GetOtherDimNo@15(DimNo@1000 : Integer) : Integer;
-    BEGIN
-      IF DimNo = 1 THEN
-        EXIT(2);
-      EXIT(1);
+      ChangeGlobalDimHeader.GET;
+      ChangeGlobalDimHeader."Parallel Processing" := NewParallelProcessing;
+      ChangeGlobalDimHeader.MODIFY;
     END;
 
     PROCEDURE InitTableList@7() : Boolean;
@@ -519,16 +527,16 @@ OBJECT Codeunit 483 Change Global Dimensions
       TotalRecords@1003 : Integer;
     BEGIN
       TotalRecords := 0;
+      ChangeGlobalDimHeader.GET;
       ChangeGlobalDimLogEntry.LOCKTABLE;
-      ChangeGlobalDimLogEntry.DELETEALL;
+      ChangeGlobalDimLogEntry.DELETEALL(TRUE);
       IF FindTablesWithDims(TempAllObjWithCaption) THEN BEGIN
-        InsertLogEntryWithNewDimCodes;
         REPEAT
           ChangeGlobalDimLogEntry.INIT;
           ChangeGlobalDimLogEntry."Table ID" := TempAllObjWithCaption."Object ID";
           ChangeGlobalDimLogEntry."Table Name" := TempAllObjWithCaption."Object Name";
-          ChangeGlobalDimLogEntry."Change Type 1" := ChangeType[1];
-          ChangeGlobalDimLogEntry."Change Type 2" := ChangeType[2];
+          ChangeGlobalDimLogEntry."Change Type 1" := ChangeGlobalDimHeader."Change Type 1";
+          ChangeGlobalDimLogEntry."Change Type 2" := ChangeGlobalDimHeader."Change Type 2";
           FillTableData(ChangeGlobalDimLogEntry);
           TotalRecords += ChangeGlobalDimLogEntry."Total Records";
           TempParentTableInteger.Number := ChangeGlobalDimLogEntry."Parent Table ID";
@@ -546,7 +554,8 @@ OBJECT Codeunit 483 Change Global Dimensions
           UNTIL TempParentTableInteger.NEXT = 0;
       END;
       IF TotalRecords = 0 THEN
-        ChangeGlobalDimLogEntry.DELETEALL;
+        ChangeGlobalDimLogEntry.DELETEALL(TRUE);
+      ChangeGlobalDimLogMgt.FillBuffer;
       EXIT(TotalRecords <> 0);
     END;
 
@@ -554,6 +563,14 @@ OBJECT Codeunit 483 Change Global Dimensions
     BEGIN
       IF RecRef.FINDFIRST THEN
         RecRef.MODIFY;
+    END;
+
+    LOCAL PROCEDURE DeleteEntry@2(ChangeGlobalDimLogEntry@1000 : Record 483) : Boolean;
+    BEGIN
+      IF ChangeGlobalDimLogEntry.DELETE THEN BEGIN
+        ChangeGlobalDimLogMgt.ExcludeTable(ChangeGlobalDimLogEntry."Table ID");
+        EXIT(TRUE);
+      END
     END;
 
     LOCAL PROCEDURE FillTableData@49(VAR ChangeGlobalDimLogEntry@1001 : Record 483);
@@ -580,35 +597,13 @@ OBJECT Codeunit 483 Change Global Dimensions
     LOCAL PROCEDURE UpdateGLSetup@6();
     BEGIN
       GeneralLedgerSetup.GET;
-      GeneralLedgerSetup.VALIDATE("Global Dimension 1 Code",NewGlobalDimCode[1]);
-      GeneralLedgerSetup.VALIDATE("Global Dimension 2 Code",NewGlobalDimCode[2]);
+      GeneralLedgerSetup.VALIDATE("Global Dimension 1 Code",ChangeGlobalDimHeader."Global Dimension 1 Code");
+      GeneralLedgerSetup.VALIDATE("Global Dimension 2 Code",ChangeGlobalDimHeader."Global Dimension 2 Code");
       GeneralLedgerSetup.MODIFY(TRUE);
 
       UpdateDimValues;
-      COMMIT;
-    END;
-
-    LOCAL PROCEDURE InsertLogEntryWithNewDimCodes@48();
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
-    BEGIN
-      ChangeGlobalDimLogEntry.INIT;
-      ChangeGlobalDimLogEntry."Table ID" := 0;
-      ChangeGlobalDimLogEntry."Table Name" := STRSUBSTNO('%1;%2',NewGlobalDimCode[1],NewGlobalDimCode[2]);
-      ChangeGlobalDimLogEntry.INSERT;
-    END;
-
-    LOCAL PROCEDURE RestoreNewDimCodes@43();
-    VAR
-      ChangeGlobalDimLogEntry@1000 : Record 483;
-      NewDimCodes@1001 : Code[30];
-      Pos@1002 : Integer;
-    BEGIN
-      ChangeGlobalDimLogEntry.GET(0);
-      NewDimCodes := ChangeGlobalDimLogEntry."Table Name";
-      Pos := STRPOS(NewDimCodes,';');
-      SetNewGlobalDim1Code(COPYSTR(NewDimCodes,1,Pos - 1));
-      SetNewGlobalDim2Code(COPYSTR(NewDimCodes,Pos + 1));
+      IF ChangeGlobalDimHeader."Parallel Processing" THEN
+        COMMIT;
     END;
 
     LOCAL PROCEDURE UpdateDimValues@14();
@@ -620,44 +615,15 @@ OBJECT Codeunit 483 Change Global Dimensions
         SETRANGE("Global Dimension No.",1,2);
         MODIFYALL("Global Dimension No.",0);
         RESET;
-        IF NewGlobalDimCode[1] <> '' THEN BEGIN
-          SETRANGE("Dimension Code",NewGlobalDimCode[1]);
+        IF ChangeGlobalDimHeader."Global Dimension 1 Code" <> '' THEN BEGIN
+          SETRANGE("Dimension Code",ChangeGlobalDimHeader."Global Dimension 1 Code");
           MODIFYALL("Global Dimension No.",1);
         END;
-        IF NewGlobalDimCode[2] <> '' THEN BEGIN
-          SETRANGE("Dimension Code",NewGlobalDimCode[2]);
+        IF ChangeGlobalDimHeader."Global Dimension 2 Code" <> '' THEN BEGIN
+          SETRANGE("Dimension Code",ChangeGlobalDimHeader."Global Dimension 2 Code");
           MODIFYALL("Global Dimension No.",2);
         END;
       END;
-    END;
-
-    LOCAL PROCEDURE ValidateDimCode@9(NewCode@1000 : Code[20];VAR Code@1001 : Code[20]);
-    VAR
-      Dimension@1002 : Record 348;
-    BEGIN
-      IF NewCode <> '' THEN BEGIN
-        Dimension.GET(NewCode);
-        IF IsUsedInShortcurDims(NewCode) THEN
-          ERROR(DimIsUsedInGLSetupErr,NewCode);
-      END;
-      Code := NewCode;
-    END;
-
-    LOCAL PROCEDURE IsUsedInShortcurDims@17(DimensionCode@1000 : Code[20]) : Boolean;
-    BEGIN
-      EXIT(
-        DimensionCode IN
-        [GeneralLedgerSetup."Shortcut Dimension 3 Code",
-         GeneralLedgerSetup."Shortcut Dimension 4 Code",
-         GeneralLedgerSetup."Shortcut Dimension 5 Code",
-         GeneralLedgerSetup."Shortcut Dimension 6 Code",
-         GeneralLedgerSetup."Shortcut Dimension 7 Code",
-         GeneralLedgerSetup."Shortcut Dimension 8 Code"]);
-    END;
-
-    PROCEDURE GetBindNotificationID@34() Id : GUID;
-    BEGIN
-      EVALUATE(Id,BindNotificationIDTok);
     END;
 
     PROCEDURE GetCloseSessionsNotificationID@45() Id : GUID;
@@ -671,14 +637,6 @@ OBJECT Codeunit 483 Change Global Dimensions
       Notification.RECALL;
       Notification.MESSAGE(Msg);
       Notification.SCOPE(NOTIFICATIONSCOPE::LocalScope);
-    END;
-
-    LOCAL PROCEDURE SendBindNotification@35();
-    VAR
-      Notification@1000 : Notification;
-    BEGIN
-      PrepareNotification(Notification,GetBindNotificationID,BindNotificationMsg);
-      Notification.SEND;
     END;
 
     LOCAL PROCEDURE SendCloseSessionsNotification@44();
@@ -706,15 +664,32 @@ OBJECT Codeunit 483 Change Global Dimensions
     BEGIN
     END;
 
-    [EventSubscriber(Codeunit,1,OnBeforeCompanyOpen)]
-    LOCAL PROCEDURE OnBeforeCompanyOpenHandler@22();
-    BEGIN
-      ActivateBlock;
-    END;
-
     [Integration]
     LOCAL PROCEDURE OnBeforeScheduleTask@29(TableNo@1002 : Integer;VAR DoNotScheduleTask@1000 : Boolean;VAR TaskID@1001 : GUID);
     BEGIN
+    END;
+
+    LOCAL PROCEDURE UpdateWithCommit@62(VAR ChangeGlobalDimLogEntry@1000 : Record 483;CurrentRecNo@1002 : Integer;StartedFromRecord@1001 : Integer) : Boolean;
+    BEGIN
+      IF ChangeGlobalDimHeader."Parallel Processing" THEN
+        EXIT(ChangeGlobalDimLogEntry.UpdateWithCommit(CurrentRecNo,StartedFromRecord));
+      EXIT(ChangeGlobalDimLogEntry.UpdateWithoutCommit(CurrentRecNo,StartedFromRecord));
+    END;
+
+    LOCAL PROCEDURE WindowOpen@67();
+    BEGIN
+      IF GUIALLOWED THEN BEGIN
+        Window.OPEN(ProgressMsg);
+        IsWindowOpen := TRUE;
+      END;
+    END;
+
+    LOCAL PROCEDURE WindowClose@68();
+    BEGIN
+      IF IsWindowOpen THEN BEGIN
+        Window.CLOSE;
+        IsWindowOpen := FALSE;
+      END;
     END;
 
     BEGIN

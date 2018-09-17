@@ -2,9 +2,9 @@ OBJECT Table 246 Requisition Line
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -579,7 +579,6 @@ OBJECT Table 246 Requisition Line
                                                                   IF "Unit of Measure Code" <> '' THEN BEGIN
                                                                     "Qty. per Unit of Measure" := UOMMgt.GetQtyPerUnitOfMeasure(Item,"Unit of Measure Code");
                                                                     "Unit Cost" := ROUND(Item."Unit Cost" * "Qty. per Unit of Measure",0.00001);
-                                                                    "Overhead Rate" := ROUND(Item."Overhead Rate" * "Qty. per Unit of Measure",0.00001);
                                                                   END ELSE
                                                                     "Qty. per Unit of Measure" := 1;
                                                                 END ELSE

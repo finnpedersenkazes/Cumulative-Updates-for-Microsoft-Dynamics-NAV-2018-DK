@@ -2,9 +2,9 @@ OBJECT Codeunit 333 Req. Wksh.-Make Order
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -164,7 +164,7 @@ OBJECT Codeunit 333 Req. Wksh.-Make Order
           "Worksheet Template Name","Journal Batch Name","Vendor No.",
           "Sell-to Customer No.","Ship-to Code","Order Address Code","Currency Code",
           "Ref. Order Type","Ref. Order Status","Ref. Order No.",
-          "Location Code","Transfer-from Code");
+          "Location Code","Transfer-from Code","Purchasing Code");
 
         IF FIND('-') THEN
           REPEAT

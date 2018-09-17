@@ -2,9 +2,9 @@ OBJECT Table 36 Sales Header
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -2944,7 +2944,7 @@ OBJECT Table 36 Sales Header
       IF "Sell-to Customer No." = '' THEN BEGIN
         TESTFIELD("Sell-to Contact No.");
         TESTFIELD("Sell-to Customer Template Code");
-        Cont.GET("Sell-to Contact No.");
+        GetContact(Cont,"Sell-to Contact No.");
         Cont.CreateCustomer("Sell-to Customer Template Code");
         COMMIT;
         GET("Document Type"::Quote,"No.");
@@ -2953,7 +2953,7 @@ OBJECT Table 36 Sales Header
       IF "Bill-to Customer No." = '' THEN BEGIN
         TESTFIELD("Bill-to Contact No.");
         TESTFIELD("Bill-to Customer Template Code");
-        Cont.GET("Bill-to Contact No.");
+        GetContact(Cont,"Bill-to Contact No.");
         Cont.CreateCustomer("Bill-to Customer Template Code");
         COMMIT;
         GET("Document Type"::Quote,"No.");
@@ -3292,6 +3292,13 @@ OBJECT Table 36 Sales Header
       END;
       IF NOT (CalledByFieldNo IN [FIELDNO("Shipping Agent Code"),FIELDNO("Shipping Agent Service Code")]) THEN
         VALIDATE("Shipping Time");
+    END;
+
+    LOCAL PROCEDURE GetContact@159(VAR Contact@1000 : Record 5050;ContactNo@1001 : Code[20]);
+    BEGIN
+      Contact.GET(ContactNo);
+      IF (Contact.Type = Contact.Type::Person) AND (Contact."Company No." <> '') THEN
+        Contact.GET(Contact."Company No.");
     END;
 
     [Internal]
@@ -4523,13 +4530,13 @@ OBJECT Table 36 Sales Header
     [External]
     PROCEDURE CopySellToAddressToShipToAddress@112();
     BEGIN
-      VALIDATE("Ship-to Address","Sell-to Address");
-      VALIDATE("Ship-to Address 2","Sell-to Address 2");
-      VALIDATE("Ship-to City","Sell-to City");
-      VALIDATE("Ship-to Contact","Sell-to Contact");
-      VALIDATE("Ship-to Country/Region Code","Sell-to Country/Region Code");
-      VALIDATE("Ship-to County","Sell-to County");
-      VALIDATE("Ship-to Post Code","Sell-to Post Code");
+      "Ship-to Address" := "Sell-to Address";
+      "Ship-to Address 2" := "Sell-to Address 2";
+      "Ship-to City" := "Sell-to City";
+      "Ship-to Contact" := "Sell-to Contact";
+      "Ship-to Country/Region Code" := "Sell-to Country/Region Code";
+      "Ship-to County" := "Sell-to County";
+      "Ship-to Post Code" := "Sell-to Post Code";
     END;
 
     PROCEDURE CopySellToAddressToBillToAddress@92();
@@ -4768,7 +4775,6 @@ OBJECT Table 36 Sales Header
 
     PROCEDURE SelectSalesHeaderCustomerTemplate@127() : Code[10];
     VAR
-      CustomerTemplate@1000 : Record 5105;
       Contact@1001 : Record 5050;
     BEGIN
       Contact.GET("Sell-to Contact No.");
@@ -4777,8 +4783,7 @@ OBJECT Table 36 Sales Header
       IF NOT Contact.ContactToCustBusinessRelationExist THEN
         IF CONFIRM(SelectCustomerTemplateQst,FALSE) THEN BEGIN
           COMMIT;
-          IF PAGE.RUNMODAL(0,CustomerTemplate) = ACTION::LookupOK THEN
-            EXIT(CustomerTemplate.Code);
+          EXIT(Contact.LookupCustomerTemplate);
         END;
     END;
 

@@ -2,9 +2,9 @@ OBJECT Codeunit 1751 Data Classification Eval. Data
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -1299,6 +1299,7 @@ OBJECT Codeunit 1751 Data Classification Eval. Data
       SetTableFieldsToNormal(DATABASE::"Record Link");
       SetTableFieldsToNormal(DATABASE::"Document Service");
       SetTableFieldsToNormal(DATABASE::"Data Privacy Entities");
+      SetTableFieldsToNormal(DATABASE::"Data Class. Notif. Setup");
     END;
 
     PROCEDURE SetTableFieldsToNormal@231(TableNo@1001 : Integer);

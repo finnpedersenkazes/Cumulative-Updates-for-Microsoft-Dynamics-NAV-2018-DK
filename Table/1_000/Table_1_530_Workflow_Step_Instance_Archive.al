@@ -2,13 +2,13 @@ OBJECT Table 1530 Workflow Step Instance Archive
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
-    Permissions=TableData 1531=d;
+    Permissions=TableData 1531=md;
     OnDelete=VAR
                WorkflowStepArgumentArchive@1000 : Record 1531;
              BEGIN

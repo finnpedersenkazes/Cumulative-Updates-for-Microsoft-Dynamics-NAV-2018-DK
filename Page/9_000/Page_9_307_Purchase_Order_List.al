@@ -2,9 +2,9 @@ OBJECT Page 9307 Purchase Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 9307 Purchase Order List
     PageType=List;
     CardPageID=Purchase Order;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Anmod om godkendelse,Udskriv;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Anmod om godkendelse,Udskriv;
                                 ENU=New,Process,Report,Request Approval,Print];
     OnOpenPage=VAR
                  PurchasesPayablesSetup@1000 : Record 312;

@@ -2,9 +2,9 @@ OBJECT Page 51 Purchase Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 51 Purchase Invoice
     SourceTableView=WHERE(Document Type=FILTER(Invoice));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Fakturer,Bogf›ring,Vis,Anmod om godkendelse,Indg†ende bilag;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Fakturer,Bogf›ring,Vis,Anmod om godkendelse,Indg†ende bilag;
                                 ENU=New,Process,Report,Approve,Invoice,Posting,View,Request Approval,Incoming Document];
     OnInit=VAR
              PurchasesPayablesSetup@1001 : Record 312;
@@ -1132,6 +1132,8 @@ OBJECT Page 51 Purchase Invoice
                            ENU=Pay-to];
                 ToolTipML=[DAN=Angiver den kreditor, som k›bsbilaget skal betales til. Standard (kreditor): Den samme som kreditoren p† k›bsbilaget. En anden kreditor: Enhver kreditor, som du angiver i nedenst†ende felter.;
                            ENU=Specifies the vendor that the purchase document will be paid to. Default (Vendor): The same as the vendor on the purchase document. Another Vendor: Any vendor that you specify in the fields below.];
+                OptionCaptionML=[DAN=Standard (kreditor),en anden kreditor;
+                                 ENU=Default (Vendor),Another Vendor];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr=PayToOptions;
                 OnValidate=BEGIN

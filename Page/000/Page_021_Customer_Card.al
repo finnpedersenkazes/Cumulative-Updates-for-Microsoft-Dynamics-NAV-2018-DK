@@ -2,9 +2,9 @@ OBJECT Page 21 Customer Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -13,7 +13,7 @@ OBJECT Page 21 Customer Card
     SourceTable=Table18;
     PageType=Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Nyt bilag,Godkend,Anmod om godkendelse,Priser og rabatter,Naviger,Debitor;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Nyt bilag,Godkend,Anmod om godkendelse,Priser og rabatter,Naviger,Debitor;
                                 ENU=New,Process,Report,New Document,Approve,Request Approval,Prices and Discounts,Navigate,Customer];
     OnInit=VAR
              ApplicationAreaSetup@1000 : Record 9178;

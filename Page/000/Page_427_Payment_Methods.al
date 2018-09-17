@@ -2,9 +2,9 @@ OBJECT Page 427 Payment Methods
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -12,6 +12,22 @@ OBJECT Page 427 Payment Methods
                ENU=Payment Methods];
     SourceTable=Table289;
     PageType=List;
+    ActionList=ACTIONS
+    {
+      { 11      ;    ;ActionContainer;
+                      ActionContainerType=ActionItems }
+      { 12      ;1   ;Action    ;
+                      CaptionML=[DAN=Ove&rs‘ttelse;
+                                 ENU=T&ranslation];
+                      ToolTipML=[DAN=F† vist eller rediger beskrivelser til hver betalingsmetode p† forskellige sprog.;
+                                 ENU=View or edit descriptions for each payment method in different languages.];
+                      ApplicationArea=#Basic,#Suite;
+                      RunObject=Page 758;
+                      RunPageLink=Payment Method Code=FIELD(Code);
+                      Promoted=Yes;
+                      Image=Translation;
+                      PromotedCategory=Process }
+    }
   }
   CONTROLS
   {

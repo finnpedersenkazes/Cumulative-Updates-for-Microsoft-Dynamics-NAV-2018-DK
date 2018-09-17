@@ -2,9 +2,9 @@ OBJECT Codeunit 6500 Item Tracking Management
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -40,7 +40,7 @@ OBJECT Codeunit 6500 Item Tracking Management
       Text012@1016 : TextConst 'DAN=Kun ‚n udl›bsdato er tilladt pr. lotnumber.\%1 har i ›jeblikket to forskellige udl›bsdatoer: %2 og %3.;ENU=Only one expiration date is allowed per lot number.\%1 currently has two different expiration dates: %2 and %3.';
       IsPick@1017 : Boolean;
       DeleteReservationEntries@1021 : Boolean;
-      CannotMatchItemTrackingErr@1003 : TextConst 'DAN=Cannot match item tracking.;ENU=Cannot match item tracking.';
+      CannotMatchItemTrackingErr@1003 : TextConst 'DAN=Varesporing stemmer ikke overens.;ENU=Cannot match item tracking.';
 
     [External]
     PROCEDURE SetPointerFilter@21(VAR TrackingSpecification@1000 : Record 336);
@@ -212,7 +212,15 @@ OBJECT Codeunit 6500 Item Tracking Management
             TempInvoicingSpecification."Qty. to Invoice" :=
               ROUND(TempInvoicingSpecification."Qty. to Invoice (Base)" /
                 SourceSpecification."Qty. per Unit of Measure",0.00001);
-            TotalQtyToInvoiceBase += TempInvoicingSpecification."Qty. to Invoice (Base)";
+
+            IF ABS(TotalQtyToInvoiceBase + TempInvoicingSpecification."Qty. to Invoice (Base)") >
+               ABS(SourceSpecification."Qty. to Invoice (Base)")
+            THEN BEGIN
+              TempInvoicingSpecification."Qty. to Invoice (Base)" :=
+                SourceSpecification."Qty. to Invoice (Base)" - TotalQtyToInvoiceBase;
+              TotalQtyToInvoiceBase := SourceSpecification."Qty. to Invoice (Base)";
+            END ELSE
+              TotalQtyToInvoiceBase += TempInvoicingSpecification."Qty. to Invoice (Base)";
             TempInvoicingSpecification.INSERT;
           END;
         UNTIL TrackingSpecification.NEXT = 0;

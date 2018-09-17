@@ -2,9 +2,9 @@ OBJECT Table 37 Sales Line
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -3055,8 +3055,12 @@ OBJECT Table 37 Sales Line
 
     [External]
     PROCEDURE UpdateUnitPrice@2(CalledByFieldNo@1000 : Integer);
+    VAR
+      Handled@1001 : Boolean;
     BEGIN
-      OnBeforeUpdateUnitPrice(Rec,xRec,CalledByFieldNo,CurrFieldNo);
+      OnBeforeUpdateUnitPrice(Rec,xRec,CalledByFieldNo,CurrFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
 
       GetSalesHeader;
       TESTFIELD("Qty. per Unit of Measure");
@@ -5752,7 +5756,7 @@ OBJECT Table 37 Sales Line
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnBeforeUpdateUnitPrice@127(VAR SalesLine@1003 : Record 37;xSalesLine@1002 : Record 37;CalledByFieldNo@1001 : Integer;CurrFieldNo@1000 : Integer);
+    LOCAL PROCEDURE OnBeforeUpdateUnitPrice@127(VAR SalesLine@1003 : Record 37;xSalesLine@1002 : Record 37;CalledByFieldNo@1001 : Integer;CurrFieldNo@1000 : Integer;VAR Handled@1004 : Boolean);
     BEGIN
     END;
 

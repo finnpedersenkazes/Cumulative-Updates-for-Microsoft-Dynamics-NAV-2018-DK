@@ -2,9 +2,9 @@ OBJECT Table 38 Purchase Header
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -3746,6 +3746,7 @@ OBJECT Table 38 Purchase Header
       PurchaseLine.SETRANGE("Document Type","Document Type");
       PurchaseLine.SETRANGE("Document No.","No.");
       PurchaseLine.SETFILTER("No.",'<>%1','');
+      PurchaseLine.SETFILTER(Type,'<>%1',PurchaseLine.Type::" ");
       PurchaseLine.SETRANGE("Drop Shipment",TRUE);
 
       HasDropShipmentLines := NOT PurchaseLine.ISEMPTY;

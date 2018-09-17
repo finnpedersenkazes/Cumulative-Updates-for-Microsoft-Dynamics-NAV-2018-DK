@@ -2,9 +2,9 @@ OBJECT Table 98 General Ledger Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,9 +15,17 @@ OBJECT Table 98 General Ledger Setup
   {
     { 1   ;   ;Primary Key         ;Code10        ;CaptionML=[DAN=Prim‘rn›gle;
                                                               ENU=Primary Key] }
-    { 2   ;   ;Allow Posting From  ;Date          ;CaptionML=[DAN=Bogf. tilladt fra;
+    { 2   ;   ;Allow Posting From  ;Date          ;OnValidate=BEGIN
+                                                                UserSetupManagement.CheckAllowedPostingDates("Allow Posting From","Allow Posting To");
+                                                              END;
+
+                                                   CaptionML=[DAN=Bogf. tilladt fra;
                                                               ENU=Allow Posting From] }
-    { 3   ;   ;Allow Posting To    ;Date          ;CaptionML=[DAN=Bogf. tilladt til;
+    { 3   ;   ;Allow Posting To    ;Date          ;OnValidate=BEGIN
+                                                                UserSetupManagement.CheckAllowedPostingDates("Allow Posting From","Allow Posting To");
+                                                              END;
+
+                                                   CaptionML=[DAN=Bogf. tilladt til;
                                                               ENU=Allow Posting To] }
     { 4   ;   ;Register Time       ;Boolean       ;CaptionML=[DAN=Registrer tid;
                                                               ENU=Register Time] }
@@ -486,6 +494,7 @@ OBJECT Table 98 General Ledger Setup
       AnalysisViewEntry@1033 : Record 365;
       AnalysisViewBudgetEntry@1034 : Record 366;
       AdjAddReportingCurr@1005 : Report 86;
+      UserSetupManagement@1006 : Codeunit 5700;
       ErrorMessage@1036 : Boolean;
       DependentFieldActivatedErr@1009 : TextConst 'DAN=%1 kan ikke ‘ndres, fordi %2 er valgt.;ENU=You cannot change %1 because %2 is selected.';
       Text025@1016 : TextConst 'DAN=Feltet %1 skal ikke angives til %2, hvis feltet %3 i tabellen %4 er angivet til %5, da der kan opst† deadlocks.;ENU=The field %1 should not be set to %2 if field %3 in %4 table is set to %5 because deadlocks can occur.';

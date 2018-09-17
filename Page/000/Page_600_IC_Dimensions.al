@@ -2,9 +2,9 @@ OBJECT Page 600 IC Dimensions
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -12,7 +12,7 @@ OBJECT Page 600 IC Dimensions
                ENU=Intercompany Dimensions];
     SourceTable=Table411;
     PageType=List;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Dimensioner,Import/eksport;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Dimensioner,Import/eksport;
                                 ENU=New,Process,Report,Dimensions,Import/Export];
     ActionList=ACTIONS
     {
@@ -61,6 +61,7 @@ OBJECT Page 600 IC Dimensions
                                END;
                                 }
       { 13      ;2   ;Action    ;
+                      Name=CopyFromDimensions;
                       CaptionML=[DAN=Kopi‚r fra dimensioner;
                                  ENU=Copy from Dimensions];
                       ToolTipML=[DAN=Opretter koncerninterne dimensioner for eksisterende dimensioner.;
@@ -207,7 +208,7 @@ OBJECT Page 600 IC Dimensions
                 ICDimVal.Indentation := PrevIndentation;
                 ICDimVal.INSERT;
               END;
-              PrevIndentation := DimVal.Indentation;
+              PrevIndentation := ICDimVal.Indentation;
               IF DimVal."Dimension Value Type" = DimVal."Dimension Value Type"::"Begin-Total" THEN
                 PrevIndentation := PrevIndentation + 1;
             UNTIL DimVal.NEXT = 0;

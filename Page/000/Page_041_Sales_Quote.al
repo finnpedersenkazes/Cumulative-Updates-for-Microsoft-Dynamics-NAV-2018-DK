@@ -2,9 +2,9 @@ OBJECT Page 41 Sales Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 41 Sales Quote
     SourceTableView=WHERE(Document Type=FILTER(Quote));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Tilbud,Vis,Godkend,Anmod om godkendelse,Oversigt;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Tilbud,Vis,Godkend,Anmod om godkendelse,Oversigt;
                                 ENU=New,Process,Report,Quote,View,Approve,Request Approval,History];
     OnInit=BEGIN
              EnableBillToCustomerNo := TRUE;

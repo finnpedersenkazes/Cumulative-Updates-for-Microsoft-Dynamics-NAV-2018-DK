@@ -2,9 +2,9 @@ OBJECT Page 9311 Purchase Return Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 9311 Purchase Return Order List
     PageType=List;
     CardPageID=Purchase Return Order;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Returvareordre,Anmod om godkendelse,Frigiv;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Returvareordre,Anmod om godkendelse,Frigiv;
                                 ENU=New,Process,Report,Return Order,Request Approval,Release];
     OnOpenPage=VAR
                  PurchasesPayablesSetup@1000 : Record 312;

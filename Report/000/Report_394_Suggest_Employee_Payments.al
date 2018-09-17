@@ -2,9 +2,9 @@ OBJECT Report 394 Suggest Employee Payments
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -41,13 +41,13 @@ OBJECT Report 394 Suggest Employee Payments
                                GenJnlLineInserted := FALSE;
                                MessageText := '';
 
-                               IF ((BankPmtType = BankPmtType::" ") OR
+                               IF ((BankPmtType = GenJnlLine2."Bank Payment Type"::" ") OR
                                    SummarizePerEmpl) AND
                                   (NextDocNo = '')
                                THEN
                                  ERROR(StartingDocNoErr);
 
-                               IF ((BankPmtType = BankPmtType::"Manual Check") AND
+                               IF ((BankPmtType = GenJnlLine2."Bank Payment Type"::"Manual Check") AND
                                    NOT SummarizePerEmpl AND
                                    NOT DocNoPerLine)
                                THEN
@@ -307,8 +307,6 @@ OBJECT Report 394 Suggest Employee Payments
                              ENU=Bank Payment Type];
                   ToolTipML=[DAN=Angiver den checktype, der skal anvendes, hvis du bruger Bankkonto som modkontotype.;
                              ENU=Specifies the check type to be used, if you use Bank Account as the balancing account type.];
-                  OptionCaptionML=[DAN=" ,Computercheck,Manuel check";
-                                   ENU=" ,Computer Check,Manual Check"];
                   ApplicationArea=#Basic,#Suite;
                   SourceExpr=GenJnlLine2."Bank Payment Type";
                   Importance=Additional;
@@ -367,7 +365,7 @@ OBJECT Report 394 Suggest Employee Payments
       NextEntryNo@1052 : Integer;
       StopPayments@1053 : Boolean;
       DocNoPerLine@1054 : Boolean;
-      BankPmtType@1055 : ' ,Computer Check,Manual Check';
+      BankPmtType@1055 : Option;
       BalAccType@1056 : 'G/L Account,Customer,Vendor,Bank Account,Fixed Asset,IC Partner,Employee';
       BalAccNo@1057 : Code[20];
       MessageText@1058 : Text;
@@ -397,7 +395,7 @@ OBJECT Report 394 Suggest Employee Payments
       END;
     END;
 
-    PROCEDURE InitializeRequest@3(NewAvailableAmount@1002 : Decimal;NewSkipExportedPayments@1009 : Boolean;NewPostingDate@1003 : Date;NewStartDocNo@1004 : Code[20];NewSummarizePerEmpl@1005 : Boolean;BalAccType@1006 : 'G/L Account,Customer,Vendor,Bank Account,Fixed Asset,IC Partner,Employee';BalAccNo@1007 : Code[20];BankPmtType@1008 : ' ,Computer Check,Manual Check');
+    PROCEDURE InitializeRequest@3(NewAvailableAmount@1002 : Decimal;NewSkipExportedPayments@1009 : Boolean;NewPostingDate@1003 : Date;NewStartDocNo@1004 : Code[20];NewSummarizePerEmpl@1005 : Boolean;BalAccType@1006 : 'G/L Account,Customer,Vendor,Bank Account,Fixed Asset,IC Partner,Employee';BalAccNo@1007 : Code[20];BankPmtType@1008 : Option);
     BEGIN
       AmountAvailable := NewAvailableAmount;
       SkipExportedPayments := NewSkipExportedPayments;
@@ -617,6 +615,7 @@ OBJECT Report 394 Suggest Employee Payments
             SetHideValidation(TRUE);
             VALIDATE("Posting Date",PostingDate);
             VALIDATE("Account No.",TempEmplPaymentBuffer."Employee No.");
+            VALIDATE("Recipient Bank Account",TempEmplPaymentBuffer."Employee No.");
             Employee.GET(TempEmplPaymentBuffer."Employee No.");
 
             "Bal. Account Type" := BalAccType;

@@ -2,12 +2,65 @@ OBJECT Table 483 Change Global Dim. Log Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
+    Permissions=TableData 17=rm,
+                TableData 21=rm,
+                TableData 25=rm,
+                TableData 32=rm,
+                TableData 110=rm,
+                TableData 111=rm,
+                TableData 112=rm,
+                TableData 113=rm,
+                TableData 114=rm,
+                TableData 115=rm,
+                TableData 120=rm,
+                TableData 121=rm,
+                TableData 122=rm,
+                TableData 123=rm,
+                TableData 124=rm,
+                TableData 125=rm,
+                TableData 169=rm,
+                TableData 203=rm,
+                TableData 271=rm,
+                TableData 281=rm,
+                TableData 297=rm,
+                TableData 304=rm,
+                TableData 379=rm,
+                TableData 380=rm,
+                TableData 1005=rm,
+                TableData 5222=rm,
+                TableData 5223=rm,
+                TableData 5405=rm,
+                TableData 5406=rm,
+                TableData 5407=rm,
+                TableData 5409=rm,
+                TableData 5410=rm,
+                TableData 5411=rm,
+                TableData 5412=rm,
+                TableData 5413=rm,
+                TableData 5414=rm,
+                TableData 5415=rm,
+                TableData 5416=rm,
+                TableData 5601=rm,
+                TableData 5625=rm,
+                TableData 5629=rm,
+                TableData 5802=rm,
+                TableData 5832=rm,
+                TableData 5900=rm,
+                TableData 5901=rm,
+                TableData 5902=rm,
+                TableData 5907=rm,
+                TableData 5965=rm,
+                TableData 5970=rm,
+                TableData 6650=rm,
+                TableData 6651=rm,
+                TableData 6660=rm,
+                TableData 6661=rm;
     CaptionML=[DAN=Rediger global dim.logpost;
                ENU=Change Global Dim. Log Entry];
   }
@@ -15,7 +68,7 @@ OBJECT Table 483 Change Global Dim. Log Entry
   {
     { 1   ;   ;Table ID            ;Integer       ;CaptionML=[DAN=Tabel-id;
                                                               ENU=Table ID] }
-    { 2   ;   ;Table Name          ;Text30        ;CaptionML=[DAN=Tabelnavn;
+    { 2   ;   ;Table Name          ;Text50        ;CaptionML=[DAN=Tabelnavn;
                                                               ENU=Table Name] }
     { 3   ;   ;Total Records       ;Integer       ;CaptionML=[DAN=Samlet antal records;
                                                               ENU=Total Records] }
@@ -63,11 +116,15 @@ OBJECT Table 483 Change Global Dim. Log Entry
                                                               ENU=Earliest Start Date/Time] }
     { 18  ;   ;Remaining Duration  ;Duration      ;CaptionML=[DAN=Resterende varighed;
                                                               ENU=Remaining Duration] }
+    { 19  ;   ;Server Instance ID  ;Integer       ;DataClassification=SystemMetadata;
+                                                   CaptionML=[DAN=Serverforekomst-id;
+                                                              ENU=Server Instance ID] }
   }
   KEYS
   {
     {    ;Table ID                                ;Clustered=Yes }
     {    ;Progress                                 }
+    {    ;Parent Table ID                          }
   }
   FIELDGROUPS
   {
@@ -84,17 +141,28 @@ OBJECT Table 483 Change Global Dim. Log Entry
 
     PROCEDURE Update@37(CurrentRecNo@1000 : Integer;StartedFromRecord@1001 : Integer) : Boolean;
     BEGIN
-      IF "Completed Records" <> CurrentRecNo THEN BEGIN
-        "Remaining Duration" :=
-          ROUND(
-            ("Total Records" - CurrentRecNo) / (CurrentRecNo - StartedFromRecord) *
-            (CURRENTDATETIME - "Earliest Start Date/Time"),1);
-        VALIDATE("Completed Records",CurrentRecNo);
-        IF "Completed Records" = "Total Records" THEN
-          UpdateStatus;
-        EXIT(MODIFY);
+      IF "Completed Records" = CurrentRecNo THEN
+        EXIT(FALSE);
+
+      IF CurrentRecNo >= "Total Records" THEN
+        RecalculateTotalRecords;
+      VALIDATE("Completed Records",CurrentRecNo);
+      CASE "Completed Records" OF
+        0:
+          BEGIN
+            Status := Status::Incomplete;
+            CLEAR("Remaining Duration");
+          END;
+        "Total Records":
+          Status := Status::Completed;
+        ELSE
+          IF CurrentRecNo - StartedFromRecord <> 0 THEN
+            "Remaining Duration" :=
+              ROUND(
+                ("Total Records" - CurrentRecNo) / (CurrentRecNo - StartedFromRecord) *
+                (CURRENTDATETIME - "Earliest Start Date/Time"),1);
       END;
-      EXIT(FALSE);
+      EXIT(MODIFY);
     END;
 
     PROCEDURE UpdateWithCommit@28(CurrentRecNo@1000 : Integer;StartedFromRecord@1001 : Integer) Completed : Boolean;
@@ -102,6 +170,24 @@ OBJECT Table 483 Change Global Dim. Log Entry
       IF Update(CurrentRecNo,StartedFromRecord) THEN
         COMMIT;
       Completed := Status = Status::Completed;
+    END;
+
+    PROCEDURE UpdateWithoutCommit@7(CurrentRecNo@1000 : Integer;StartedFromRecord@1001 : Integer) Completed : Boolean;
+    BEGIN
+      Update(CurrentRecNo,StartedFromRecord);
+      Completed := Status = Status::Completed;
+    END;
+
+    [External]
+    PROCEDURE CancelTask@8();
+    VAR
+      ScheduledTask@1000 : Record 2000000175;
+    BEGIN
+      IF NOT ISNULLGUID("Task ID") THEN BEGIN
+        IF ScheduledTask.GET("Task ID") THEN
+          TASKSCHEDULER.CANCELTASK("Task ID");
+        CLEAR("Task ID");
+      END;
     END;
 
     PROCEDURE ChangeDimOnRecord@22(VAR RecRef@1000 : RecordRef;DimNo@1001 : Integer;GlobalDimFieldRef@1003 : FieldRef;OldDimValueCode@1004 : Code[20]);
@@ -129,20 +215,6 @@ OBJECT Table 483 Change Global Dim. Log Entry
       DimValueCode[2] := GlobalDimFieldRef[2].VALUE;
     END;
 
-    PROCEDURE FindDependentTableNo@23(ParentChangeGlobalDimLogEntry@1000 : Record 483;VAR DependentRecRef@1001 : RecordRef) : Boolean;
-    BEGIN
-      IF ParentChangeGlobalDimLogEntry."Is Parent Table" THEN BEGIN
-        SETRANGE("Parent Table ID",ParentChangeGlobalDimLogEntry."Table ID");
-        IF FINDFIRST THEN BEGIN
-          DependentRecRef.OPEN("Table ID");
-          DependentRecRef.LOCKTABLE(TRUE);
-          "Total Records" := DependentRecRef.COUNT;
-          "Session ID" := SESSIONID;
-          EXIT("Total Records" > 0);
-        END;
-      END;
-    END;
-
     PROCEDURE FindDimensionSetIDField@27(RecRef@1000 : RecordRef) : Boolean;
     VAR
       Field@1001 : Record 2000000041;
@@ -161,7 +233,6 @@ OBJECT Table 483 Change Global Dim. Log Entry
       END;
     END;
 
-    [Internal]
     PROCEDURE FindDimensionValueCode@5(RecRef@1003 : RecordRef;DimNo@1000 : Integer) : Code[20];
     VAR
       GeneralLedgerSetup@1001 : Record 98;
@@ -267,26 +338,19 @@ OBJECT Table 483 Change Global Dim. Log Entry
       PKeyFieldRef := PKeyRef.FIELDINDEX(1);
     END;
 
-    PROCEDURE Rerun@18();
+    LOCAL PROCEDURE RecalculateTotalRecords@21();
     VAR
-      ChangeGlobalDimensions@1000 : Codeunit 483;
+      RecRef@1000 : RecordRef;
     BEGIN
-      UpdateStatus;
-      ChangeGlobalDimensions.Rerun(Rec);
-    END;
-
-    PROCEDURE RunTask@7() Completed : Boolean;
-    VAR
-      ChangeGlobalDimensions@1000 : Codeunit 483;
-    BEGIN
-      SetSessionInProgress;
-      COMMIT;
-      Completed := ChangeGlobalDimensions.ChangeDimsOnTable(Rec);
+      RecRef.OPEN("Table ID");
+      "Total Records" := RecRef.COUNT;
+      RecRef.CLOSE;
     END;
 
     PROCEDURE SetSessionInProgress@6();
     BEGIN
       "Session ID" := SESSIONID;
+      "Server Instance ID" := SERVICEINSTANCEID;
       Status := Status::"In Progress";
       MODIFY;
     END;
@@ -301,6 +365,7 @@ OBJECT Table 483 Change Global Dim. Log Entry
       ELSE
         IF "Completed Records" = "Total Records" THEN BEGIN
           "Session ID" := -1; // to avoid match to real user sessions
+          "Server Instance ID" := -1;
           Status := Status::Completed
         END ELSE
           IF "Session ID" = 0 THEN BEGIN
@@ -309,17 +374,36 @@ OBJECT Table 483 Change Global Dim. Log Entry
             ELSE
               Status := Status::Incomplete;
           END ELSE
-            IF ActiveSession.GET(SERVICEINSTANCEID,"Session ID") THEN
+            IF ActiveSession.GET("Server Instance ID","Session ID") THEN
               Status := Status::"In Progress"
-            ELSE
+            ELSE BEGIN
               Status := Status::Incomplete;
+              "Session ID" := -1;
+              "Server Instance ID" := -1;
+            END;
+    END;
+
+    PROCEDURE ShowError@3();
+    VAR
+      JobQueueLogEntry@1000 : Record 474;
+    BEGIN
+      IF ISNULLGUID("Task ID") THEN BEGIN
+        JobQueueLogEntry.SETRANGE("Object Type to Run",JobQueueLogEntry."Object Type to Run"::Codeunit);
+        JobQueueLogEntry.SETRANGE("Object ID to Run",CODEUNIT::"Change Global Dim Err. Handler");
+        JobQueueLogEntry.SETRANGE(Description,"Table Name");
+      END ELSE
+        JobQueueLogEntry.SETRANGE(ID,"Task ID");
+      JobQueueLogEntry.SETRANGE(Status,JobQueueLogEntry.Status::Error);
+      PAGE.RUNMODAL(PAGE::"Job Queue Log Entries",JobQueueLogEntry);
     END;
 
     LOCAL PROCEDURE IsTaskScheduled@17() TaskExists : Boolean;
+    VAR
+      ScheduledTask@1000 : Record 2000000175;
     BEGIN
       OnFindingScheduledTask("Task ID",TaskExists);
       IF NOT TaskExists THEN
-        EXIT(TASKSCHEDULER.TASKEXISTS("Task ID"));
+        EXIT(ScheduledTask.GET("Task ID"));
     END;
 
     [Business]

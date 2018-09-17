@@ -2,9 +2,9 @@ OBJECT Table 77 Report Selections
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -109,7 +109,7 @@ OBJECT Table 77 Report Selections
       EmailBodyIsAlreadyDefinedErr@1002 : TextConst '@@@="%1 = Usage, for example Sales Invoice";DAN=En br›dtekst i mail er allerede defineret for %1.;ENU=An email body is already defined for %1.';
       CannotBeUsedAsAnEmailBodyErr@1003 : TextConst '@@@="%1 = Report ID,%2 = Type";DAN=Rapporten %1 bruger %2, som ikke kan bruges som br›dtekst i mail.;ENU=Report %1 uses the %2 which cannot be used as an email body.';
       ReportLayoutSelection@1004 : Record 9651;
-      OneRecordWillBeSentQst@1005 : TextConst 'DAN=Only the first of the selected documents can be scheduled in the job queue.\\Do you want to continue?;ENU=Only the first of the selected documents can be scheduled in the job queue.\\Do you want to continue?';
+      OneRecordWillBeSentQst@1005 : TextConst 'DAN=Kun det f›rste af de valgte dokumenter kan l‘gges i opgavek›en.\\Vil du forts‘tte?;ENU=Only the first of the selected documents can be scheduled in the job queue.\\Do you want to continue?';
       InteractionMgt@1006 : Codeunit 5067;
 
     [External]
@@ -237,37 +237,73 @@ OBJECT Table 77 Report Selections
 
     [External]
     PROCEDURE PrintWithCheck@6(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;CustomerNoFieldNo@1003 : Integer);
+    VAR
+      Handled@1002 : Boolean;
     BEGIN
+      OnBeforePrintWithCheck(ReportUsage,RecordVariant,CustomerNoFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       PrintWithGUIYesNoWithCheck(ReportUsage,RecordVariant,TRUE,CustomerNoFieldNo);
     END;
 
     [External]
     PROCEDURE PrintWithGUIYesNoWithCheck@12(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;CustomerNoFieldNo@1005 : Integer);
+    VAR
+      Handled@1003 : Boolean;
     BEGIN
+      OnBeforePrintWithGUIYesNoWithCheck(ReportUsage,RecordVariant,IsGUI,CustomerNoFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,CustomerNoFieldNo,TRUE,DATABASE::Customer);
     END;
 
     [External]
     PROCEDURE PrintWithGUIYesNoWithCheckVendor@66(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;VendorNoFieldNo@1005 : Integer);
+    VAR
+      Handled@1003 : Boolean;
     BEGIN
+      OnBeforePrintWithGUIYesNoWithCheckVendor(ReportUsage,RecordVariant,IsGUI,VendorNoFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,VendorNoFieldNo,TRUE,DATABASE::Vendor);
     END;
 
     [External]
     PROCEDURE Print@7(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;CustomerNoFieldNo@1003 : Integer);
+    VAR
+      Handled@1002 : Boolean;
     BEGIN
+      OnBeforePrint(ReportUsage,RecordVariant,CustomerNoFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       PrintWithGUIYesNo(ReportUsage,RecordVariant,TRUE,CustomerNoFieldNo);
     END;
 
     [External]
     PROCEDURE PrintWithGUIYesNo@8(ReportUsage@1000 : Integer;RecordVariant@1001 : Variant;IsGUI@1002 : Boolean;CustomerNoFieldNo@1005 : Integer);
+    VAR
+      Handled@1003 : Boolean;
     BEGIN
+      OnBeforePrintWithGUIYesNo(ReportUsage,RecordVariant,IsGUI,CustomerNoFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,CustomerNoFieldNo,FALSE,DATABASE::Customer);
     END;
 
     [External]
     PROCEDURE PrintWithGUIYesNoVendor@32(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;VendorNoFieldNo@1005 : Integer);
+    VAR
+      Handled@1000 : Boolean;
     BEGIN
+      OnBeforePrintWithGUIYesNoVendor(ReportUsage,RecordVariant,IsGUI,VendorNoFieldNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       PrintDocumentsWithCheckGUIYesNoCommon(ReportUsage,RecordVariant,IsGUI,VendorNoFieldNo,FALSE,DATABASE::Vendor);
     END;
 
@@ -593,7 +629,12 @@ OBJECT Table 77 Report Selections
       SMTPMail@1002 : Codeunit 400;
       OfficeMgt@1008 : Codeunit 1630;
       RecRef@1005 : RecordRef;
+      Handled@1012 : Boolean;
     BEGIN
+      OnBeforeSendEmailToCust(ReportUsage,RecordVariant,DocNo,DocName,ShowDialog,CustNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       IF ShowDialog OR
          (NOT SMTPMail.IsEnabled) OR
          (GetEmailAddressIgnoringLayout(ReportUsage,RecordVariant,CustNo) = '') OR
@@ -624,7 +665,12 @@ OBJECT Table 77 Report Selections
       OfficeMgt@1009 : Codeunit 1630;
       RecRef@1006 : RecordRef;
       VendorEmail@1011 : Text[250];
+      Handled@1012 : Boolean;
     BEGIN
+      OnBeforeSendEmailToVendor(ReportUsage,RecordVariant,DocNo,DocName,ShowDialog,VendorNo,Handled);
+      IF Handled THEN
+        EXIT;
+
       VendorEmail := GetVendorEmailAddress(VendorNo,RecordVariant,ReportUsage);
       IF ShowDialog OR NOT SMTPMail.IsEnabled OR (VendorEmail = '') OR OfficeMgt.IsAvailable THEN BEGIN
         SendEmailToVendorDirectly(ReportUsage,RecordVariant,DocNo,DocName,TRUE,VendorNo);
@@ -1147,16 +1193,56 @@ OBJECT Table 77 Report Selections
     END;
 
     [Integration]
-    LOCAL PROCEDURE OnBeforePrintForUsage@69(VAR ReportUsage@1000 : Integer;VAR Handled@1001 : Boolean);
+    LOCAL PROCEDURE OnBeforePrint@77(ReportUsage@1002 : Integer;RecordVariant@1001 : Variant;CustomerNoFieldNo@1000 : Integer;VAR Handled@1003 : Boolean);
     BEGIN
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnBeforePrintForUsage@69(VAR ReportUsage@1000 : Integer;VAR IsHandled@1001 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePrintWithCheck@43(ReportUsage@1002 : Integer;RecordVariant@1001 : Variant;CustomerNoFieldNo@1000 : Integer;VAR Handled@1003 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePrintWithGUIYesNoWithCheck@64(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;CustomerNoFieldNo@1000 : Integer;VAR Handled@1004 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePrintWithGUIYesNoWithCheckVendor@74(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;VendorNoFieldNo@1000 : Integer;VAR Handled@1004 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePrintWithGUIYesNo@79(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;CustomerNoFieldNo@1000 : Integer;VAR Handled@1004 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforePrintWithGUIYesNoVendor@83(ReportUsage@1003 : Integer;RecordVariant@1002 : Variant;IsGUI@1001 : Boolean;VendorNoFieldNo@1000 : Integer;VAR Handled@1004 : Boolean);
+    BEGIN
+    END;
+
+    [Integration(TRUE)]
     LOCAL PROCEDURE OnBeforeSetReportLayout@61(RecordVariant@1000 : Variant);
     BEGIN
     END;
 
     [Integration]
+    LOCAL PROCEDURE OnBeforeSendEmailToCust@89(ReportUsage@1005 : Integer;RecordVariant@1004 : Variant;DocNo@1003 : Code[20];DocName@1002 : Text[150];ShowDialog@1001 : Boolean;CustNo@1000 : Code[20];VAR Handled@1006 : Boolean);
+    BEGIN
+    END;
+
+    [Integration]
+    LOCAL PROCEDURE OnBeforeSendEmailToVendor@92(ReportUsage@1005 : Integer;RecordVariant@1004 : Variant;DocNo@1003 : Code[20];DocName@1002 : Text[150];ShowDialog@1001 : Boolean;VendorNo@1000 : Code[20];VAR Handled@1006 : Boolean);
+    BEGIN
+    END;
+
+    [Integration(TRUE)]
     LOCAL PROCEDURE OnFindReportSelections@63(VAR FilterReportSelections@1001 : Record 77;VAR IsHandled@1002 : Boolean;VAR ReturnReportSelections@1000 : Record 77);
     BEGIN
     END;

@@ -2,9 +2,9 @@ OBJECT Page 5050 Contact Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -12,7 +12,7 @@ OBJECT Page 5050 Contact Card
                ENU=Contact Card];
     SourceTable=Table5050;
     PageType=ListPlus;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Relaterede oplysninger;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Relaterede oplysninger;
                                 ENU=New,Process,Report,Related Information];
     OnInit=BEGIN
              OrganizationalLevelCodeEnable := TRUE;

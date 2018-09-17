@@ -2,9 +2,9 @@ OBJECT Page 135 Posted Sales Cr. Memo Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -91,6 +91,7 @@ OBJECT Page 135 Posted Sales Cr. Memo Subform
                       ToolTipML=[DAN=Vis de bogf›rte returvaremodtagelser for varen.;
                                  ENU=View posted return receipts for the item.];
                       ApplicationArea=#Advanced;
+                      Image=ReceiptLines;
                       OnAction=BEGIN
                                  PageShowItemReturnRcptLines;
                                END;

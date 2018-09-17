@@ -2,9 +2,9 @@ OBJECT Table 312 Purchases & Payables Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -139,7 +139,7 @@ OBJECT Table 312 Purchases & Payables Setup
                                                               ENU=Notify On Success] }
     { 46  ;   ;Allow Document Deletion Before;Date;CaptionML=[DAN=Tillad sletning af dokument f›r;
                                                               ENU=Allow Document Deletion Before] }
-    { 56  ;   ;Ignore Updated Addresses;Boolean   ;CaptionML=[DAN=Ignore Updated Addresses;
+    { 56  ;   ;Ignore Updated Addresses;Boolean   ;CaptionML=[DAN=Ignorer opdaterede adresser;
                                                               ENU=Ignore Updated Addresses] }
     { 1217;   ;Debit Acc. for Non-Item Lines;Code20;
                                                    TableRelation="G/L Account" WHERE (Direct Posting=CONST(Yes),

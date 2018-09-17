@@ -2,9 +2,9 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -801,15 +801,14 @@ OBJECT Codeunit 6620 Copy Document Mgt.
           "Line No." := NextLineNo;
           IF FromSalesLine.Type = FromSalesLine.Type::" " THEN
             Description := FromSalesLine.Description
-          ELSE BEGIN
+          ELSE
             TransfldsFromSalesToPurchLine(FromSalesLine,ToPurchLine);
-            IF (Type = Type::Item) AND (Quantity <> 0) THEN
-              CopyItemTrackingEntries(
-                FromSalesLine,ToPurchLine,FromSalesHeader."Prices Including VAT",
-                ToPurchHeader."Prices Including VAT");
-          END;
           OnBeforeCopySalesToPurchDoc(ToPurchLine,FromSalesLine);
           INSERT(TRUE);
+          IF (FromSalesLine.Type <> FromSalesLine.Type::" ") AND (Type = Type::Item) AND (Quantity <> 0) THEN
+            CopyItemTrackingEntries(
+              FromSalesLine,ToPurchLine,FromSalesHeader."Prices Including VAT",
+              ToPurchHeader."Prices Including VAT");
           OnAfterCopySalesToPurchDoc(ToPurchLine,FromSalesLine);
         UNTIL FromSalesLine.NEXT = 0;
       END;
@@ -4790,16 +4789,18 @@ OBJECT Codeunit 6620 Copy Document Mgt.
 
     LOCAL PROCEDURE CopyItemTrackingEntries@126(SalesLine@1000 : Record 37;VAR PurchLine@1001 : Record 39;SalesPricesIncludingVAT@1006 : Boolean;PurchPricesIncludingVAT@1005 : Boolean);
     VAR
+      PurchasesPayablesSetup@1007 : Record 312;
       TempItemLedgerEntry@1003 : TEMPORARY Record 32;
       TrackingSpecification@1008 : Record 336;
       ItemTrackingMgt@1002 : Codeunit 6500;
       MissingExCostRevLink@1004 : Boolean;
     BEGIN
+      PurchasesPayablesSetup.GET;
       FindTrackingEntries(
         TempItemLedgerEntry,DATABASE::"Sales Line",TrackingSpecification."Source Subtype"::"5",
         SalesLine."Document No.",'',0,SalesLine."Line No.",SalesLine."No.");
       ItemTrackingMgt.CopyItemLedgEntryTrkgToPurchLn(
-        TempItemLedgerEntry,PurchLine,FALSE,MissingExCostRevLink,
+        TempItemLedgerEntry,PurchLine,PurchasesPayablesSetup."Exact Cost Reversing Mandatory",MissingExCostRevLink,
         SalesPricesIncludingVAT,PurchPricesIncludingVAT,TRUE);
     END;
 

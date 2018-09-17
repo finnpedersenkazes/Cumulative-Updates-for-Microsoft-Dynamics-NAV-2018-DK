@@ -2,9 +2,9 @@ OBJECT Report 3 G/L Register
 {
   OBJECT-PROPERTIES
   {
-    Date=26-01-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20348;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -597,7 +597,7 @@ OBJECT Report 3 G/L Register
                   <Width>2cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.02135cm</Width>
+                  <Width>1.64217cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.5cm</Width>
@@ -609,7 +609,7 @@ OBJECT Report 3 G/L Register
                   <Width>2.25001cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.956cm</Width>
+                  <Width>1.64559cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.34396cm</Width>
@@ -624,7 +624,7 @@ OBJECT Report 3 G/L Register
                   <Width>1.04765cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.24998cm</Width>
+                  <Width>1.93957cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.32644cm</Width>

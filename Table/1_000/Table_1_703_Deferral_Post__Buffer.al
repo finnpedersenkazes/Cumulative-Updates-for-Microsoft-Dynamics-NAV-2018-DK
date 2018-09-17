@@ -2,12 +2,14 @@ OBJECT Table 1703 Deferral Post. Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
+    ObsoleteState=Pending;
+    ObsoleteReason=Replace with tab 1706 Deferral Posting Buffer;
     CaptionML=[DAN=Periodiseringsbogf.buffer;
                ENU=Deferral Post. Buffer];
   }
@@ -19,34 +21,26 @@ OBJECT Table 1703 Deferral Post. Buffer
                                                    OptionCaptionML=[DAN=Forudb. val.kursdiff.,Finanskonto,Vare,Ressource,Anl‘g;
                                                                     ENU=Prepmt. Exch. Rate Difference,G/L Account,Item,Resource,Fixed Asset];
                                                    OptionString=Prepmt. Exch. Rate Difference,G/L Account,Item,Resource,Fixed Asset }
-    { 2   ;   ;G/L Account         ;Code20        ;TableRelation="G/L Account" WHERE (Account Type=CONST(Posting),
-                                                                                      Blocked=CONST(No));
-                                                   DataClassification=SystemMetadata;
+    { 2   ;   ;G/L Account         ;Code20        ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Finanskonto;
                                                               ENU=G/L Account];
                                                    NotBlank=Yes }
-    { 3   ;   ;Gen. Bus. Posting Group;Code20     ;TableRelation="Gen. Business Posting Group";
-                                                   DataClassification=SystemMetadata;
+    { 3   ;   ;Gen. Bus. Posting Group;Code20     ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Virksomhedsbogf›ringsgruppe;
                                                               ENU=Gen. Bus. Posting Group] }
-    { 4   ;   ;Gen. Prod. Posting Group;Code20    ;TableRelation="Gen. Product Posting Group";
-                                                   DataClassification=SystemMetadata;
+    { 4   ;   ;Gen. Prod. Posting Group;Code20    ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Produktbogf›ringsgruppe;
                                                               ENU=Gen. Prod. Posting Group] }
-    { 5   ;   ;VAT Bus. Posting Group;Code20      ;TableRelation="VAT Business Posting Group";
-                                                   DataClassification=SystemMetadata;
+    { 5   ;   ;VAT Bus. Posting Group;Code20      ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Momsvirksomhedsbogf.gruppe;
                                                               ENU=VAT Bus. Posting Group] }
-    { 6   ;   ;VAT Prod. Posting Group;Code20     ;TableRelation="VAT Product Posting Group";
-                                                   DataClassification=SystemMetadata;
+    { 6   ;   ;VAT Prod. Posting Group;Code20     ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Momsproduktbogf.gruppe;
                                                               ENU=VAT Prod. Posting Group] }
-    { 7   ;   ;Tax Area Code       ;Code20        ;TableRelation="Tax Area";
-                                                   DataClassification=SystemMetadata;
+    { 7   ;   ;Tax Area Code       ;Code20        ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Skatteomr†dekode;
                                                               ENU=Tax Area Code] }
-    { 8   ;   ;Tax Group Code      ;Code20        ;TableRelation="Tax Group";
-                                                   DataClassification=SystemMetadata;
+    { 8   ;   ;Tax Group Code      ;Code20        ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Skattegruppekode;
                                                               ENU=Tax Group Code] }
     { 9   ;   ;Tax Liable          ;Boolean       ;DataClassification=SystemMetadata;
@@ -55,8 +49,7 @@ OBJECT Table 1703 Deferral Post. Buffer
     { 10  ;   ;Use Tax             ;Boolean       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Use tax;
                                                               ENU=Use Tax] }
-    { 11  ;   ;Job No.             ;Code20        ;TableRelation=Job;
-                                                   DataClassification=SystemMetadata;
+    { 11  ;   ;Job No.             ;Code20        ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Sagsnr.;
                                                               ENU=Job No.] }
     { 12  ;   ;Posting Date        ;Date          ;DataClassification=SystemMetadata;
@@ -71,13 +64,11 @@ OBJECT Table 1703 Deferral Post. Buffer
     { 15  ;   ;System-Created Entry;Boolean       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Automatisk oprettet;
                                                               ENU=System-Created Entry] }
-    { 16  ;   ;Global Dimension 1 Code;Code20     ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(1));
-                                                   DataClassification=SystemMetadata;
+    { 16  ;   ;Global Dimension 1 Code;Code20     ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Global dimension 1-kode;
                                                               ENU=Global Dimension 1 Code];
                                                    CaptionClass='1,1,1' }
-    { 17  ;   ;Global Dimension 2 Code;Code20     ;TableRelation="Dimension Value".Code WHERE (Global Dimension No.=CONST(2));
-                                                   DataClassification=SystemMetadata;
+    { 17  ;   ;Global Dimension 2 Code;Code20     ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Global dimension 2-kode;
                                                               ENU=Global Dimension 2 Code];
                                                    CaptionClass='1,1,2' }
@@ -114,13 +105,11 @@ OBJECT Table 1703 Deferral Post. Buffer
     { 27  ;   ;Partial Deferral    ;Boolean       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Delvis periodisering;
                                                               ENU=Partial Deferral] }
-    { 480 ;   ;Dimension Set ID    ;Integer       ;TableRelation="Dimension Set Entry";
-                                                   DataClassification=SystemMetadata;
+    { 480 ;   ;Dimension Set ID    ;Integer       ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Dimensionsgruppe-id;
                                                               ENU=Dimension Set ID];
                                                    Editable=No }
-    { 1700;   ;Deferral Code       ;Code10        ;TableRelation="Deferral Template"."Deferral Code";
-                                                   DataClassification=SystemMetadata;
+    { 1700;   ;Deferral Code       ;Code10        ;DataClassification=SystemMetadata;
                                                    CaptionML=[DAN=Periodiseringskode;
                                                               ENU=Deferral Code] }
     { 1701;   ;Deferral Line No.   ;Integer       ;DataClassification=SystemMetadata;

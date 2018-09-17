@@ -2,9 +2,9 @@ OBJECT Page 1751 Data Classification Worksheet
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 1751 Data Classification Worksheet
     SourceTableView=WHERE(Field Caption=FILTER(<>''));
     PageType=List;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Administrer,Vis;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Administrer,Vis;
                                 ENU=New,Process,Report,Manage,View];
     OnOpenPage=VAR
                  Company@1002 : Record 2000000006;
@@ -67,8 +67,27 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=Setup;
                       PromotedCategory=Process;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  PAGE.RUN(PAGE::"Data Classification Wizard");
+                               END;
+                                }
+      { 11      ;2   ;Action    ;
+                      Name=Find New Fields;
+                      CaptionML=[DAN=Find nye felter;
+                                 ENU=Find New Fields];
+                      ToolTipML=[DAN=S›g efter nye felter, og tilf›j dem til dataklassificeringskladden;
+                                 ENU=Search for new fields and add them in the data classification worksheet];
+                      ApplicationArea=#All;
+                      Promoted=Yes;
+                      PromotedIsBig=Yes;
+                      Image=Refresh;
+                      PromotedCategory=Process;
+                      PromotedOnly=Yes;
+                      OnAction=VAR
+                                 DataClassificationMgt@1000 : Codeunit 1750;
+                               BEGIN
+                                 DataClassificationMgt.SyncAllFields;
                                END;
                                 }
       { 18      ;2   ;Action    ;
@@ -82,6 +101,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=ApplyEntries;
                       PromotedCategory=Process;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SetSensitivityToSelection("Data Sensitivity"::Sensitive);
                                END;
@@ -97,6 +117,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=ApplyEntries;
                       PromotedCategory=Process;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SetSensitivityToSelection("Data Sensitivity"::Personal);
                                END;
@@ -112,21 +133,23 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=ApplyEntries;
                       PromotedCategory=Process;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SetSensitivityToSelection("Data Sensitivity"::Normal);
                                END;
                                 }
-      { 27      ;2   ;Action    ;
+      { 14      ;2   ;Action    ;
                       Name=Set as Company Confidential;
-                      CaptionML=[DAN=Angiv som Virksomhedens fortrolige;
+                      CaptionML=[DAN=Angiv som virksomhedsfortrolige data;
                                  ENU=Set as Company Confidential];
-                      ToolTipML=[DAN=Angiv de valgte felters dataf›lsomhed som Virksomhedens fortrolige;
+                      ToolTipML=[DAN=Angiv de valgte felters dataf›lsomhed som virksomhedsfortrolige data;
                                  ENU=Set the Data Sensitivity of the selected fields to Company Confidential];
                       ApplicationArea=#All;
                       Promoted=Yes;
                       PromotedIsBig=Yes;
                       Image=ApplyEntries;
                       PromotedCategory=Process;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SetSensitivityToSelection("Data Sensitivity"::"Company Confidential");
                                END;
@@ -146,6 +169,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=FilterLines;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=VAR
                                  DataClassificationMgt@1000 : Codeunit 1750;
                                BEGIN
@@ -167,6 +191,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=FilterLines;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SETRANGE("Data Sensitivity","Data Sensitivity"::Unclassified);
                                  CurrPage.UPDATE;
@@ -182,6 +207,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       Promoted=Yes;
                       Image=FilterLines;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SETRANGE("Data Sensitivity","Data Sensitivity"::Sensitive);
                                  CurrPage.UPDATE;
@@ -197,6 +223,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       Promoted=Yes;
                       Image=FilterLines;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SETRANGE("Data Sensitivity","Data Sensitivity"::Personal);
                                  CurrPage.UPDATE;
@@ -212,6 +239,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       Promoted=Yes;
                       Image=FilterLines;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SETRANGE("Data Sensitivity","Data Sensitivity"::Normal);
                                  CurrPage.UPDATE;
@@ -227,6 +255,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       Promoted=Yes;
                       Image=FilterLines;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  SETRANGE("Data Sensitivity","Data Sensitivity"::"Company Confidential");
                                  CurrPage.UPDATE;
@@ -242,6 +271,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       Promoted=Yes;
                       Image=ClearFilter;
                       PromotedCategory=Category5;
+                      PromotedOnly=Yes;
                       OnAction=BEGIN
                                  RESET;
                                  SETRANGE("Company Name",COMPANYNAME);
@@ -260,6 +290,7 @@ OBJECT Page 1751 Data Classification Worksheet
                       PromotedIsBig=Yes;
                       Image=Table;
                       PromotedCategory=Process;
+                      PromotedOnly=Yes;
                       OnAction=VAR
                                  TempFieldContentBuffer@1000 : TEMPORARY Record 1754;
                                  DataClassificationMgt@1003 : Codeunit 1750;

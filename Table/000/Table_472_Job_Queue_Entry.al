@@ -2,9 +2,9 @@ OBJECT Table 472 Job Queue Entry
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,10 +17,13 @@ OBJECT Table 472 Job Queue Entry
                SetDefaultValues(TRUE);
              END;
 
-    OnModify=BEGIN
-               IF AreRunParametersChanged THEN
+    OnModify=VAR
+               RunParametersChanged@1000 : Boolean;
+             BEGIN
+               RunParametersChanged := AreRunParametersChanged;
+               IF RunParametersChanged THEN
                  Reschedule;
-               SetDefaultValues(FALSE);
+               SetDefaultValues(RunParametersChanged);
                "On Hold Due to Inactivity" := FALSE;
              END;
 
@@ -312,6 +315,7 @@ OBJECT Table 472 Job Queue Entry
                                                                 ELSE BEGIN
                                                                   CLEAR(XML);
                                                                   MESSAGE(RequestPagesOptionsDeletedMsg);
+                                                                  "User ID" := USERID;
                                                                 END;
                                                               END;
 
@@ -571,7 +575,7 @@ OBJECT Table 472 Job Queue Entry
     BEGIN
       CancelTask;
       IF Status = Status::Ready THEN BEGIN
-        SetDefaultValues(TRUE);
+        SetDefaultValues(FALSE);
         EnqueueTask;
       END;
     END;
@@ -680,7 +684,7 @@ OBJECT Table 472 Job Queue Entry
       CASE NewStatus OF
         Status::Ready:
           BEGIN
-            SetDefaultValues(TRUE);
+            SetDefaultValues(FALSE);
             IF "On Hold Due to Inactivity" THEN
               "Earliest Start Date/Time" :=
                 JobQueueDispatcher.CalcNextRunTimeForRecurringJob(Rec,CURRENTDATETIME)
@@ -813,16 +817,20 @@ OBJECT Table 472 Job Queue Entry
     PROCEDURE RunReportRequestPage@18();
     VAR
       Params@1000 : Text;
+      OldParams@1001 : Text;
     BEGIN
       IF "Object Type to Run" <> "Object Type to Run"::Report THEN
         EXIT;
       IF "Object ID to Run" = 0 THEN
         EXIT;
 
-      Params := REPORT.RUNREQUESTPAGE("Object ID to Run",GetReportParameters);
+      OldParams := GetReportParameters;
+      Params := REPORT.RUNREQUESTPAGE("Object ID to Run",OldParams);
 
-      IF Params <> '' THEN
+      IF (Params <> '') AND (Params <> OldParams) THEN BEGIN
+        "User ID" := USERID;
         SetReportParameters(Params);
+      END;
     END;
 
     [External]

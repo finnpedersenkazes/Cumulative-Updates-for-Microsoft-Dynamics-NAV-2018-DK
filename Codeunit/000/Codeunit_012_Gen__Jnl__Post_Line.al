@@ -2,9 +2,9 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -266,6 +266,20 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
         LastDocType := "Document Type";
         LastDocNo := "Document No.";
         LastDate := "Posting Date";
+      END;
+    END;
+
+    LOCAL PROCEDURE InitNextEntryNo@230();
+    VAR
+      GLEntry@1000 : Record 17 SECURITYFILTERING(Ignored);
+    BEGIN
+      GLEntry.LOCKTABLE;
+      IF GLEntry.FINDLAST THEN BEGIN
+        NextEntryNo := GLEntry."Entry No." + 1;
+        NextTransactionNo := GLEntry."Transaction No." + 1;
+      END ELSE BEGIN
+        NextEntryNo := 1;
+        NextTransactionNo := 1;
       END;
     END;
 
@@ -1186,15 +1200,8 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
       OnBeforeStartPosting(GenJnlLine);
 
       WITH GenJnlLine DO BEGIN
-        GlobalGLEntry.LOCKTABLE;
-        IF GlobalGLEntry.FINDLAST THEN BEGIN
-          NextEntryNo := GlobalGLEntry."Entry No." + 1;
-          NextTransactionNo := GlobalGLEntry."Transaction No." + 1;
-          LogInManagement.CheckLicense("Posting Date");
-        END ELSE BEGIN
-          NextEntryNo := 1;
-          NextTransactionNo := 1;
-        END;
+        InitNextEntryNo;
+        LogInManagement.CheckLicense("Posting Date");
         FirstTransactionNo := NextTransactionNo;
 
         InitLastDocDate(GenJnlLine);
@@ -5167,12 +5174,8 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
         IF DeferralHeader.GET(DeferralDocType::"G/L","Journal Template Name","Journal Batch Name",0,'',"Line No.") THEN BEGIN
           EmptyDeferralLine := FALSE;
           // Get the range of detail records for this schedule
-          DeferralLine.SETRANGE("Deferral Doc. Type",DeferralDocType::"G/L");
-          DeferralLine.SETRANGE("Gen. Jnl. Template Name","Journal Template Name");
-          DeferralLine.SETRANGE("Gen. Jnl. Batch Name","Journal Batch Name");
-          DeferralLine.SETRANGE("Document Type",0);
-          DeferralLine.SETRANGE("Document No.",'');
-          DeferralLine.SETRANGE("Line No.","Line No.");
+          DeferralUtilities.FilterDeferralLines(
+            DeferralLine,DeferralDocType::"G/L","Journal Template Name","Journal Batch Name",0,'',"Line No.");
           IF DeferralLine.FINDSET THEN
             REPEAT
               IF DeferralLine.Amount = 0.0 THEN
@@ -5196,15 +5199,11 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 
         // Get the Deferral Header table so we know the amount to defer...
         // Assume straight GL posting
-        IF DeferralHeader.GET(DeferralDocType::"G/L","Journal Template Name","Journal Batch Name",0,'',"Line No.") THEN BEGIN
+        IF DeferralHeader.GET(DeferralDocType::"G/L","Journal Template Name","Journal Batch Name",0,'',"Line No.") THEN
           // Get the range of detail records for this schedule
-          DeferralLine.SETRANGE("Deferral Doc. Type",DeferralDocType::"G/L");
-          DeferralLine.SETRANGE("Gen. Jnl. Template Name","Journal Template Name");
-          DeferralLine.SETRANGE("Gen. Jnl. Batch Name","Journal Batch Name");
-          DeferralLine.SETRANGE("Document Type",0);
-          DeferralLine.SETRANGE("Document No.",'');
-          DeferralLine.SETRANGE("Line No.","Line No.");
-        END ELSE
+          DeferralUtilities.FilterDeferralLines(
+            DeferralLine,DeferralDocType::"G/L","Journal Template Name","Journal Batch Name",0,'',"Line No.")
+        ELSE
           ERROR(NoDeferralScheduleErr,"Line No.","Deferral Code");
 
         InitGLEntry(GenJournalLine,GLEntry,
@@ -5252,7 +5251,7 @@ OBJECT Codeunit 12 Gen. Jnl.-Post Line
 
     LOCAL PROCEDURE PostDeferralPostBuffer@127(GenJournalLine@1005 : Record 81);
     VAR
-      DeferralPostBuffer@1004 : Record 1703;
+      DeferralPostBuffer@1004 : Record 1706;
       GLEntry@1003 : Record 17;
       PostDate@1000 : Date;
     BEGIN

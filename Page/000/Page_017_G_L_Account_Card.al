@@ -2,9 +2,9 @@ OBJECT Page 17 G/L Account Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -13,7 +13,7 @@ OBJECT Page 17 G/L Account Card
     SourceTable=Table15;
     PageType=Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Konto,Saldo;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Konto,Saldo;
                                 ENU=New,Process,Report,Account,Balance];
     OnAfterGetRecord=BEGIN
                        CALCFIELDS("Account Subcategory Descript.");

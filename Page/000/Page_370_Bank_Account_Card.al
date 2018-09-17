@@ -2,9 +2,9 @@ OBJECT Page 370 Bank Account Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -12,7 +12,7 @@ OBJECT Page 370 Bank Account Card
                ENU=Bank Account Card];
     SourceTable=Table270;
     PageType=Card;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Tjeneste til bankkontoudtog,Bankkonto;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Tjeneste til bankkontoudtog,Bankkonto;
                                 ENU=New,Process,Report,Bank Statement Service,Bank Account];
     OnOpenPage=VAR
                  Contact@1001 : Record 5050;

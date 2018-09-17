@@ -2,9 +2,9 @@ OBJECT Table 99000829 Planning Component
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -101,13 +101,11 @@ OBJECT Table 99000829 Planning Component
 
                                                                 "Indirect Cost %" := ROUND(Item."Indirect Cost %" * "Qty. per Unit of Measure",0.00001);
 
-                                                                "Overhead Rate" :=
-                                                                  ROUND(Item."Overhead Rate" * "Qty. per Unit of Measure",
-                                                                    GLSetup."Unit-Amount Rounding Precision");
+                                                                "Overhead Rate" := Item."Overhead Rate";
 
                                                                 "Direct Unit Cost" :=
                                                                   ROUND(
-                                                                    ("Unit Cost" - "Overhead Rate") / (1 + "Indirect Cost %" / 100),
+                                                                    ("Unit Cost" - "Overhead Rate" * "Qty. per Unit of Measure") / (1 + "Indirect Cost %" / 100),
                                                                     GLSetup."Unit-Amount Rounding Precision");
 
                                                                 VALIDATE("Calculation Formula");
@@ -190,7 +188,7 @@ OBJECT Table 99000829 Planning Component
                                                                 "Overhead Amount" :=
                                                                   ROUND(
                                                                     "Expected Quantity" *
-                                                                    (("Direct Unit Cost" * "Indirect Cost %" / 100) + "Overhead Rate"));
+                                                                    (("Direct Unit Cost" * "Indirect Cost %" / 100) + "Overhead Rate" * "Qty. per Unit of Measure"));
                                                                 "Direct Cost Amount" := ROUND("Expected Quantity" * "Direct Unit Cost");
                                                               END;
 
@@ -333,11 +331,9 @@ OBJECT Table 99000829 Planning Component
                                                                     ROUND(Item."Unit Cost" * "Qty. per Unit of Measure");
                                                                   "Indirect Cost %" :=
                                                                     ROUND(Item."Indirect Cost %" * "Qty. per Unit of Measure",0.00001);
-                                                                  "Overhead Rate" :=
-                                                                    ROUND(Item."Overhead Rate" * "Qty. per Unit of Measure",
-                                                                      GLSetup."Unit-Amount Rounding Precision");
+                                                                  "Overhead Rate" := Item."Overhead Rate";
                                                                   "Direct Unit Cost" :=
-                                                                    ROUND(("Unit Cost" - "Overhead Rate") / (1 + "Indirect Cost %" / 100),
+                                                                    ROUND(("Unit Cost" - "Overhead Rate" * "Qty. per Unit of Measure") / (1 + "Indirect Cost %" / 100),
                                                                       GLSetup."Unit-Amount Rounding Precision");
                                                                 END;
 
@@ -370,7 +366,7 @@ OBJECT Table 99000829 Planning Component
                                                    DecimalPlaces=2:5 }
     { 56  ;   ;Indirect Cost %     ;Decimal       ;OnValidate=BEGIN
                                                                 "Direct Unit Cost" :=
-                                                                  ROUND("Unit Cost" / (1 + "Indirect Cost %" / 100) - "Overhead Rate");
+                                                                  ROUND("Unit Cost" / (1 + "Indirect Cost %" / 100) - "Overhead Rate" * "Qty. per Unit of Measure");
                                                               END;
 
                                                    CaptionML=[DAN=Indir. omkost.pct.;

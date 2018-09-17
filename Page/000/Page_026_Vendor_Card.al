@@ -2,9 +2,9 @@ OBJECT Page 26 Vendor Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -13,7 +13,7 @@ OBJECT Page 26 Vendor Card
     SourceTable=Table23;
     PageType=Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Anmod om godkendelse,Nyt bilag,Naviger,Indg†ende bilag;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Anmod om godkendelse,Nyt bilag,Naviger,Indg†ende bilag;
                                 ENU=New,Process,Report,Approve,Request Approval,New Document,Navigate,Incoming Documents];
     OnInit=BEGIN
              SetVendorNoVisibilityOnFactBoxes;

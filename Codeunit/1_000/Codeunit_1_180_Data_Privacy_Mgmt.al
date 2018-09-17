@@ -2,9 +2,9 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -97,7 +97,8 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
       END;
     END;
 
-    LOCAL PROCEDURE CreateRelatedData@5(VAR RecRef@1014 : RecordRef;EntityTypeTableNo@1002 : Integer;EntityNo@1006 : Code[50];VAR PackageCode@1015 : Code[20];ActionType@1016 : 'Export a data subject''s data,Create a data privacy configuration package';GeneratePreview@1019 : Boolean;DataSensitivityOption@1020 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
+    [External]
+    PROCEDURE CreateRelatedData@5(VAR RecRef@1014 : RecordRef;EntityTypeTableNo@1002 : Integer;EntityNo@1006 : Code[50];VAR PackageCode@1015 : Code[20];ActionType@1016 : 'Export a data subject''s data,Create a data privacy configuration package';GeneratePreview@1019 : Boolean;DataSensitivityOption@1020 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
     VAR
       ConfigPackage@1007 : Record 8623;
       Field@1010 : Record 2000000041;
@@ -577,7 +578,7 @@ OBJECT Codeunit 1180 Data Privacy Mgmt
     END;
 
     [Integration]
-    PROCEDURE OnCreateData@9(EntityTypeTableNo@1003 : Integer;EntityNo@1002 : Code[50];PackageCode@1000 : Code[20];ActionType@1004 : 'Export a data subject''s data,Create a data privacy configuration package';GeneratePreview@1005 : Boolean;DataSensitivity@1006 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
+    PROCEDURE OnCreateData@9(EntityTypeTableNo@1003 : Integer;EntityNo@1002 : Code[50];VAR PackageCode@1000 : Code[20];ActionType@1004 : 'Export a data subject''s data,Create a data privacy configuration package';GeneratePreview@1005 : Boolean;DataSensitivity@1006 : 'Sensitive,Personal,Company Confidential,Normal,Unclassified');
     BEGIN
     END;
 

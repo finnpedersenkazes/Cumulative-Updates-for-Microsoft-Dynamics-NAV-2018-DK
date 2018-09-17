@@ -2,9 +2,9 @@ OBJECT Page 507 Blanket Sales Order
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 507 Blanket Sales Order
     SourceTableView=WHERE(Document Type=FILTER(Blanket Order));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Anmod om godkendelse;
                                 ENU=New,Process,Report,Approve,Request Approval];
     OnOpenPage=BEGIN
                  IF UserMgt.GetSalesFilter <> '' THEN BEGIN

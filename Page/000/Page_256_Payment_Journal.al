@@ -2,9 +2,9 @@ OBJECT Page 256 Payment Journal
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -16,7 +16,7 @@ OBJECT Page 256 Payment Journal
     DelayedInsert=Yes;
     PageType=Worksheet;
     AutoSplitKey=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Bank,Klarg›r,Godkend,Side;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Bank,Klarg›r,Godkend,Side;
                                 ENU=New,Process,Report,Bank,Prepare,Approve,Page];
     OnInit=BEGIN
              TotalBalanceVisible := TRUE;

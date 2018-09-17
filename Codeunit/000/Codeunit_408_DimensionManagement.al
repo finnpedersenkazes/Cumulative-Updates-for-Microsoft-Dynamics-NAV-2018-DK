@@ -2,9 +2,9 @@ OBJECT Codeunit 408 DimensionManagement
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -1043,7 +1043,9 @@ OBJECT Codeunit 408 DimensionManagement
       TempDimField@1002 : TEMPORARY Record 2000000041;
       TempDimSetIDField@1001 : TEMPORARY Record 2000000041;
     BEGIN
-      TempDimField.SETFILTER(TableNo,'<>%1&<>%2',DATABASE::"General Ledger Setup",DATABASE::"Job Task");
+      TempDimField.SETFILTER(
+        TableNo,'<>%1&<>%2&<>%3',
+        DATABASE::"General Ledger Setup",DATABASE::"Job Task",DATABASE::"Change Global Dim. Header");
       TempDimField.SETFILTER(ObsoleteState,'<>%1',TempDimField.ObsoleteState::Removed);
       TempDimField.SETFILTER(FieldName,'*Global Dimension*');
       TempDimField.SETRANGE(Type,TempDimField.Type::Code);
@@ -1645,8 +1647,20 @@ OBJECT Codeunit 408 DimensionManagement
             JobTaskDimension2."Dimension Code" := JobTaskDimension."Dimension Code";
             JobTaskDimension2."Dimension Value Code" := JobTaskDimension."Dimension Value Code";
             JobTaskDimension2.INSERT(TRUE);
+          END ELSE BEGIN
+            JobTaskDimension2."Dimension Value Code" := JobTaskDimension."Dimension Value Code";
+            JobTaskDimension2.MODIFY(TRUE);
           END;
         UNTIL JobTaskDimension.NEXT = 0;
+
+      JobTaskDimension2.RESET;
+      JobTaskDimension2.SETRANGE("Job No.",NewJobNo);
+      JobTaskDimension2.SETRANGE("Job Task No.",NewJobTaskNo);
+      IF JobTaskDimension2.FINDSET THEN
+        REPEAT
+          IF NOT JobTaskDimension.GET(JobNo,JobTaskNo,JobTaskDimension2."Dimension Code") THEN
+            JobTaskDimension2.DELETE(TRUE);
+        UNTIL JobTaskDimension2.NEXT = 0;
     END;
 
     [External]
@@ -2067,9 +2081,11 @@ OBJECT Codeunit 408 DimensionManagement
     PROCEDURE ResolveDimValueFilter@47(VAR DimValueFilter@1001 : Text;DimensionCode@1000 : Code[20]);
     VAR
       TempDimensionValue@1002 : TEMPORARY Record 349;
+      TempDimensionValueBuffer@1003 : TEMPORARY Record 349;
     BEGIN
       GetDimValuesWithTotalings(TempDimensionValue,DimValueFilter,DimensionCode);
-      GetFilterFromDimValuesTable(TempDimensionValue,DimValueFilter);
+      FillTempDimensionValueBuffer(TempDimensionValue,TempDimensionValueBuffer,DimValueFilter,DimensionCode);
+      GetFilterFromDimValuesTable(TempDimensionValue,TempDimensionValueBuffer,DimValueFilter);
     END;
 
     LOCAL PROCEDURE GetDimValuesWithTotalings@44(VAR TempDimensionValue@1004 : TEMPORARY Record 349;DimValueFilter@1002 : Text;DimensionCode@1000 : Code[20]);
@@ -2083,18 +2099,45 @@ OBJECT Codeunit 408 DimensionManagement
       IF DimensionValue.FINDSET THEN
         REPEAT
           TempDimensionValue.INIT;
-          TempDimensionValue.Code := DimensionValue.Code;
-          TempDimensionValue."Dimension Code" := DimensionValue."Dimension Code";
-          TempDimensionValue."Dimension Value Type" := DimensionValue."Dimension Value Type";
+          TempDimensionValue := DimensionValue;
           IF TempDimensionValue.INSERT THEN
             IF DimensionValue.Totaling <> '' THEN
               GetDimValuesWithTotalings(TempDimensionValue,DimensionValue.Totaling,DimensionCode);
         UNTIL DimensionValue.NEXT = 0;
     END;
 
-    LOCAL PROCEDURE GetFilterFromDimValuesTable@42(VAR TempDimensionValue@1001 : TEMPORARY Record 349;VAR DimValueFilter@1000 : Text);
+    LOCAL PROCEDURE FillTempDimensionValueBuffer@94(VAR TempDimensionValue@1004 : TEMPORARY Record 349;VAR TempDimensionValueBuffer@1000 : TEMPORARY Record 349;DimValueFilter@1003 : Text;DimensionCode@1002 : Code[20]);
     VAR
-      DimensionValue@1005 : Record 349;
+      DimensionValue@1001 : Record 349;
+    BEGIN
+      IF NOT TempDimensionValueBuffer.ISTEMPORARY OR (DimensionCode = '') THEN
+        EXIT;
+
+      DimensionValue.SETRANGE("Dimension Code",DimensionCode);
+      IF DimensionValue.FINDSET THEN BEGIN
+        REPEAT
+          TempDimensionValueBuffer.INIT;
+          TempDimensionValueBuffer := DimensionValue;
+          TempDimensionValueBuffer.INSERT;
+        UNTIL DimensionValue.NEXT = 0;
+
+        TempDimensionValueBuffer.INIT;
+        TempDimensionValueBuffer := DimensionValue;
+        TempDimensionValueBuffer.Code := '''''';
+        TempDimensionValueBuffer.INSERT;
+
+        TempDimensionValueBuffer.SETFILTER(Code,DimValueFilter);
+        TempDimensionValueBuffer.Code := '''''';
+        IF TempDimensionValueBuffer.FIND THEN BEGIN
+          TempDimensionValue.INIT;
+          TempDimensionValue := TempDimensionValueBuffer;
+          TempDimensionValue.INSERT;
+        END;
+      END;
+    END;
+
+    LOCAL PROCEDURE GetFilterFromDimValuesTable@42(VAR TempDimensionValue@1001 : TEMPORARY Record 349;VAR TempDimensionValueBuffer@1004 : TEMPORARY Record 349;VAR DimValueFilter@1000 : Text);
+    VAR
       RangeStartCode@1006 : Code[20];
       PreviousCode@1002 : Code[20];
       RangeStarted@1003 : Boolean;
@@ -2106,37 +2149,34 @@ OBJECT Codeunit 408 DimensionManagement
         SETFILTER("Dimension Value Type",'%1|%2',"Dimension Value Type"::Standard,"Dimension Value Type"::Heading);
         IF FINDSET THEN BEGIN
           Finished := FALSE;
-          DimensionValue.SETRANGE("Dimension Code","Dimension Code");
-          DimensionValue.FINDSET;
           DimValueFilter := '';
-          REPEAT
-            IF Code = DimensionValue.Code THEN BEGIN
+          TempDimensionValueBuffer.RESET;
+          TempDimensionValueBuffer.FINDFIRST;
+          WHILE NOT Finished DO
+            IF Code IN [TempDimensionValueBuffer.Code,''''''] THEN BEGIN
               IF NOT RangeStarted THEN BEGIN
                 RangeStarted := TRUE;
                 RangeStartCode := Code;
               END;
               PreviousCode := Code;
-              DimensionValue.NEXT;
-              IF NEXT = 0 THEN
-                Finished := TRUE;
+              IF Code <> '''''' THEN
+                TempDimensionValueBuffer.NEXT;
+              Finished := NEXT = 0;
             END ELSE BEGIN
-              IF RangeStarted THEN BEGIN
-                AddRangeToFilter(DimValueFilter,RangeStartCode,PreviousCode);
-                RangeStarted := FALSE;
-              END;
-              REPEAT
-                DimensionValue.NEXT;
-              UNTIL DimensionValue.Code = Code;
+              AddRangeToFilter(DimValueFilter,RangeStartCode,PreviousCode,RangeStarted);
+              TempDimensionValueBuffer.GET("Dimension Code",Code);
             END;
-          UNTIL Finished;
-          IF RangeStarted THEN
-            AddRangeToFilter(DimValueFilter,RangeStartCode,PreviousCode);
-        END
-      END
+          AddRangeToFilter(DimValueFilter,RangeStartCode,PreviousCode,RangeStarted);
+        END;
+      END;
     END;
 
-    LOCAL PROCEDURE AddRangeToFilter@24(VAR DimValueFilter@1000 : Text;RangeStartCode@1002 : Code[20];RangeEndCode@1001 : Code[20]);
+    LOCAL PROCEDURE AddRangeToFilter@24(VAR DimValueFilter@1000 : Text;RangeStartCode@1002 : Code[20];RangeEndCode@1001 : Code[20];VAR RangeStarted@1003 : Boolean);
     BEGIN
+      IF NOT RangeStarted THEN
+        EXIT;
+      RangeStarted := FALSE;
+
       IF DimValueFilter <> '' THEN BEGIN
         IF STRLEN(DimValueFilter) + 1 > MAXSTRLEN(DimValueFilter) THEN
           ERROR(OverflowDimFilterErr);

@@ -2,9 +2,9 @@ OBJECT Page 49 Purchase Quote
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 49 Purchase Quote
     SourceTableView=WHERE(Document Type=FILTER(Quote));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=New,Process,Report,Approve,Request Approval;
                                 ENU=New,Process,Report,Approve,Request Approval];
     OnInit=BEGIN
              ShowShippingOptionsWithLocation := DummyApplicationAreaSetup.IsLocationEnabled OR DummyApplicationAreaSetup.IsAllDisabled;
@@ -930,6 +930,8 @@ OBJECT Page 49 Purchase Quote
                            ENU=Pay-to];
                 ToolTipML=[DAN=Angiver den kreditor, som k›bsbilaget skal betales til. Standard (kreditor): Den samme som kreditoren p† k›bsbilaget. En anden kreditor: Enhver kreditor, som du angiver i nedenst†ende felter.;
                            ENU=Specifies the vendor that the purchase document will be paid to. Default (Vendor): The same as the vendor on the purchase document. Another Vendor: Any vendor that you specify in the fields below.];
+                OptionCaptionML=[DAN=Standard (kreditor),en anden kreditor;
+                                 ENU=Default (Vendor),Another Vendor];
                 ApplicationArea=#Advanced;
                 SourceExpr=PayToOptions;
                 OnValidate=BEGIN

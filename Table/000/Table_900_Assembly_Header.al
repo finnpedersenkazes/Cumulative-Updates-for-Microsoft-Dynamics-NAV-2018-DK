@@ -2,9 +2,9 @@ OBJECT Table 900 Assembly Header
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -423,7 +423,7 @@ OBJECT Table 900 Assembly Header
                                                                 GetItem;
                                                                 "Qty. per Unit of Measure" := UOMMgt.GetQtyPerUnitOfMeasure(Item,"Unit of Measure Code");
                                                                 "Unit Cost" := GetUnitCost;
-                                                                "Overhead Rate" := RoundUnitAmount(Item."Overhead Rate" * "Qty. per Unit of Measure");
+                                                                "Overhead Rate" := Item."Overhead Rate";
 
                                                                 AssemblyLineMgt.UpdateAssemblyLines(Rec,xRec,FIELDNO("Unit of Measure Code"),ReplaceLinesFromBOM,CurrFieldNo,CurrentFieldNum);
                                                                 ClearCurrentFieldNum(FIELDNO("Unit of Measure Code"));

@@ -2,9 +2,9 @@ OBJECT Page 591 Payment Tolerance Warning
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -52,14 +52,14 @@ OBJECT Page 591 Payment Tolerance Warning
     { 1   ;2   ;Group     ;
                 Visible=Posting = Posting::"Payment Tolerance Accounts";
                 GroupType=Group;
-                InstructionalTextML=[DAN=Posting this application will create an outstanding balance. You can close all entries by posting the balance as a payment tolerance amount.;
+                InstructionalTextML=[DAN=Hvis du bogf›rer denne udligning, opst†r der en udest†ende saldo. Du kan lukke alle poster ved at bogf›re saldoen som et betalingstolerancebel›b.;
                                      ENU=Posting this application will create an outstanding balance. You can close all entries by posting the balance as a payment tolerance amount.];
                 Layout=Rows }
 
     { 4   ;2   ;Group     ;
                 Visible=Posting = Posting::"Remaining Amount";
                 GroupType=Group;
-                InstructionalTextML=[DAN=Posting this application will be handled as a partial payment with a remaining balance. The document will not be closed.;
+                InstructionalTextML=[DAN=Bogf›ringen af denne udligning behandles som en delvis betaling med en resterende saldo. Dokumentet lukkes ikke.;
                                      ENU=Posting this application will be handled as a partial payment with a remaining balance. The document will not be closed.] }
 
     { 7   ;2   ;Field     ;

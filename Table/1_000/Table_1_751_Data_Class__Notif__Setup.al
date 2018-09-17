@@ -2,21 +2,26 @@ OBJECT Table 1751 Data Class. Notif. Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
+    ObsoleteState=Pending;
+    ObsoleteReason=Functionality moved on My Notifications.;
     CaptionML=[DAN=Konfiguration af notifikation om dataklasse;
                ENU=Data Class. Notif. Setup];
   }
   FIELDS
   {
-    { 1   ;   ;USER ID             ;GUID          ;DataClassification=EndUserPseudonymousIdentifiers;
+    { 1   ;   ;USER ID             ;GUID          ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Functionality moved on My Notifications.;
+                                                   DataClassification=EndUserPseudonymousIdentifiers;
                                                    CaptionML=[DAN=BRUGER-ID;
                                                               ENU=USER ID] }
-    { 2   ;   ;Show Notifications  ;Boolean       ;DataClassification=SystemMetadata;
+    { 2   ;   ;Show Notifications  ;Boolean       ;ObsoleteState=Pending;
+                                                   ObsoleteReason=Functionality moved on My Notifications.;
                                                    CaptionML=[DAN=Vis notifikationer;
                                                               ENU=Show Notifications] }
   }
@@ -29,26 +34,6 @@ OBJECT Table 1751 Data Class. Notif. Setup
   }
   CODE
   {
-
-    PROCEDURE ShowNotifications@1() : Boolean;
-    BEGIN
-      IF NOT GET(USERSECURITYID) THEN
-        EXIT(TRUE);
-
-      EXIT("Show Notifications");
-    END;
-
-    PROCEDURE DisableNotifications@2();
-    BEGIN
-      IF GET(USERSECURITYID) THEN BEGIN
-        "Show Notifications" := FALSE;
-        MODIFY;
-      END ELSE BEGIN
-        "USER ID" := USERSECURITYID;
-        "Show Notifications" := FALSE;
-        INSERT;
-      END;
-    END;
 
     BEGIN
     END.

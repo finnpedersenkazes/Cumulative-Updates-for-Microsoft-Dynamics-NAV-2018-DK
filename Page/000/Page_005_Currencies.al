@@ -2,9 +2,9 @@ OBJECT Page 5 Currencies
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -13,7 +13,7 @@ OBJECT Page 5 Currencies
     SourceTable=Table4;
     PageType=List;
     CardPageID=Currency Card;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Valutakurstjeneste;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Valutakurstjeneste;
                                 ENU=New,Process,Report,Exchange Rate Service];
     OnOpenPage=VAR
                  CRMIntegrationManagement@1000 : Codeunit 5330;

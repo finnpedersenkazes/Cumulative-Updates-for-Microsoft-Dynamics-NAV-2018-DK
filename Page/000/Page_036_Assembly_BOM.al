@@ -2,9 +2,9 @@ OBJECT Page 36 Assembly BOM
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 36 Assembly BOM
     PageType=List;
     AutoSplitKey=Yes;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Vare,Stykliste;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Vare,Stykliste;
                                 ENU=New,Process,Report,Item,BOM];
     OnAfterGetRecord=BEGIN
                        IsEmptyOrItem := Type IN [Type::" ",Type::Item];

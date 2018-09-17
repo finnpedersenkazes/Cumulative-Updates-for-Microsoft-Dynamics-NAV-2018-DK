@@ -2,9 +2,9 @@ OBJECT Table 5092 Opportunity
 {
   OBJECT-PROPERTIES
   {
-    Date=22-02-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.20783;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -481,6 +481,7 @@ OBJECT Table 5092 Opportunity
     {    ;Campaign No.,Closed                      }
     {    ;Segment No.,Closed                       }
     {    ;Sales Document Type,Sales Document No.   }
+    {    ;Description                              }
   }
   FIELDGROUPS
   {

@@ -2,9 +2,9 @@ OBJECT Page 5805 Item Charge Assignment (Purch)
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -18,7 +18,7 @@ OBJECT Page 5805 Item Charge Assignment (Purch)
     PageType=Worksheet;
     AutoSplitKey=Yes;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Varegebyr;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Varegebyr;
                                 ENU=New,Process,Report,Item Charge];
     OnOpenPage=BEGIN
                  FILTERGROUP(2);

@@ -2,9 +2,9 @@ OBJECT Page 459 Sales & Receivables Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 459 Sales & Receivables Setup
     DeleteAllowed=No;
     SourceTable=Table311;
     PageType=Card;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Debitorgrupper,Betalinger;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Debitorgrupper,Betalinger;
                                 ENU=New,Process,Report,Customer Groups,Payments];
     OnOpenPage=BEGIN
                  RESET;
@@ -321,7 +321,7 @@ OBJECT Page 459 Sales & Receivables Setup
                 Importance=Additional }
 
     { 60  ;2   ;Field     ;
-                ToolTipML=[DAN=Specifies if changes to addresses made on sales documents are copied to the customer card. By default, changes are copied to the customer card.;
+                ToolTipML=[DAN=Angiver, om adresse‘ndringer, der er foretaget p† salgsbilag, kopieres til debitorkortet. Som standard kopieres ‘ndringer til debitorkortet.;
                            ENU=Specifies if changes to addresses made on sales documents are copied to the customer card. By default, changes are copied to the customer card.];
                 ApplicationArea=#Basic,#Suite;
                 SourceExpr="Ignore Updated Addresses" }

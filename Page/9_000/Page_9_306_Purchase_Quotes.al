@@ -2,9 +2,9 @@ OBJECT Page 9306 Purchase Quotes
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 9306 Purchase Quotes
     PageType=List;
     CardPageID=Purchase Quote;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=New,Process,Report,Request Approval;
                                 ENU=New,Process,Report,Request Approval];
     OnOpenPage=BEGIN
                  SetSecurityFilterOnRespCenter;

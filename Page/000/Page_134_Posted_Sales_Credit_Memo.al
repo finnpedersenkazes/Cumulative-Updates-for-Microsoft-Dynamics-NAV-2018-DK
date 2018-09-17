@@ -2,9 +2,9 @@ OBJECT Page 134 Posted Sales Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 134 Posted Sales Credit Memo
     SourceTable=Table114;
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Kreditnota,Annuller;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Kreditnota,Annuller;
                                 ENU=New,Process,Report,Cr. Memo,Cancel];
     OnOpenPage=VAR
                  OfficeMgt@1000 : Codeunit 1630;

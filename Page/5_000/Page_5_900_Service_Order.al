@@ -2,9 +2,9 @@ OBJECT Page 5900 Service Order
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 5900 Service Order
     SourceTableView=WHERE(Document Type=FILTER(Order));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Lagersted;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Lagersted;
                                 ENU=New,Process,Report,Warehouse];
     OnOpenPage=BEGIN
                  IF UserMgt.GetServiceFilter <> '' THEN BEGIN

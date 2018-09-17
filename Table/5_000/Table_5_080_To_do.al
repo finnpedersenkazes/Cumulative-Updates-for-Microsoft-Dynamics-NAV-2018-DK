@@ -2,9 +2,9 @@ OBJECT Table 5080 To-do
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -1079,15 +1079,16 @@ OBJECT Table 5080 To-do
             Attendee."Attendee Type"::Contact,
             Cont."No.",Cont."E-Mail" <> '');
       END ELSE BEGIN
-        IF Task."Team Code" = '' THEN BEGIN
-          IF Salesperson.GET(Task."Salesperson Code") THEN
-            Attendee.CreateAttendee(
-              Attendee,
-              Task."No.",10000,Attendee."Attendance Type"::"To-do Organizer",
-              Attendee."Attendee Type"::Salesperson,
-              Salesperson.Code,TRUE);
-        END ELSE
-          Task.CreateAttendeesFromTeam(Attendee,Task."Team Meeting Organizer");
+        IF Task.Type = Type::Meeting THEN
+          IF Task."Team Code" = '' THEN BEGIN
+            IF Salesperson.GET(Task."Salesperson Code") THEN
+              Attendee.CreateAttendee(
+                Attendee,
+                Task."No.",10000,Attendee."Attendance Type"::"To-do Organizer",
+                Attendee."Attendee Type"::Salesperson,
+                Salesperson.Code,TRUE);
+          END ELSE
+            Task.CreateAttendeesFromTeam(Attendee,Task."Team Meeting Organizer");
 
         IF Attendee.FIND('+') THEN
           AttendeeLineNo := Attendee."Line No." + 10000

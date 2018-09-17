@@ -2,9 +2,9 @@ OBJECT Report 1307 Standard Sales - Credit Memo
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -1104,7 +1104,8 @@ OBJECT Report 1307 Standard Sales - Credit Memo
         FormatDocument.SetPaymentMethod(PaymentMethod,"Payment Method Code");
         FormatDocument.SetShipmentMethod(ShipmentMethod,"Shipment Method Code","Language Code");
 
-        FormatDocument.SetText("Applies-to Doc. No." <> '',STRSUBSTNO('%1 %2',FORMAT("Applies-to Doc. Type"),"Applies-to Doc. No."));
+        AppliesToText :=
+          FormatDocument.SetText("Applies-to Doc. No." <> '',STRSUBSTNO('%1 %2',FORMAT("Applies-to Doc. Type"),"Applies-to Doc. No."));
       END;
     END;
 

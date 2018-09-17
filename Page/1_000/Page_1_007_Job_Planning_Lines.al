@@ -2,9 +2,9 @@ OBJECT Page 1007 Job Planning Lines
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 1007 Job Planning Lines
     DataCaptionExpr=Caption;
     PageType=List;
     AutoSplitKey=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Outlook;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Outlook;
                                 ENU=New,Process,Report,Outlook];
     OnInit=VAR
              SMTPMailSetup@1000 : Record 409;

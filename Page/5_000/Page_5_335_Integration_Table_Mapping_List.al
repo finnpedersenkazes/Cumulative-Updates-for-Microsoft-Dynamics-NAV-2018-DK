@@ -2,9 +2,9 @@ OBJECT Page 5335 Integration Table Mapping List
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 5335 Integration Table Mapping List
     SourceTable=Table5335;
     SourceTableView=WHERE(Delete After Synchronization=CONST(No));
     PageType=List;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Synkronisering,Kobling;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Synkronisering,Kobling;
                                 ENU=New,Process,Report,Synchronization,Mapping];
     OnAfterGetRecord=BEGIN
                        IntegrationTableCaptionValue := ObjectTranslation.TranslateObject(ObjectTranslation."Object Type"::Table,"Integration Table ID");

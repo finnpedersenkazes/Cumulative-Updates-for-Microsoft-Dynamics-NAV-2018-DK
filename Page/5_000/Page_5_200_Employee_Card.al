@@ -2,9 +2,9 @@ OBJECT Page 5200 Employee Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -496,6 +496,12 @@ OBJECT Page 5200 Employee Card
                            ENU=Specifies the bank account's international bank account number.];
                 ApplicationArea=#BasicHR;
                 SourceExpr=IBAN }
+
+    { 33  ;2   ;Field     ;
+                ToolTipML=[DAN=Angiver SWIFT-koden (internationalt bank-id) p† den bank, hvor medarbejderen har bankkontoen.;
+                           ENU=Specifies the SWIFT code (international bank identifier code) of the bank where the employee has the account.];
+                ApplicationArea=#BasicHR;
+                SourceExpr="SWIFT Code" }
 
     { 1900000007;0;Container;
                 ContainerType=FactBoxArea }

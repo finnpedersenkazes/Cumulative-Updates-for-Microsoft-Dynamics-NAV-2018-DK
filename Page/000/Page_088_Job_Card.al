@@ -2,9 +2,9 @@ OBJECT Page 88 Job Card
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -13,7 +13,7 @@ OBJECT Page 88 Job Card
     SourceTable=Table167;
     PageType=Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Priser;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Priser;
                                 ENU=New,Process,Report,Prices];
     OnInit=BEGIN
              JobSimplificationAvailable := IsJobSimplificationAvailable;

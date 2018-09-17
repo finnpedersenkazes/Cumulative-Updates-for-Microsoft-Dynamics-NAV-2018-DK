@@ -2,9 +2,9 @@ OBJECT Table 23 Vendor
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -124,6 +124,8 @@ OBJECT Table 23 Vendor
                VATRegistrationLogMgt.DeleteVendorLog(Rec);
 
                IntrastatSetup.CheckDeleteIntrastatContact(IntrastatSetup."Intrastat Contact Type"::Vendor,"No.");
+
+               CalendarManagement.DeleteCustomizedBaseCalendarData(CustomizedCalendarChange."Source Type"::Vendor,"No.");
              END;
 
     OnRename=BEGIN
@@ -131,6 +133,8 @@ OBJECT Table 23 Vendor
                SetLastModifiedDateTime;
                IF xRec."Invoice Disc. Code" = xRec."No." THEN
                  "Invoice Disc. Code" := "No.";
+
+               CalendarManagement.RenameCustomizedBaseCalendarData(CustomizedCalendarChange."Source Type"::Vendor,"No.",xRec."No.");
              END;
 
     CaptionML=[DAN=Kreditor;
@@ -1220,12 +1224,14 @@ OBJECT Table 23 Vendor
       RMSetup@1020 : Record 5079;
       ServiceItem@1024 : Record 5940;
       SalespersonPurchaser@1050 : Record 13;
+      CustomizedCalendarChange@1032 : Record 7602;
       NoSeriesMgt@1011 : Codeunit 396;
       MoveEntries@1012 : Codeunit 361;
       UpdateContFromVend@1013 : Codeunit 5057;
       DimMgt@1014 : Codeunit 408;
       LeadTimeMgt@1006 : Codeunit 5404;
       ApprovalsMgmt@1028 : Codeunit 1535;
+      CalendarManagement@1031 : Codeunit 7600;
       InsertFromContact@1015 : Boolean;
       Text004@1019 : TextConst 'DAN=Kontakt %1 %2 er ikke knyttet til kreditor %3 %4.;ENU=Contact %1 %2 is not related to vendor %3 %4.';
       Text005@1021 : TextConst 'DAN=bogf›re;ENU=post';

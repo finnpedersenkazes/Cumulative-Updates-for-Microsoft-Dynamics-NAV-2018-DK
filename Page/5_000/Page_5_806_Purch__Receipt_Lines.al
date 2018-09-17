@@ -2,9 +2,9 @@ OBJECT Page 5806 Purch. Receipt Lines
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -13,7 +13,7 @@ OBJECT Page 5806 Purch. Receipt Lines
                ENU=Purch. Receipt Lines];
     SourceTable=Table121;
     PageType=List;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Linje;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Linje;
                                 ENU=New,Process,Report,Line];
     OnInit=BEGIN
              CurrPage.LOOKUPMODE := TRUE;

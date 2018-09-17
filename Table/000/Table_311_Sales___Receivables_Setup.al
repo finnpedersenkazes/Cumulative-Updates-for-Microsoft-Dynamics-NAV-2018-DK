@@ -2,9 +2,9 @@ OBJECT Table 311 Sales & Receivables Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -173,7 +173,7 @@ OBJECT Table 311 Sales & Receivables Setup
     { 51  ;   ;Create Item from Description;Boolean;
                                                    CaptionML=[DAN=Opret vare ud fra beskrivelse;
                                                               ENU=Create Item from Description] }
-    { 61  ;   ;Ignore Updated Addresses;Boolean   ;CaptionML=[DAN=Ignore Updated Addresses;
+    { 61  ;   ;Ignore Updated Addresses;Boolean   ;CaptionML=[DAN=Ignorer opdaterede adresser;
                                                               ENU=Ignore Updated Addresses] }
     { 5329;   ;Write-in Product Type;Option       ;CaptionML=[DAN=Produkttype, der skal rekvireres;
                                                               ENU=Write-in Product Type];

@@ -2,9 +2,9 @@ OBJECT Page 9305 Sales Order List
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 9305 Sales Order List
     PageType=List;
     CardPageID=Sales Order;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Anmod om godkendelse,Bestil;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Anmod om godkendelse,Bestil;
                                 ENU=New,Process,Report,Request Approval,Order];
     OnOpenPage=VAR
                  SalesSetup@1000 : Record 311;

@@ -2,9 +2,9 @@ OBJECT Table 18 Customer
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836,NAVDK11.00.00.21836;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -190,6 +190,8 @@ OBJECT Table 18 Customer
                VATRegistrationLogMgt.DeleteCustomerLog(Rec);
 
                DimMgt.DeleteDefaultDim(DATABASE::Customer,"No.");
+
+               CalendarManagement.DeleteCustomizedBaseCalendarData(CustomizedCalendarChange."Source Type"::Customer,"No.");
              END;
 
     OnRename=VAR
@@ -208,6 +210,8 @@ OBJECT Table 18 Customer
                  "Invoice Disc. Code" := "No.";
                CustomerTemplate.SETRANGE("Invoice Disc. Code",xRec."No.");
                CustomerTemplate.MODIFYALL("Invoice Disc. Code","No.");
+
+               CalendarManagement.RenameCustomizedBaseCalendarData(CustomizedCalendarChange."Source Type"::Customer,"No.",xRec."No.");
              END;
 
     CaptionML=[DAN=Debitor;
@@ -1482,12 +1486,14 @@ OBJECT Table 18 Customer
       ServContract@1026 : Record 5965;
       ServiceItem@1027 : Record 5940;
       SalespersonPurchaser@1060 : Record 13;
+      CustomizedCalendarChange@1048 : Record 7602;
       PaymentToleranceMgt@1038 : Codeunit 426;
       NoSeriesMgt@1011 : Codeunit 396;
       MoveEntries@1012 : Codeunit 361;
       UpdateContFromCust@1013 : Codeunit 5056;
       DimMgt@1014 : Codeunit 408;
       ApprovalsMgmt@1039 : Codeunit 1535;
+      CalendarManagement@1047 : Codeunit 7600;
       InsertFromContact@1015 : Boolean;
       Text003@1020 : TextConst 'DAN=Kontakten %1 %2 er ikke knyttet til debitoren %3 %4.;ENU=Contact %1 %2 is not related to customer %3 %4.';
       Text004@1023 : TextConst 'DAN=bogf›re;ENU=post';

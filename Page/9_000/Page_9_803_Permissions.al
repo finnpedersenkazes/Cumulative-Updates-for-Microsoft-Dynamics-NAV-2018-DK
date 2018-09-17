@@ -2,9 +2,9 @@ OBJECT Page 9803 Permissions
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -16,7 +16,7 @@ OBJECT Page 9803 Permissions
     DataCaptionFields=Object Type,Object Name;
     PageType=Worksheet;
     SourceTableTemporary=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,L‘s,Inds‘t,Ret,Slet,Udf›r;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,L‘s,Inds‘t,Ret,Slet,Udf›r;
                                 ENU=New,Process,Report,Read,Insert,Modify,Delete,Execute];
     ShowFilter=No;
     OnOpenPage=VAR

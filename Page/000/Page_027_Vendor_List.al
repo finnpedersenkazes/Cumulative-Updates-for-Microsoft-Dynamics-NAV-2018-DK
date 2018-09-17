@@ -2,9 +2,9 @@ OBJECT Page 27 Vendor List
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 27 Vendor List
     PageType=List;
     CardPageID=Vendor Card;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Nyt dokument,Kreditor;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Nyt dokument,Kreditor;
                                 ENU=New,Process,Report,New Document,Vendor];
     OnInit=BEGIN
              SetVendorNoVisibilityOnFactBoxes;

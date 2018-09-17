@@ -2,9 +2,9 @@ OBJECT Page 1871 Credit Limit Details
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -101,10 +101,11 @@ OBJECT Page 1871 Credit Limit Details
                 Editable=FALSE }
 
     { 3   ;1   ;Field     ;
+                Name=OverdueBalance;
                 ToolTipML=[DAN=Angiver betalinger fra debitoren, der er forfaldne pr. dags dato.;
                            ENU=Specifies payments from the customer that are overdue per today's date.];
                 ApplicationArea=#Basic,#Suite;
-                SourceExpr="Balance Due (LCY)";
+                SourceExpr=CalcOverdueBalance;
                 CaptionClass=FORMAT(STRSUBSTNO(OverdueAmountsTxt,FORMAT(GETRANGEMAX("Date Filter"))));
                 Editable=FALSE;
                 OnDrillDown=VAR

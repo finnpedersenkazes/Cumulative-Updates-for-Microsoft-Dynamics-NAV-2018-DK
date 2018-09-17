@@ -2,9 +2,9 @@ OBJECT Report 2 General Journal - Test
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -22,6 +22,9 @@ OBJECT Report 2 General Journal - Test
                                PurchSetup.GET;
                                AmountLCY := 0;
                                BalanceLCY := 0;
+
+                               "Gen. Journal Line".COPYFILTER("Journal Batch Name",Name);
+                               "Gen. Journal Line".COPYFILTER("Journal Template Name","Journal Template Name");
                              END;
                               }
 
@@ -129,9 +132,10 @@ OBJECT Report 2 General Journal - Test
                                  SETFILTER("Expiration Date",'%1 | %2..',0D,WORKDATE);
                                END;
 
+                               LastEnteredDocNo := '';
                                IF "Gen. Journal Batch"."No. Series" <> '' THEN BEGIN
                                  NoSeries.GET("Gen. Journal Batch"."No. Series");
-                                 LastEntrdDocNo := '';
+                                 LastEnteredDocNo := GetLastEnteredDocumentNo("Gen. Journal Line");
                                  LastEntrdDate := 0D;
                                END;
 
@@ -433,14 +437,9 @@ OBJECT Report 2 General Journal - Test
                                     IF "Document No." = '' THEN
                                       AddError(STRSUBSTNO(Text002,FIELDCAPTION("Document No.")))
                                     ELSE
-                                      IF "Gen. Journal Batch"."No. Series" <> '' THEN BEGIN
-                                        IF (LastEntrdDocNo <> '') AND
-                                           ("Document No." <> LastEntrdDocNo) AND
-                                           ("Document No." <> INCSTR(LastEntrdDocNo))
-                                        THEN
+                                      IF "Gen. Journal Batch"."No. Series" <> '' THEN
+                                        IF IsGapInNosForDocNo("Gen. Journal Line") THEN
                                           AddError(Text016);
-                                        LastEntrdDocNo := "Document No.";
-                                      END;
 
                                     IF ("Account Type" IN ["Account Type"::Customer,"Account Type"::Vendor,"Account Type"::"Fixed Asset"]) AND
                                        ("Bal. Account Type" IN ["Bal. Account Type"::Customer,"Bal. Account Type"::Vendor,"Bal. Account Type"::"Fixed Asset"])
@@ -904,15 +903,12 @@ OBJECT Report 2 General Journal - Test
       LastDate@1090 : Date;
       LastDocType@1091 : 'Document,Payment,Invoice,Credit Memo,Finance Charge Memo,Reminder';
       LastDocNo@1092 : Code[20];
-      LastEntrdDocNo@1093 : Code[20];
+      LastEnteredDocNo@1093 : Code[20];
       LastEntrdDate@1094 : Date;
       BalanceLCY@1138 : Decimal;
       AmountLCY@1131 : Decimal;
-      DocBalance@1095 : Decimal;
       DocBalanceReverse@1096 : Decimal;
-      DateBalance@1097 : Decimal;
       DateBalanceReverse@1098 : Decimal;
-      TotalBalance@1099 : Decimal;
       TotalBalanceReverse@1100 : Decimal;
       AccName@1101 : Text[50];
       LastLineNo@1102 : Integer;
@@ -1071,17 +1067,22 @@ OBJECT Report 2 General Journal - Test
     VAR
       GenJnlLine@1000 : Record 81;
       NextGenJnlLine@1001 : Record 81;
+      DocBalance@1004 : Decimal;
+      DateBalance@1003 : Decimal;
+      TotalBalance@1002 : Decimal;
     BEGIN
       GenJnlLine := "Gen. Journal Line";
       LastLineNo := "Gen. Journal Line"."Line No.";
       NextGenJnlLine := "Gen. Journal Line";
+      NextGenJnlLine.SETRANGE("Journal Template Name",GenJnlLine."Journal Template Name");
+      NextGenJnlLine.SETRANGE("Journal Batch Name",GenJnlLine."Journal Batch Name");
       IF NextGenJnlLine.NEXT = 0 THEN;
       MakeRecurringTexts(NextGenJnlLine);
       WITH GenJnlLine DO
         IF NOT EmptyLine THEN BEGIN
-          DocBalance := DocBalance + "Balance (LCY)";
-          DateBalance := DateBalance + "Balance (LCY)";
-          TotalBalance := TotalBalance + "Balance (LCY)";
+          DocBalance := CalculateDocBalance(GenJnlLine);
+          DateBalance := CalculateDateBalance(GenJnlLine);
+          TotalBalance := CalculateTotalBalance(GenJnlLine);
           IF "Recurring Method" >= "Recurring Method"::"RF Reversing Fixed" THEN BEGIN
             DocBalanceReverse := DocBalanceReverse + "Balance (LCY)";
             DateBalanceReverse := DateBalanceReverse + "Balance (LCY)";
@@ -1128,7 +1129,6 @@ OBJECT Report 2 General Journal - Test
                     Text026,
                     SELECTSTR(LastDocType + 1,Text063),LastDocNo,DocBalanceReverse));
             END;
-            DocBalance := 0;
             DocBalanceReverse := 0;
           END;
           IF ("Posting Date" <> LastDate) OR
@@ -1157,9 +1157,7 @@ OBJECT Report 2 General Journal - Test
                   Text028,
                   LastDate,DateBalanceReverse));
           END;
-          DocBalance := 0;
           DocBalanceReverse := 0;
-          DateBalance := 0;
           DateBalanceReverse := 0;
         END;
 
@@ -1176,17 +1174,47 @@ OBJECT Report 2 General Journal - Test
                   Text030,
                   TotalBalanceReverse));
           END;
-          DocBalance := 0;
           DocBalanceReverse := 0;
-          DateBalance := 0;
           DateBalanceReverse := 0;
-          TotalBalance := 0;
           TotalBalanceReverse := 0;
           LastDate := 0D;
           LastDocType := 0;
           LastDocNo := '';
         END;
       END;
+    END;
+
+    LOCAL PROCEDURE CalculateDocBalance@27(GenJournalLine@1000 : Record 81) : Decimal;
+    VAR
+      GenJournalLine2@1001 : Record 81;
+    BEGIN
+      GenJournalLine2.SETRANGE("Journal Template Name",GenJournalLine."Journal Template Name");
+      GenJournalLine2.SETRANGE("Journal Batch Name",GenJournalLine."Journal Batch Name");
+      GenJournalLine2.SETRANGE("Document Type",GenJournalLine."Document Type");
+      GenJournalLine2.SETRANGE("Document No.",GenJournalLine."Document No.");
+      GenJournalLine2.CALCSUMS("Balance (LCY)");
+      EXIT(GenJournalLine2."Balance (LCY)");
+    END;
+
+    LOCAL PROCEDURE CalculateDateBalance@34(GenJournalLine@1000 : Record 81) : Decimal;
+    VAR
+      GenJournalLine2@1001 : Record 81;
+    BEGIN
+      GenJournalLine2.SETRANGE("Journal Template Name",GenJournalLine."Journal Template Name");
+      GenJournalLine2.SETRANGE("Journal Batch Name",GenJournalLine."Journal Batch Name");
+      GenJournalLine2.SETRANGE("Posting Date",GenJournalLine."Posting Date");
+      GenJournalLine2.CALCSUMS("Balance (LCY)");
+      EXIT(GenJournalLine2."Balance (LCY)");
+    END;
+
+    LOCAL PROCEDURE CalculateTotalBalance@28(GenJournalLine@1000 : Record 81) : Decimal;
+    VAR
+      GenJournalLine2@1001 : Record 81;
+    BEGIN
+      GenJournalLine2.SETRANGE("Journal Template Name",GenJournalLine."Journal Template Name");
+      GenJournalLine2.SETRANGE("Journal Batch Name",GenJournalLine."Journal Batch Name");
+      GenJournalLine2.CALCSUMS("Balance (LCY)");
+      EXIT(GenJournalLine2."Balance (LCY)");
     END;
 
     LOCAL PROCEDURE AddError@2(Text@1000 : Text[250]);
@@ -2091,6 +2119,30 @@ OBJECT Report 2 General Journal - Test
         AccountType::Employee:
           CheckEmployee("Gen. Journal Line",Name);
       END;
+    END;
+
+    LOCAL PROCEDURE GetLastEnteredDocumentNo@29(VAR FromGenJournalLine@1000 : Record 81) : Code[20];
+    VAR
+      GenJournalLine@1001 : Record 81;
+    BEGIN
+      GenJournalLine.COPYFILTERS(FromGenJournalLine);
+      GenJournalLine.SETCURRENTKEY("Document No.");
+      IF GenJournalLine.FINDLAST THEN;
+      EXIT(GenJournalLine."Document No.");
+    END;
+
+    LOCAL PROCEDURE IsGapInNosForDocNo@38(VAR FromGenJournalLine@1000 : Record 81) : Boolean;
+    VAR
+      GenJournalLine@1001 : Record 81;
+    BEGIN
+      IF LastEnteredDocNo = '' THEN
+        EXIT(FALSE);
+      IF FromGenJournalLine."Document No." = LastEnteredDocNo THEN
+        EXIT(FALSE);
+
+      GenJournalLine.COPYFILTERS(FromGenJournalLine);
+      GenJournalLine.SETRANGE("Document No.",INCSTR(FromGenJournalLine."Document No."));
+      EXIT(GenJournalLine.ISEMPTY);
     END;
 
     BEGIN

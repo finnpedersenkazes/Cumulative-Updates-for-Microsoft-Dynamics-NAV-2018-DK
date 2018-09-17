@@ -2,9 +2,9 @@ OBJECT Page 5742 Transfer Orders
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 5742 Transfer Orders
     SourceTable=Table5740;
     PageType=List;
     CardPageID=Transfer Order;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Frigiv,Bogf›ring,Ordre,Bilag;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Frigiv,Bogf›ring,Ordre,Bilag;
                                 ENU=New,Process,Report,Release,Posting,Order,Documents];
     OnInit=VAR
              ApplicationAreaSetup@1000 : Record 9178;

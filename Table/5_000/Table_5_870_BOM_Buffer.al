@@ -2,9 +2,9 @@ OBJECT Table 5870 BOM Buffer
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -529,7 +529,7 @@ OBJECT Table 5870 BOM Buffer
 
       "Production BOM No." := Item."Production BOM No.";
       "Routing No." := Item."Routing No.";
-      IF SKU.GET(GETFILTER("Location Code"),"No.",GETFILTER("Variant Code")) THEN
+      IF GetSKUFromFilter(SKU,"No.") THEN
         "Replenishment System" := SKU."Replenishment System"
       ELSE
         "Replenishment System" := Item."Replenishment System";
@@ -715,6 +715,22 @@ OBJECT Table 5870 BOM Buffer
         RoundCosts(UOMMgt.GetResQtyPerUnitOfMeasure(Res,"Unit of Measure Code") * "Qty. per Parent")
       ELSE
         RoundCosts(UOMMgt.GetResQtyPerUnitOfMeasure(Res,"Unit of Measure Code") * "Qty. per Top Item");
+    END;
+
+    LOCAL PROCEDURE GetSKUFromFilter@42(VAR SKU@1000 : Record 5700;ItemNo@1003 : Code[20]) : Boolean;
+    VAR
+      LocationFilter@1001 : Text;
+      VariantFilter@1002 : Text;
+    BEGIN
+      LocationFilter := GETFILTER("Location Code");
+      IF STRLEN(LocationFilter) > MAXSTRLEN("Location Code") THEN
+        EXIT(FALSE);
+
+      VariantFilter := GETFILTER("Variant Code");
+      IF STRLEN(VariantFilter) > MAXSTRLEN("Variant Code") THEN
+        EXIT(FALSE);
+
+      EXIT(SKU.GET(LocationFilter,ItemNo,VariantFilter));
     END;
 
     [External]

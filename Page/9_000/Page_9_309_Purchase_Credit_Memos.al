@@ -2,9 +2,9 @@ OBJECT Page 9309 Purchase Credit Memos
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -17,7 +17,7 @@ OBJECT Page 9309 Purchase Credit Memos
     PageType=List;
     CardPageID=Purchase Credit Memo;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Anmod om godkendelse;
                                 ENU=New,Process,Report,Request Approval];
     OnOpenPage=VAR
                  PurchasesPayablesSetup@1000 : Record 312;

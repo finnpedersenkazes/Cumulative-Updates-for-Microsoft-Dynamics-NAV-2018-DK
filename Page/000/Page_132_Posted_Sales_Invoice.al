@@ -2,9 +2,9 @@ OBJECT Page 132 Posted Sales Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -15,7 +15,7 @@ OBJECT Page 132 Posted Sales Invoice
     SourceTable=Table112;
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Faktura,Korrekt;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Faktura,Korrekt;
                                 ENU=New,Process,Report,Invoice,Correct];
     OnInit=BEGIN
              DocExcStatusVisible := TRUE;

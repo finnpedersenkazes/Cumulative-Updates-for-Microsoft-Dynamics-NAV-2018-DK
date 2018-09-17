@@ -2,9 +2,9 @@ OBJECT Page 6651 Posted Return Shipment Subform
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -29,6 +29,7 @@ OBJECT Page 6651 Posted Return Shipment Subform
                       ToolTipML=[DAN=Fortryd den antalsbogf›ring, der er foretaget for returvareleverancen. Der inds‘ttes automatisk en rettelseslinje i det bogf›rte bilag, og felterne Antal sendt retur og Afs. ret.vare - ikke fakt. p† returvareordren nulstilles.;
                                  ENU=Undo the quantity posting made with the return shipment. A corrective line is inserted in the posted document, and the Return Qty. Shipped and Return Shpd. Not Invd. fields on the return order are set to zero.];
                       ApplicationArea=#PurchReturnOrder;
+                      Image=UndoShipment;
                       OnAction=BEGIN
                                  UndoReturnShipment;
                                END;
@@ -82,6 +83,7 @@ OBJECT Page 6651 Posted Return Shipment Subform
                       ToolTipML=[DAN=Vis de relaterede kreditnotalinjer.;
                                  ENU=View the related credit memo lines.];
                       ApplicationArea=#PurchReturnOrder;
+                      Image=CreditMemo;
                       OnAction=BEGIN
                                  PageShowItemPurchCrMemoLines;
                                END;

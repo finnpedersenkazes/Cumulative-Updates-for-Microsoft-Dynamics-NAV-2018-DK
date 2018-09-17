@@ -2,9 +2,9 @@ OBJECT Page 9318 Service Orders
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -16,7 +16,7 @@ OBJECT Page 9318 Service Orders
     DataCaptionFields=Customer No.;
     PageType=List;
     CardPageID=Service Order;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Lagersted;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Lagersted;
                                 ENU=New,Process,Report,Warehouse];
     OnOpenPage=BEGIN
                  SetSecurityFilterOnRespCenter;

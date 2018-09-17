@@ -2,9 +2,9 @@ OBJECT Page 30 Item Card
 {
   OBJECT-PROPERTIES
   {
-    Date=26-04-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.21836;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -1603,8 +1603,6 @@ OBJECT Page 30 Item Card
                 Importance=Additional }
 
     { 32  ;3   ;Field     ;
-                CaptionML=[DAN=Sidste k›bspris;
-                           ENU=Last Purchase Cost];
                 ToolTipML=[DAN=Angiver den seneste k›bspris for varen.;
                            ENU=Specifies the most recent direct unit cost of the item.];
                 ApplicationArea=#Basic,#Suite;

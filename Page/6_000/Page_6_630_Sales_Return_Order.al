@@ -2,9 +2,9 @@ OBJECT Page 6630 Sales Return Order
 {
   OBJECT-PROPERTIES
   {
-    Date=21-12-17;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.19846,NAVDK11.00.00.19846;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -14,7 +14,7 @@ OBJECT Page 6630 Sales Return Order
     SourceTableView=WHERE(Document Type=FILTER(Return Order));
     PageType=Document;
     RefreshOnActivate=Yes;
-    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport‚r,Godkend,Frigiv,Bogf›ring,Forbered,Faktura,Anmod om godkendelse;
+    PromotedActionCategoriesML=[DAN=Ny,Behandl,Rapport,Godkend,Frigiv,Bogf›ring,Forbered,Faktura,Anmod om godkendelse;
                                 ENU=New,Process,Report,Approve,Release,Posting,Prepare,Invoice,Request Approval];
     OnInit=VAR
              SalesReceivablesSetup@1000 : Record 311;

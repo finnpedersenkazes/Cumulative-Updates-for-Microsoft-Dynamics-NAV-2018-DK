@@ -2,9 +2,9 @@ OBJECT Table 1226 Payment Export Data
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -453,6 +453,7 @@ OBJECT Table 1226 Payment Export Data
       IF Employee.GetBankAccountNo = '' THEN
         ERROR(EmployeeMustHaveBankAccountNoErr,Employee.FullName);
       "Recipient Bank Acc. No." := COPYSTR(Employee.GetBankAccountNo,1,MAXSTRLEN("Recipient Bank Acc. No."));
+      "Recipient Bank BIC" := Employee."SWIFT Code";
     END;
 
     [External]

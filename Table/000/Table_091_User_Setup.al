@@ -2,9 +2,9 @@ OBJECT Table 91 User Setup
 {
   OBJECT-PROPERTIES
   {
-    Date=25-05-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.22292;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -52,9 +52,17 @@ OBJECT Table 91 User Setup
                                                    CaptionML=[DAN=Bruger-id;
                                                               ENU=User ID];
                                                    NotBlank=Yes }
-    { 2   ;   ;Allow Posting From  ;Date          ;CaptionML=[DAN=Bogf. tilladt fra;
+    { 2   ;   ;Allow Posting From  ;Date          ;OnValidate=BEGIN
+                                                                UserSetupManagement.CheckAllowedPostingDates("Allow Posting From","Allow Posting To");
+                                                              END;
+
+                                                   CaptionML=[DAN=Bogf. tilladt fra;
                                                               ENU=Allow Posting From] }
-    { 3   ;   ;Allow Posting To    ;Date          ;CaptionML=[DAN=Bogf. tilladt til;
+    { 3   ;   ;Allow Posting To    ;Date          ;OnValidate=BEGIN
+                                                                UserSetupManagement.CheckAllowedPostingDates("Allow Posting From","Allow Posting To");
+                                                              END;
+
+                                                   CaptionML=[DAN=Bogf. tilladt til;
                                                               ENU=Allow Posting To] }
     { 4   ;   ;Register Time       ;Boolean       ;CaptionML=[DAN=Registrer tid;
                                                               ENU=Register Time] }
@@ -222,6 +230,7 @@ OBJECT Table 91 User Setup
       Text005@1004 : TextConst 'DAN=Du kan ikke have godkendelsesgr‘nser, der er mindre end nul.;ENU=You cannot have approval limits less than zero.';
       SalesPersonPurchaser@1011 : Record 13;
       PrivacyBlockedGenericErr@1013 : TextConst '@@@="%1 = salesperson / purchaser code.";DAN=Beskyttelse af personlige oplysninger sp‘rret m† ikke v‘re g‘ldende for s‘lgeren/indk›beren %1.;ENU=Privacy Blocked must not be true for Salesperson / Purchaser %1.';
+      UserSetupManagement@1001 : Codeunit 5700;
 
     [External]
     PROCEDURE CreateApprovalUserSetup@3(User@1000 : Record 2000000120);

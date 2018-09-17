@@ -2,9 +2,9 @@ OBJECT Codeunit 80 Sales-Post
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019,NAVDK11.00.00.23019;
+    Version List=NAVW111.00.00.23572,NAVDK11.00.00.23572;
   }
   PROPERTIES
   {
@@ -211,7 +211,7 @@ OBJECT Codeunit 80 Sales-Post
       TempICGenJnlLine@2165 : TEMPORARY Record 81;
       TempPrepmtDeductLCYSalesLine@1134 : TEMPORARY Record 37;
       TempSKU@1175 : TEMPORARY Record 5700;
-      DeferralPostBuffer@1046 : ARRAY [2] OF Record 1703;
+      DeferralPostBuffer@1046 : Record 1706;
       TempDeferralHeader@1009 : TEMPORARY Record 1701;
       TempDeferralLine@1035 : TEMPORARY Record 1702;
       GenJnlPostLine@1082 : Codeunit 12;
@@ -286,6 +286,7 @@ OBJECT Codeunit 80 Sales-Post
       DownloadShipmentAlsoQst@1036 : TextConst 'DAN=Du kan downloade bilaget Salg - leverance nu. Du kan ogs† †bne det fra vinduet Bogf›rte salgsleverancer p† et senere tidspunkt.\\Vil du downloade bilaget Salg - leverance nu?;ENU=You can also download the Sales - Shipment document now. Alternatively, you can access it from the Posted Sales Shipments window later.\\Do you want to download the Sales - Shipment document now?';
       InvPickExistsErr@1062 : TextConst 'DAN=Et eller flere relaterede pluk (lager) skal registreres, f›r du kan bogf›re leverancen.;ENU=One or more related inventory picks must be registered before you can post the shipment.';
       InvPutAwayExistsErr@1057 : TextConst 'DAN=En eller flere l‘g-p†-lager-aktiviteter skal registreres, f›r du kan bogf›re modtagelsen.;ENU=One or more related inventory put-aways must be registered before you can post the receipt.';
+      PostingPreviewNoTok@1257 : TextConst '@@@={Locked};DAN=***;ENU=***';
 
     LOCAL PROCEDURE CopyToTempLines@180(SalesHeader@1000 : Record 36);
     VAR
@@ -358,30 +359,36 @@ OBJECT Codeunit 80 Sales-Post
 
     LOCAL PROCEDURE CalcInvDiscount@18(VAR SalesHeader@1000 : Record 36);
     VAR
+      SalesHeaderCopy@1005 : Record 36;
       SalesLine@1001 : Record 37;
-      TempInvoice@1004 : Boolean;
-      TempShpt@1003 : Boolean;
-      TempReturn@1002 : Boolean;
     BEGIN
       WITH SalesHeader DO BEGIN
         IF NOT (SalesSetup."Calc. Inv. Discount" AND (Status <> Status::Open)) THEN
           EXIT;
 
+        SalesHeaderCopy := SalesHeader;
         SalesLine.RESET;
         SalesLine.SETRANGE("Document Type","Document Type");
         SalesLine.SETRANGE("Document No.","No.");
         SalesLine.FINDFIRST;
-        TempInvoice := Invoice;
-        TempShpt := Ship;
-        TempReturn := Receive;
         CODEUNIT.RUN(CODEUNIT::"Sales-Calc. Discount",SalesLine);
         RefreshTempLines(SalesHeader);
         GET("Document Type","No.");
-        Invoice := TempInvoice;
-        Ship := TempShpt;
-        Receive := TempReturn;
+        RestoreSalesHeader(SalesHeader,SalesHeaderCopy);
         IF NOT PreviewMode THEN
           COMMIT;
+      END;
+    END;
+
+    LOCAL PROCEDURE RestoreSalesHeader@232(VAR SalesHeader@1000 : Record 36;SalesHeaderCopy@1002 : Record 36);
+    BEGIN
+      WITH SalesHeader DO BEGIN
+        Invoice := SalesHeaderCopy.Invoice;
+        Receive := SalesHeaderCopy.Receive;
+        Ship := SalesHeaderCopy.Ship;
+        "Posting No." := SalesHeaderCopy."Posting No.";
+        "Shipping No." := SalesHeaderCopy."Shipping No.";
+        "Return Receipt No." := SalesHeaderCopy."Return Receipt No.";
       END;
     END;
 
@@ -1245,21 +1252,17 @@ OBJECT Codeunit 80 Sales-Post
 
     LOCAL PROCEDURE ReleaseSalesDocument@19(VAR SalesHeader@1000 : Record 36);
     VAR
+      SalesHeaderCopy@1001 : Record 36;
       TempAsmHeader@1005 : TEMPORARY Record 900;
       ReleaseSalesDocument@1006 : Codeunit 414;
-      TempInvoice@1003 : Boolean;
       LinesWereModified@1007 : Boolean;
-      TempShpt@1002 : Boolean;
-      TempReturn@1001 : Boolean;
       SavedStatus@1004 : Option;
     BEGIN
       WITH SalesHeader DO BEGIN
         IF NOT (Status = Status::Open) OR (Status = Status::"Pending Prepayment") THEN
           EXIT;
 
-        TempInvoice := Invoice;
-        TempShpt := Ship;
-        TempReturn := Receive;
+        SalesHeaderCopy := SalesHeader;
         SavedStatus := Status;
         GetOpenLinkedATOs(TempAsmHeader);
         LinesWereModified := ReleaseSalesDocument.ReleaseSalesHeader(SalesHeader,PreviewMode);
@@ -1267,9 +1270,7 @@ OBJECT Codeunit 80 Sales-Post
           RefreshTempLines(SalesHeader);
         TESTFIELD(Status,Status::Released);
         Status := SavedStatus;
-        Invoice := TempInvoice;
-        Ship := TempShpt;
-        Receive := TempReturn;
+        RestoreSalesHeader(SalesHeader,SalesHeaderCopy);
         ReopenAsmOrders(TempAsmHeader);
         IF PreviewMode AND ("Posting No." = '') THEN
           "Posting No." := '***';
@@ -1365,26 +1366,27 @@ OBJECT Codeunit 80 Sales-Post
       NoSeriesMgt@1001 : Codeunit 396;
     BEGIN
       WITH SalesHeader DO BEGIN
-        IF "Posting No." = '***' THEN
-          "Posting No." := '';
-
         IF Ship AND ("Shipping No." = '') THEN
           IF ("Document Type" = "Document Type"::Order) OR
              (("Document Type" = "Document Type"::Invoice) AND SalesSetup."Shipment on Invoice")
-          THEN BEGIN
-            TESTFIELD("Shipping No. Series");
-            "Shipping No." := NoSeriesMgt.GetNextNo("Shipping No. Series","Posting Date",TRUE);
-            ModifyHeader := TRUE;
-          END;
+          THEN
+            IF NOT PreviewMode THEN BEGIN
+              TESTFIELD("Shipping No. Series");
+              "Shipping No." := NoSeriesMgt.GetNextNo("Shipping No. Series","Posting Date",TRUE);
+              ModifyHeader := TRUE;
+            END ELSE
+              "Shipping No." := PostingPreviewNoTok;
 
         IF Receive AND ("Return Receipt No." = '') THEN
           IF ("Document Type" = "Document Type"::"Return Order") OR
              (("Document Type" = "Document Type"::"Credit Memo") AND SalesSetup."Return Receipt on Credit Memo")
-          THEN BEGIN
-            TESTFIELD("Return Receipt No. Series");
-            "Return Receipt No." := NoSeriesMgt.GetNextNo("Return Receipt No. Series","Posting Date",TRUE);
-            ModifyHeader := TRUE;
-          END;
+          THEN
+            IF NOT PreviewMode THEN BEGIN
+              TESTFIELD("Return Receipt No. Series");
+              "Return Receipt No." := NoSeriesMgt.GetNextNo("Return Receipt No. Series","Posting Date",TRUE);
+              ModifyHeader := TRUE;
+            END ELSE
+              "Return Receipt No." := PostingPreviewNoTok;
 
         IF Invoice AND ("Posting No." = '') THEN BEGIN
           IF ("No. Series" <> '') OR
@@ -1398,7 +1400,7 @@ OBJECT Codeunit 80 Sales-Post
               "Posting No." := NoSeriesMgt.GetNextNo("Posting No. Series","Posting Date",TRUE);
               ModifyHeader := TRUE;
             END ELSE
-              "Posting No." := '***';
+              "Posting No." := PostingPreviewNoTok;
           END;
         END;
       END;
@@ -5071,25 +5073,21 @@ OBJECT Codeunit 80 Sales-Post
         CALCFIELDS("Work Description");
         SalesInvHeader.TRANSFERFIELDS(SalesHeader);
 
+        SalesInvHeader."No." := "Posting No.";
         IF "Document Type" = "Document Type"::Order THEN BEGIN
-          IF PreviewMode THEN
-            SalesInvHeader."No." := '***'
-          ELSE
-            SalesInvHeader."No." := "Posting No.";
           IF SalesSetup."Ext. Doc. No. Mandatory" THEN
             TESTFIELD("External Document No.");
           SalesInvHeader."Pre-Assigned No. Series" := '';
           SalesInvHeader."Order No. Series" := "No. Series";
           SalesInvHeader."Order No." := "No.";
-          Window.UPDATE(1,STRSUBSTNO(InvoiceNoMsg,"Document Type","No.",SalesInvHeader."No."));
         END ELSE BEGIN
+          IF "Posting No." = '' THEN
+            SalesInvHeader."No." := "No.";
           SalesInvHeader."Pre-Assigned No. Series" := "No. Series";
           SalesInvHeader."Pre-Assigned No." := "No.";
-          IF "Posting No." <> '' THEN BEGIN
-            SalesInvHeader."No." := "Posting No.";
-            Window.UPDATE(1,STRSUBSTNO(InvoiceNoMsg,"Document Type","No.",SalesInvHeader."No."));
-          END;
         END;
+        IF GUIALLOWED THEN
+          Window.UPDATE(1,STRSUBSTNO(InvoiceNoMsg,"Document Type","No.",SalesInvHeader."No."));
         SalesInvHeader."Source Code" := SrcCode;
         SalesInvHeader."User ID" := USERID;
         SalesInvHeader."No. Printed" := 0;
@@ -6017,46 +6015,38 @@ OBJECT Codeunit 80 Sales-Post
            SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.")
       THEN BEGIN
         IF TempDeferralHeader."Amount to Defer" <> 0 THEN BEGIN
-          TempDeferralLine.SETRANGE("Deferral Doc. Type",DeferralUtilities.GetSalesDeferralDocType);
-          TempDeferralLine.SETRANGE("Gen. Jnl. Template Name",'');
-          TempDeferralLine.SETRANGE("Gen. Jnl. Batch Name",'');
-          TempDeferralLine.SETRANGE("Document Type",SalesLine."Document Type");
-          TempDeferralLine.SETRANGE("Document No.",SalesLine."Document No.");
-          TempDeferralLine.SETRANGE("Line No.",SalesLine."Line No.");
+          DeferralUtilities.FilterDeferralLines(
+            TempDeferralLine,DeferralUtilities.GetSalesDeferralDocType,'','',
+            SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.");
 
           // Remainder\Initial deferral pair
-          DeferralPostBuffer[1].PrepareSales(SalesLine,GenJnlLineDocNo);
-          DeferralPostBuffer[1]."Posting Date" := SalesHeader."Posting Date";
-          DeferralPostBuffer[1].Description := SalesHeader."Posting Description";
-          DeferralPostBuffer[1]."Period Description" := DeferralTemplate."Period Description";
-          DeferralPostBuffer[1]."Deferral Line No." := InvDefLineNo;
-          DeferralPostBuffer[1].PrepareInitialPair(
+          DeferralPostBuffer.PrepareSales(SalesLine,GenJnlLineDocNo);
+          DeferralPostBuffer."Posting Date" := SalesHeader."Posting Date";
+          DeferralPostBuffer.Description := SalesHeader."Posting Description";
+          DeferralPostBuffer."Period Description" := DeferralTemplate."Period Description";
+          DeferralPostBuffer."Deferral Line No." := InvDefLineNo;
+          DeferralPostBuffer.PrepareInitialPair(
             InvoicePostBuffer,RemainAmtToDefer,RemainAmtToDeferACY,SalesAccount,DeferralAccount);
-          UpdDeferralPostBuffer(InvoicePostBuffer);
+          DeferralPostBuffer.Update(DeferralPostBuffer,InvoicePostBuffer);
           IF (RemainAmtToDefer <> 0) OR (RemainAmtToDeferACY <> 0) THEN BEGIN
-            DeferralPostBuffer[1].PrepareRemainderSales(
-              SalesLine,RemainAmtToDefer,RemainAmtToDeferACY,SalesAccount,DeferralAccount);
-            UpdDeferralPostBuffer(InvoicePostBuffer);
+            DeferralPostBuffer.PrepareRemainderSales(
+              SalesLine,RemainAmtToDefer,RemainAmtToDeferACY,SalesAccount,DeferralAccount,InvDefLineNo);
+            DeferralPostBuffer.Update(DeferralPostBuffer,InvoicePostBuffer);
           END;
 
           // Add the deferral lines for each period to the deferral posting buffer merging when they are the same
           IF TempDeferralLine.FINDSET THEN
             REPEAT
               IF (TempDeferralLine."Amount (LCY)" <> 0) OR (TempDeferralLine.Amount <> 0) THEN BEGIN
-                DeferralPostBuffer[1].PrepareSales(SalesLine,GenJnlLineDocNo);
-                DeferralPostBuffer[1]."Amount (LCY)" := TempDeferralLine."Amount (LCY)";
-                DeferralPostBuffer[1].Amount := TempDeferralLine.Amount;
-                DeferralPostBuffer[1]."Sales/Purch Amount (LCY)" := TempDeferralLine."Amount (LCY)";
-                DeferralPostBuffer[1]."Sales/Purch Amount" := TempDeferralLine.Amount;
+                DeferralPostBuffer.PrepareSales(SalesLine,GenJnlLineDocNo);
+                DeferralPostBuffer.InitFromDeferralLine(TempDeferralLine);
                 IF NOT SalesLine.IsCreditDocType THEN
-                  DeferralPostBuffer[1].ReverseAmounts;
-                DeferralPostBuffer[1]."G/L Account" := SalesAccount;
-                DeferralPostBuffer[1]."Deferral Account" := DeferralAccount;
-                DeferralPostBuffer[1]."Posting Date" := TempDeferralLine."Posting Date";
-                DeferralPostBuffer[1].Description := TempDeferralLine.Description;
-                DeferralPostBuffer[1]."Period Description" := DeferralTemplate."Period Description";
-                DeferralPostBuffer[1]."Deferral Line No." := InvDefLineNo;
-                UpdDeferralPostBuffer(InvoicePostBuffer);
+                  DeferralPostBuffer.ReverseAmounts;
+                DeferralPostBuffer."G/L Account" := SalesAccount;
+                DeferralPostBuffer."Deferral Account" := DeferralAccount;
+                DeferralPostBuffer."Period Description" := DeferralTemplate."Period Description";
+                DeferralPostBuffer."Deferral Line No." := InvDefLineNo;
+                DeferralPostBuffer.Update(DeferralPostBuffer,InvoicePostBuffer);
               END ELSE
                 ERROR(ZeroDeferralAmtErr,SalesLine."No.",SalesLine."Deferral Code");
 
@@ -6068,29 +6058,6 @@ OBJECT Codeunit 80 Sales-Post
           ERROR(NoDeferralScheduleErr,SalesLine."No.",SalesLine."Deferral Code")
       END ELSE
         ERROR(NoDeferralScheduleErr,SalesLine."No.",SalesLine."Deferral Code");
-    END;
-
-    LOCAL PROCEDURE UpdDeferralPostBuffer@124(InvoicePostBuffer@1000 : Record 49);
-    BEGIN
-      DeferralPostBuffer[1]."Dimension Set ID" := InvoicePostBuffer."Dimension Set ID";
-      DeferralPostBuffer[1]."Global Dimension 1 Code" := InvoicePostBuffer."Global Dimension 1 Code";
-      DeferralPostBuffer[1]."Global Dimension 2 Code" := InvoicePostBuffer."Global Dimension 2 Code";
-
-      DeferralPostBuffer[2] := DeferralPostBuffer[1];
-      IF DeferralPostBuffer[2].FIND THEN BEGIN
-        DeferralPostBuffer[2].Amount += DeferralPostBuffer[1].Amount;
-        DeferralPostBuffer[2]."Amount (LCY)" += DeferralPostBuffer[1]."Amount (LCY)";
-        DeferralPostBuffer[2]."Sales/Purch Amount" += DeferralPostBuffer[1]."Sales/Purch Amount";
-        DeferralPostBuffer[2]."Sales/Purch Amount (LCY)" += DeferralPostBuffer[1]."Sales/Purch Amount (LCY)";
-
-        IF NOT DeferralPostBuffer[1]."System-Created Entry" THEN
-          DeferralPostBuffer[2]."System-Created Entry" := FALSE;
-        IF IsCombinedDeferralZero THEN
-          DeferralPostBuffer[2].DELETE
-        ELSE
-          DeferralPostBuffer[2].MODIFY;
-      END ELSE
-        DeferralPostBuffer[1].INSERT;
     END;
 
     LOCAL PROCEDURE RoundDeferralsForArchive@126(SalesHeader@1000 : Record 36;VAR SalesLine@1001 : Record 37);
@@ -6130,16 +6097,6 @@ OBJECT Codeunit 80 Sales-Post
       SalesHeader.TESTFIELD("Document Date");
 
       OnAfterCheckMandatoryFields(SalesHeader);
-    END;
-
-    LOCAL PROCEDURE IsCombinedDeferralZero@130() : Boolean;
-    BEGIN
-      IF (DeferralPostBuffer[2].Amount = 0) AND (DeferralPostBuffer[2]."Amount (LCY)" = 0) AND
-         (DeferralPostBuffer[2]."Sales/Purch Amount" = 0) AND (DeferralPostBuffer[2]."Sales/Purch Amount (LCY)" = 0)
-      THEN
-        EXIT(TRUE);
-
-      EXIT(FALSE);
     END;
 
     LOCAL PROCEDURE ClearPostBuffers@132();
@@ -6465,12 +6422,10 @@ OBJECT Codeunit 80 Sales-Post
         TempDeferralHeader.INSERT;
 
         WITH DeferralLine DO BEGIN
-          SETRANGE("Deferral Doc. Type",DeferralHeader."Deferral Doc. Type");
-          SETRANGE("Gen. Jnl. Template Name",DeferralHeader."Gen. Jnl. Template Name");
-          SETRANGE("Gen. Jnl. Batch Name",DeferralHeader."Gen. Jnl. Batch Name");
-          SETRANGE("Document Type",DeferralHeader."Document Type");
-          SETRANGE("Document No.",DeferralHeader."Document No.");
-          SETRANGE("Line No.",DeferralHeader."Line No.");
+          DeferralUtilities.FilterDeferralLines(
+            DeferralLine,DeferralHeader."Deferral Doc. Type",
+            DeferralHeader."Gen. Jnl. Template Name",DeferralHeader."Gen. Jnl. Batch Name",
+            DeferralHeader."Document Type",DeferralHeader."Document No.",DeferralHeader."Line No.");
           IF FINDSET THEN BEGIN
             TotalDeferralCount := COUNT;
             REPEAT
@@ -6520,20 +6475,14 @@ OBJECT Codeunit 80 Sales-Post
       THEN BEGIN
         PostedDeferralHeader.InitFromDeferralHeader(TempDeferralHeader,'','',
           NewDocumentType,NewDocumentNo,NewLineNo,DeferralAccount,SalesLine."Sell-to Customer No.",PostingDate);
-        WITH TempDeferralLine DO BEGIN
-          SETRANGE("Deferral Doc. Type",DeferralUtilities.GetSalesDeferralDocType);
-          SETRANGE("Gen. Jnl. Template Name",'');
-          SETRANGE("Gen. Jnl. Batch Name",'');
-          SETRANGE("Document Type",SalesLine."Document Type");
-          SETRANGE("Document No.",SalesLine."Document No.");
-          SETRANGE("Line No.",SalesLine."Line No.");
-          IF FINDSET THEN BEGIN
-            REPEAT
-              PostedDeferralLine.InitFromDeferralLine(
-                TempDeferralLine,'','',NewDocumentType,NewDocumentNo,NewLineNo,DeferralAccount);
-            UNTIL NEXT = 0;
-          END;
-        END;
+        DeferralUtilities.FilterDeferralLines(
+          TempDeferralLine,DeferralUtilities.GetSalesDeferralDocType,'','',
+          SalesLine."Document Type",SalesLine."Document No.",SalesLine."Line No.");
+        IF TempDeferralLine.FINDSET THEN
+          REPEAT
+            PostedDeferralLine.InitFromDeferralLine(
+              TempDeferralLine,'','',NewDocumentType,NewDocumentNo,NewLineNo,DeferralAccount);
+          UNTIL TempDeferralLine.NEXT = 0;
       END;
     END;
 

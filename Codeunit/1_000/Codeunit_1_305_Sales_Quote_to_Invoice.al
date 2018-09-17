@@ -2,9 +2,9 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -34,7 +34,6 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
             SalesInvoiceLine.LOCKTABLE;
 
             CreateSalesInvoiceHeader(SalesInvoiceHeader,Rec);
-            OnBeforeDeletionOfQuote(Rec,SalesInvoiceHeader);
             CreateSalesInvoiceLines(SalesInvoiceHeader,Rec);
             OnAfterInsertAllSalesInvLines(SalesInvoiceLine,Rec);
 
@@ -45,6 +44,8 @@ OBJECT Codeunit 1305 Sales-Quote to Invoice
             END;
             UpdateEmailParameters(SalesInvoiceHeader);
             UpdateCouponClaims(SalesInvoiceHeader);
+
+            OnBeforeDeletionOfQuote(Rec,SalesInvoiceHeader);
 
             DELETELINKS;
             DELETE;

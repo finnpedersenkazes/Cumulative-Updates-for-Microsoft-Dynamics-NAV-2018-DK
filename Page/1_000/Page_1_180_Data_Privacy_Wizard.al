@@ -2,9 +2,9 @@ OBJECT Page 1180 Data Privacy Wizard
 {
   OBJECT-PROPERTIES
   {
-    Date=28-06-18;
+    Date=27-07-18;
     Time=12:00:00;
-    Version List=NAVW111.00.00.23019;
+    Version List=NAVW111.00.00.23572;
   }
   PROPERTIES
   {
@@ -246,6 +246,20 @@ OBJECT Page 1180 Data Privacy Wizard
                 GroupType=Group;
                 InstructionalTextML=[DAN=V‘lg N‘ste for at starte processen.;
                                      ENU=Choose Next to start the process.] }
+
+    { 44  ;4   ;Group     ;
+                Name=Para1.2.1.1.1.1;
+                CaptionML=[DAN="";
+                           ENU=""];
+                GroupType=Group;
+                InstructionalTextML=[DAN=Du kan finde opdaterede oplysninger om anmodninger om beskyttelse af personlige oplysninger under linket nedenfor.;
+                                     ENU=Up to date information on privacy requests can be found at the link below.] }
+
+    { 32  ;5   ;Field     ;
+                ExtendedDatatype=URL;
+                ApplicationArea=#Basic,#Suite;
+                SourceExpr=PrivacyURL;
+                Editable=false }
 
     { 26  ;1   ;Group     ;
                 Name=Step2;
@@ -625,21 +639,6 @@ OBJECT Page 1180 Data Privacy Wizard
                 GroupType=Group;
                 InstructionalTextML=[DAN=Vi anbefaler, at du kontrollerer de data, der er eksporteret til Excel. Kontroller filtrene i konfigurationspakken at sikre, at du har f†et de data, du ›nsker.;
                                      ENU=We recommend that you verify the data that is exported to Excel. Please also verify the filters in the configuration package to make sure that you are getting the data that you want.] }
-
-    { 42  ;5   ;Group     ;
-                Name=Para5.1.1.1.1.1;
-                CaptionML=[DAN="";
-                           ENU=""];
-                Visible=(CurrentPage = 5) AND (ActionType = 0);
-                GroupType=Group;
-                InstructionalTextML=[DAN=Up to date information on privacy requests can be found at the link below.;
-                                     ENU=Up to date information on privacy requests can be found at the link below.] }
-
-    { 44  ;6   ;Field     ;
-                ExtendedDatatype=URL;
-                ApplicationArea=#Basic,#Suite;
-                SourceExpr=PrivacyURL;
-                Editable=false }
 
     { 38  ;3   ;Group     ;
                 Name=Para5.1.3;
