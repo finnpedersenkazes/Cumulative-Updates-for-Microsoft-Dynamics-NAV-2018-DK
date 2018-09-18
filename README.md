@@ -35,7 +35,7 @@ In case you need a few lines of code to fix a bug in your customers solutions, c
 
 ### Compare with your local file
 
-You can use a tool like Beyond Compare to compare two text files. Chose the file in the repository you want to compare. Click Raw button and copy the URL and paste it into one side in Beyond Compare and select the file you want to compare it to on the other side. 
+You can use a tool like [Beyond Compare](https://www.scootersoftware.com/) to compare two text files. Chose the file in the repository you want to compare. Click the Raw button and copy the URL and paste it into one side in Beyond Compare and select the file you want to compare it to on the other side. 
 
 ## How was this made?
 
